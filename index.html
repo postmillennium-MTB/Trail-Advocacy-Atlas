@@ -149,6 +149,7 @@ ul.orgs li{
 .scalebar .grad{height:11px;flex:1;max-width:230px}
 
 .empty{padding:40px 0;color:var(--slate);text-align:center}
+.empty a{color:var(--clay);font-weight:600}
 footer{margin-top:50px;padding-top:16px;border-top:1.5px solid var(--rule);
   color:var(--slate);font-size:13px;line-height:1.6}
 footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(--rule)}
@@ -224,48 +225,48 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 const ORGS = [
 /* ---------- NATIONAL ---------- */
 {n:"International Mountain Bicycling Association",a:"IMBA",s:"US",tier:"national",r:"National umbrella; 200+ chapters and 400+ affiliated clubs",w:"https://www.imba.com/"},
-{n:"National Interscholastic Cycling Association",a:"NICA",s:"US",tier:"national",r:"Youth development; state leagues nationwide",w:"https://www.nationalmtb.org/"},
+{n:"National Interscholastic Cycling Association",a:"NICA",s:"US",tier:"national",r:"Youth racing league, not a trail-building org — listed as a deliberate exception",w:"https://www.nationalmtb.org/"},
 
 /* ---------- COLORADO (complete — comtb.org) ---------- */
 {n:"Colorado Mountain Bike Coalition",a:"COMTB",s:"CO",tier:"state",r:"Statewide coalition",w:"https://comtb.org/"},
 {n:"Headwaters Trails Alliance",a:"HTA",s:"CO",tier:"local",p:"COMTB",r:"Winter Park, Fraser, Grand County",w:"https://headwaterstrails.org/"},
-{n:"Meeker Area Mountain Bike Association",a:"MAMBA",s:"CO",tier:"local",p:"COMTB",r:"Meeker area",w:"https://www.facebook.com/groups/305312900125478/"},
-{n:"MoCo Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Craig and Moffat County",w:"https://www.facebook.com/MoCo-Trails-153561328612489/"},
-{n:"Routt County Riders",a:"RCR",s:"CO",tier:"local",p:"COMTB",r:"Steamboat Springs, Yampa Valley",w:"https://routtcountyriders.org/"},
-{n:"Colorado Plateau Mountain Bike Trail Association",a:"COPMOBA",s:"CO",tier:"local",p:"COMTB",r:"Grand Junction, Western Colorado",w:"https://www.copmoba.org/"},
-{n:"Delta Area Mountain Bikers",a:"DAMB",s:"CO",tier:"local",p:"COPMOBA",r:"Delta area",w:"https://www.copmoba.org/delta-area-mountain-bikers/"},
+{n:"Meeker Area Mountain Bike Association",a:"MAMBA",s:"CO",tier:"local",p:"COMTB",r:"Meeker area",c:"Meeker",w:"https://www.facebook.com/groups/305312900125478/"},
+{n:"MoCo Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Craig and Moffat County",c:"Craig",w:"https://www.facebook.com/MoCo-Trails-153561328612489/"},
+{n:"Routt County Riders",a:"RCR",s:"CO",tier:"local",p:"COMTB",r:"Steamboat Springs, Yampa Valley",c:"Steamboat Springs Yampa Oak Creek",w:"https://routtcountyriders.org/"},
+{n:"Colorado Plateau Mountain Bike Trail Association",a:"COPMOBA",s:"CO",tier:"local",p:"COMTB",r:"Grand Junction, Western Colorado",c:"Grand Junction Fruita Whitewater",w:"https://www.copmoba.org/"},
+{n:"Delta Area Mountain Bikers",a:"DAMB",s:"CO",tier:"local",p:"COPMOBA",r:"Delta area",c:"Delta Cedaredge Paonia",w:"https://www.copmoba.org/delta-area-mountain-bikers/"},
 {n:"Grand Valley Canyons",a:"GVC",s:"CO",tier:"local",p:"COPMOBA",r:"Palisade, Fruita, Loma, Mack, Grand Mesa",w:"https://www.copmoba.org/grand-valley-canyons/"},
 {n:"Hardscrabble Trails Coalition",a:"HTC",s:"CO",tier:"local",p:"COMTB",r:"Eagle and Gypsum",w:"https://www.hardscrabbletrailscoalition.org/"},
-{n:"Rifle Area Mountain Bike Organization",a:"RAMBO",s:"CO",tier:"local",p:"COMTB",r:"Rifle area",w:"http://riderifle.com/"},
-{n:"Roaring Fork Mountain Bike Association",a:"RFMBA",s:"CO",tier:"local",p:"COMTB",r:"Roaring Fork Valley, New Castle to Aspen",w:"https://www.rfmba.org/"},
-{n:"Vail Valley Mountain Trails Alliance",a:"VVMTA",s:"CO",tier:"local",p:"COMTB",r:"Vail and Eagle County",w:"https://www.vvmta.org/"},
-{n:"West End Trails Alliance",a:"WETA",s:"CO",tier:"local",p:"COMTB",r:"San Miguel, Montrose, southwest Mesa County",w:"https://www.westendtrails.org/"},
-{n:"Crested Butte Mountain Bike Association",a:"CBMBA",s:"CO",tier:"local",p:"COMTB",r:"Crested Butte area",w:"https://crestedbuttemountainbike.com/"},
-{n:"Gunnison Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Gunnison County",w:"https://gunnisontrails.org/"},
-{n:"Montrose Uncompahgre Trails",a:"MUT",s:"CO",tier:"local",p:"COPMOBA",r:"Montrose area",w:"https://www.copmoba.org/montrose/"},
-{n:"Ridgway Area Trails",a:"RAT",s:"CO",tier:"local",p:"COPMOBA",r:"Ridgway area",w:"https://www.copmoba.org/ridgway/"},
-{n:"San Miguel Bike Alliance",a:"SMBA",s:"CO",tier:"local",p:"COMTB",r:"Telluride area",w:"https://telluridesmba.org/"},
-{n:"Telluride Mountain Club",a:"TMC",s:"CO",tier:"local",p:"COMTB",r:"Telluride area",w:"https://www.telluridemountainclub.org/"},
+{n:"Rifle Area Mountain Bike Organization",a:"RAMBO",s:"CO",tier:"local",p:"COMTB",r:"Rifle area",c:"Rifle Silt",w:"http://riderifle.com/"},
+{n:"Roaring Fork Mountain Bike Association",a:"RFMBA",s:"CO",tier:"local",p:"COMTB",r:"Roaring Fork Valley, New Castle to Aspen",c:"New Castle Glenwood Springs Carbondale Basalt Aspen Snowmass",w:"https://www.rfmba.org/"},
+{n:"Vail Valley Mountain Trails Alliance",a:"VVMTA",s:"CO",tier:"local",p:"COMTB",r:"Vail and Eagle County",c:"Vail Avon Edwards Eagle Minturn",w:"https://www.vvmta.org/"},
+{n:"West End Trails Alliance",a:"WETA",s:"CO",tier:"local",p:"COMTB",r:"San Miguel, Montrose, southwest Mesa County",c:"Naturita Nucla Norwood Gateway Redvale Bedrock Paradox",w:"https://www.westendtrails.org/"},
+{n:"Crested Butte Mountain Bike Association",a:"CBMBA",s:"CO",tier:"local",p:"COMTB",r:"Crested Butte area",c:"Crested Butte Mount Crested Butte",w:"https://crestedbuttemountainbike.com/"},
+{n:"Gunnison Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Gunnison County",c:"Gunnison",w:"https://gunnisontrails.org/"},
+{n:"Montrose Uncompahgre Trails",a:"MUT",s:"CO",tier:"local",p:"COPMOBA",r:"Montrose area",c:"Montrose",w:"https://www.copmoba.org/montrose/"},
+{n:"Ridgway Area Trails",a:"RAT",s:"CO",tier:"local",p:"COPMOBA",r:"Ridgway area",c:"Ridgway Ouray",w:"https://www.copmoba.org/ridgway/"},
+{n:"San Miguel Bike Alliance",a:"SMBA",s:"CO",tier:"local",p:"COMTB",r:"Telluride area",c:"Telluride Placerville Sawpit Ophir",w:"https://telluridesmba.org/"},
+{n:"Telluride Mountain Club",a:"TMC",s:"CO",tier:"local",p:"COMTB",r:"Telluride area",c:"Telluride Mountain Village",w:"https://www.telluridemountainclub.org/"},
 {n:"Developing Urban Singletrack Trails & Teams",a:"DUST2",s:"CO",tier:"local",p:"COMTB",r:"Pagosa Springs",w:"https://dustx2.org/"},
-{n:"Durango Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Durango area",w:"https://www.durangotrails.org/"},
-{n:"Rico Trails Alliance",a:"RTA",s:"CO",tier:"local",p:"COMTB",r:"Rico area",w:"https://dustx2.org/"},
+{n:"Durango Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Durango area",c:"Durango",w:"https://www.durangotrails.org/"},
+{n:"Rico Trails Alliance",a:"RTA",s:"CO",tier:"local",p:"COMTB",r:"Rico area",c:"Rico Dolores",w:"https://dustx2.org/"},
 {n:"Southwest Colorado Cycling Association",a:"SWCCA",s:"CO",tier:"local",p:"COMTB",r:"Cortez, Dolores, Mancos, Durango",w:"https://swcocycling.clubexpress.com/"},
-{n:"Boulder Mountainbike Alliance",a:"BMA",s:"CO",tier:"local",p:"COMTB",r:"Boulder and Gilpin Counties",w:"https://www.bouldermountainbike.org/"},
-{n:"Colorado Mountain Bike Association",a:"COMBA",s:"CO",tier:"local",p:"COMTB",r:"Denver, Jeffco, Clear Creek, Gilpin",w:"https://www.comba.org/"},
-{n:"Friends of Monument Preserve",a:"FOMP",s:"CO",tier:"local",p:"COMTB",r:"Monument area",w:"https://fomp.org/"},
-{n:"Medicine Wheel Trail Advocates",a:"MWTA",s:"CO",tier:"local",p:"COMTB",r:"Colorado Springs, Pikes Peak",w:"https://medwheel.org/"},
+{n:"Boulder Mountainbike Alliance",a:"BMA",s:"CO",tier:"local",p:"COMTB",r:"Boulder and Gilpin Counties",c:"Boulder",w:"https://www.bouldermountainbike.org/"},
+{n:"Colorado Mountain Bike Association",a:"COMBA",s:"CO",tier:"local",p:"COMTB",r:"Denver, Jeffco, Clear Creek, Gilpin",c:"Denver Golden Evergreen Idaho Springs",w:"https://www.comba.org/"},
+{n:"Friends of Monument Preserve",a:"FOMP",s:"CO",tier:"local",p:"COMTB",r:"Monument area",c:"Monument Palmer Lake",w:"https://fomp.org/"},
+{n:"Medicine Wheel Trail Advocates",a:"MWTA",s:"CO",tier:"local",p:"COMTB",r:"Colorado Springs, Pikes Peak",c:"Colorado Springs Manitou Springs",w:"https://medwheel.org/"},
 {n:"Nederland Area Trails Organization",a:"NATO",s:"CO",tier:"local",p:"COMTB",r:"Nederland",w:"https://nederlandareatrails.org/"},
-{n:"Overland Mountain Bike Association",a:"OMBA",s:"CO",tier:"local",p:"COMTB",r:"Fort Collins to Laramie, Northern CO, Southern WY",w:"https://overlandmtb.org/"},
+{n:"Overland Mountain Bike Association",a:"OMBA",s:"CO",tier:"local",p:"COMTB",r:"Fort Collins to Laramie, Northern CO, Southern WY",c:"Fort Collins Laramie",w:"https://overlandmtb.org/"},
 {n:"Southern Colorado Trail Builders",a:"SCTB",s:"CO",tier:"local",p:"COMTB",r:"Pueblo",w:"https://www.socotrails.org/"},
-{n:"Buena Vista Singletrack Coalition",a:"BVSC",s:"CO",tier:"local",p:"COMTB",r:"Buena Vista area",w:"https://www.bvsingletrack.com/"},
-{n:"Cloud City Wheelers",a:"CCW",s:"CO",tier:"local",p:"COMTB",r:"Leadville and Lake County",w:"https://www.cloudcitywheelers.com/"},
-{n:"Fremont Adventure Recreation",a:"FAR",s:"CO",tier:"local",p:"COMTB",r:"Cañon City, Royal Gorge",w:"http://www.joinfar.org/"},
-{n:"Salida Mountain Trails",a:"SMT",s:"CO",tier:"local",p:"COMTB",r:"Salida area",w:"https://salidamountaintrails.org/"},
-{n:"Summit County Mountain Bike Association",a:"SCOMBA",s:"CO",tier:"local",p:"COMTB",r:"Breckenridge, Keystone, Frisco, Silverthorne",w:"https://www.scomba.org/"},
-{n:"Del Norte Trails Organization",a:"DNTO",s:"CO",tier:"local",p:"COMTB",r:"Del Norte, San Luis Valley",w:"https://www.delnortetrails.org/"},
-{n:"Cuchara Mountain Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",r:"Cuchara area",w:"https://www.facebook.com/groups/cucharamountaintrailsalliance"},
-{n:"La Veta Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"La Veta area",w:"https://www.lavetatrails.com/"},
-{n:"Trinidad Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",r:"Trinidad, Fishers Peak",w:"https://www.facebook.com/groups/1784514731767150/"},
+{n:"Buena Vista Singletrack Coalition",a:"BVSC",s:"CO",tier:"local",p:"COMTB",r:"Buena Vista area",c:"Buena Vista",w:"https://www.bvsingletrack.com/"},
+{n:"Cloud City Wheelers",a:"CCW",s:"CO",tier:"local",p:"COMTB",r:"Leadville and Lake County",c:"Leadville",w:"https://www.cloudcitywheelers.com/"},
+{n:"Fremont Adventure Recreation",a:"FAR",s:"CO",tier:"local",p:"COMTB",r:"Cañon City, Royal Gorge",c:"Canon City",w:"http://www.joinfar.org/"},
+{n:"Salida Mountain Trails",a:"SMT",s:"CO",tier:"local",p:"COMTB",r:"Salida area",c:"Salida",w:"https://salidamountaintrails.org/"},
+{n:"Summit County Mountain Bike Association",a:"SCOMBA",s:"CO",tier:"local",p:"COMTB",r:"Breckenridge, Keystone, Frisco, Silverthorne",c:"Dillon",w:"https://www.scomba.org/"},
+{n:"Del Norte Trails Organization",a:"DNTO",s:"CO",tier:"local",p:"COMTB",r:"Del Norte, San Luis Valley",c:"Del Norte Monte Vista Alamosa South Fork",w:"https://www.delnortetrails.org/"},
+{n:"Cuchara Mountain Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",r:"Cuchara area",c:"Cuchara",w:"https://www.facebook.com/groups/cucharamountaintrailsalliance"},
+{n:"La Veta Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"La Veta area",c:"La Veta",w:"https://www.lavetatrails.com/"},
+{n:"Trinidad Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",r:"Trinidad, Fishers Peak",c:"Trinidad",w:"https://www.facebook.com/groups/1784514731767150/"},
 
 /* ---------- VERMONT (complete — vmba.org) ---------- */
 {n:"Vermont Mountain Bike Association",a:"VMBA",s:"VT",tier:"state",r:"Statewide; 28 chapters, shared membership platform",w:"https://vmba.org/"},
@@ -311,7 +312,7 @@ const ORGS = [
 {n:"Hood River Area Trail Stewards",a:"HRATS",s:"OR",tier:"local",p:"OMBC",r:"Hood River, 30-mile radius into Washington",w:"https://www.hrats.org/"},
 {n:"Klamath Trails Alliance",a:"KTA",s:"OR",tier:"local",p:"OMBC",r:"Klamath County",w:"https://www.klamathtrails.org"},
 {n:"Northwest Trail Alliance",a:"NWTA",s:"OR",tier:"local",p:"OMBC",r:"Portland metro, Forest Park, Tillamook State Forest",w:"http://nw-trail.org/"},
-{n:"Oregon Timber Trail Alliance",a:"OTTA",s:"OR",tier:"state",p:"OMBC",r:"670-mile statewide backcountry corridor",w:"http://oregontimbertrail.org"},
+{n:"Oregon Timber Trail Alliance",a:"OTTA",s:"OR",tier:"regional",p:"OMBC",r:"670-mile backcountry corridor spanning the state",w:"http://oregontimbertrail.org"},
 {n:"Rogue Valley Mountain Bike Association",a:"RVMBA",s:"OR",tier:"local",p:"OMBC",r:"Ashland, Medford, Grants Pass, Jacksonville",w:"http://rvmba.org/"},
 {n:"Salem Area Trail Alliance",a:"SATA",s:"OR",tier:"local",p:"OMBC",r:"Salem",w:"http://www.salemtrails.org/"},
 {n:"Trans-Cascadia",a:"",s:"OR",tier:"local",p:"OMBC",r:"Pacific Northwest backcountry trail restoration",w:"http://trans-cascadia.com"},
@@ -615,7 +616,7 @@ function matches(o){
   if(filters.state && o.s!==filters.state) return false;
   if(filters.tier && o.tier!==filters.tier) return false;
   if(filters.q){
-    const hay=[o.n,o.a,o.r,o.p,STATE_NAMES[o.s]].filter(Boolean).join(" ").toLowerCase();
+    const hay=[o.n,o.a,o.r,o.p,o.c,STATE_NAMES[o.s]].filter(Boolean).join(" ").toLowerCase();
     if(!hay.includes(filters.q.toLowerCase())) return false;
   }
   return true;
@@ -670,9 +671,17 @@ function renderList(){
 
 /* ---------- pie ---------- */
 function renderPie(){
-  const counts=stateCounts(visible());
+  const list=visible();
+  const counts=stateCounts(list);
   const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  if(!entries.length){$("p-pie").innerHTML='<p class="empty">Nothing to chart with those filters.</p>';return}
+  if(!entries.length){
+    $("p-pie").innerHTML=list.length
+      ?'<p class="empty">These are national/regional organizations that aren\'t tied to a single state, so there\'s nothing to chart here. <a href="#" id="pie-goto-list">See them in the Directory</a> instead.</p>'
+      :'<p class="empty">No organizations match those filters. Try a broader search.</p>';
+    const link=document.getElementById("pie-goto-list");
+    if(link)link.addEventListener("click",e=>{e.preventDefault();switchTab("list");render()});
+    return;
+  }
   const total=entries.reduce((s,[,n])=>s+n,0);
   const palette=THEME_PALETTES[currentTheme].pie;
   const cx=150,cy=150,rOuter=130,rInner=58;
@@ -702,7 +711,17 @@ function renderPie(){
 
 /* ---------- map ---------- */
 function renderMap(){
-  const counts=stateCounts(visible());
+  const list=visible();
+  const counts=stateCounts(list);
+  const scoped=Object.keys(counts).length>0;
+  if(!scoped){
+    $("p-map").innerHTML=list.length
+      ?'<p class="empty">These are national/regional organizations that aren\'t tied to a single state, so there\'s nothing to map here. <a href="#" id="map-goto-list">See them in the Directory</a> instead.</p>'
+      :'<p class="empty">No organizations match those filters. Try a broader search.</p>';
+    const link=document.getElementById("map-goto-list");
+    if(link)link.addEventListener("click",e=>{e.preventDefault();switchTab("list");render()});
+    return;
+  }
   const max=Math.max(1,...Object.values(counts));
   const {mapFrom,mapTo}=THEME_PALETTES[currentTheme];
   const cell=52,gap=4;
