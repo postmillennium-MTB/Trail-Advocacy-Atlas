@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>US MTB Trail Advocacy Atlas</title>
 <style>
-:root{
+:root, [data-theme="moose"]{
   --ink:#12181c;
   --paper:#f2efe6;
   --dirt:#8c5a2b;
@@ -13,9 +13,29 @@
   --clay:#c1603a;
   --slate:#5b6a72;
   --rule:#ccc5b4;
-  --tier-national:#12181c;
-  --tier-state:#8c5a2b;
-  --tier-local:#3f5d3a;
+}
+[data-theme="elk"]{
+  --ink:#241a0d;
+  --paper:#f7f1de;
+  --dirt:#b8860b;
+  --loam:#7a6a2e;
+  --clay:#d99a1f;
+  --slate:#7d6a4a;
+  --rule:#e0cf9e;
+}
+[data-theme="caribou"]{
+  --ink:#182228;
+  --paper:#eef3f4;
+  --dirt:#4a6b7c;
+  --loam:#3f6b6a;
+  --clay:#4a90a4;
+  --slate:#5f7480;
+  --rule:#c9d6da;
+}
+:root{
+  --tier-national:var(--ink);
+  --tier-state:var(--dirt);
+  --tier-local:var(--loam);
 }
 *{box-sizing:border-box}
 body{
@@ -55,6 +75,18 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
   border-radius:2px;cursor:pointer;
 }
 .tierbar button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* ---- theme switcher ---- */
+.themebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.themebar span{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate)}
+.theme-swatch{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;
+  border:1.5px solid var(--rule);background:#fff;border-radius:2px;cursor:pointer;
+  font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+}
+.theme-swatch[aria-pressed=true]{border-color:var(--ink);color:var(--ink)}
+.theme-dots{display:inline-flex;border-radius:50%;overflow:hidden;width:16px;height:16px;flex:0 0 16px}
+.theme-dots i{flex:1;display:block}
 
 /* ---- tabs ---- */
 .tabs{display:flex;gap:0;border-bottom:1.5px solid var(--rule);margin-bottom:22px}
@@ -112,7 +144,7 @@ ul.orgs li{
 .maplabel.dark{fill:var(--slate)}
 .scalebar{display:flex;align-items:center;gap:8px;margin-top:14px;
   font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
-.scalebar .grad{height:11px;flex:1;max-width:230px;background:linear-gradient(90deg,#e6ded0,#3f5d3a)}
+.scalebar .grad{height:11px;flex:1;max-width:230px}
 
 .empty{padding:40px 0;color:var(--slate);text-align:center}
 footer{margin-top:50px;padding-top:16px;border-top:1.5px solid var(--rule);
@@ -153,6 +185,16 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <button data-tier="local" aria-pressed="false">Local</button>
 </div>
 
+<div class="themebar" role="group" aria-label="Color theme">
+  <span>Palette</span>
+  <button class="theme-swatch" data-theme="moose" aria-pressed="true">
+    <span class="theme-dots"><i style="background:#12181c"></i><i style="background:#3f5d3a"></i><i style="background:#c1603a"></i></span>Moose</button>
+  <button class="theme-swatch" data-theme="elk" aria-pressed="false">
+    <span class="theme-dots"><i style="background:#241a0d"></i><i style="background:#b8860b"></i><i style="background:#d99a1f"></i></span>Elk</button>
+  <button class="theme-swatch" data-theme="caribou" aria-pressed="false">
+    <span class="theme-dots"><i style="background:#182228"></i><i style="background:#3f6b6a"></i><i style="background:#4a90a4"></i></span>Caribou</button>
+</div>
+
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-panel="list">Directory</button>
   <button role="tab" aria-selected="false" data-panel="pie">By state</button>
@@ -164,8 +206,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 <div class="panel" id="p-map" hidden></div>
 
 <footer>
-  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. Idaho, Montana, Pennsylvania, Maine, New Hampshire, New York, Utah and Illinois are assembled org-by-org from web research and, for UT/IL, a list supplied by the site owner — every entry's URL and active status was independently checked before inclusion, but these states aren't full coalition rosters and may be missing groups. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England chapters).<br>
-  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here.
+  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
+  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here.
 </footer>
 
 </div>
@@ -356,6 +398,100 @@ const ORGS = [
 {n:"Concerned Long Island Mountain Bicyclists",a:"CLIMB",s:"NY",tier:"local",r:"Long Island singletrack, Cunningham Park",w:"http://www.climbonline.org"},
 {n:"Cycle-CNY",a:"",s:"NY",tier:"local",r:"Southern Tier, Finger Lakes; Finger Lakes National Forest",w:"https://cycle-cny.com/"},
 {n:"Saratoga Mountain Bike Association",a:"SMBA-NY",s:"NY",tier:"local",r:"Capital Region/Saratoga; Daniels Road & Pittstown State Forests",w:"https://www.saratogamtb.org/"},
+
+/* ---------- SORBA (regional umbrella, 48 chapters across 8 SE states) ---------- */
+{n:"Southern Off-Road Bicycle Association",a:"SORBA",s:"US",tier:"national",r:"Regional umbrella, largest MTB nonprofit in the Southeast; chapters in AL, FL, GA, LA, MS, NC, SC, TN",w:"https://sorba.org/"},
+
+/* ---------- GEORGIA (SORBA chapters, verified) ---------- */
+{n:"MTB Atlanta",a:"SORBA-ATL",s:"GA",tier:"local",p:"SORBA",r:"Metro Atlanta; Sope Creek, Cochran Mill, Southside Park",w:"https://www.mtbatlanta.com/"},
+{n:"SORBA Woodstock",a:"",s:"GA",tier:"local",p:"SORBA",r:"Cherokee County; Blankets Creek, Rope Mill Park",w:"https://www.sorbawoodstock.org/"},
+
+/* ---------- ALABAMA (SORBA chapters, verified) ---------- */
+{n:"Birmingham Urban Mountain Pedalers",a:"BUMP",s:"AL",tier:"local",p:"SORBA",r:"Birmingham; Oak Mountain & Tannehill State Parks",w:"https://www.bump.org/"},
+{n:"Huntsville Area Mountainbike Riders",a:"HAMR",s:"AL",tier:"local",p:"SORBA",r:"Huntsville; Monte Sano State Park",w:"https://www.trailforks.com/directory/9808/"},
+
+/* ---------- MISSISSIPPI (SORBA chapters, verified) ---------- */
+{n:"Tri-County Mountain Bike Association",a:"TCMBA",s:"MS",tier:"local",p:"SORBA",r:"Jackson metro; Ridgeland, Noxubee Hills, Brandon Quarry",w:"https://www.tricountymtb.org/"},
+
+/* ---------- OHIO (verified) ---------- */
+{n:"Ohio Mountain Bike Alliance",a:"OMBA",s:"OH",tier:"state",r:"Statewide coalition",w:"https://www.omba.bike/"},
+{n:"Central Ohio Mountain Biking Organization",a:"COMBO",s:"OH",tier:"local",r:"Columbus/Westerville; 104+ miles",w:"https://www.combomtb.com/"},
+{n:"Cleveland Area Mountain Bike Association",a:"CAMBA",s:"OH",tier:"local",r:"Northeast Ohio",w:"https://camba.us/"},
+{n:"Cincinnati Off-Road Alliance",a:"CORA",s:"OH",tier:"local",r:"Greater Cincinnati and Northern Kentucky; 120+ miles",w:"https://coratrails.org/"},
+
+/* ---------- NORTH DAKOTA (verified) ---------- */
+{n:"Save the Maah Daah Hey",a:"",s:"ND",tier:"local",r:"180-mile Maah Daah Hey Trail, western ND badlands",w:"https://savethemdh.com/"},
+
+/* ---------- SOUTH DAKOTA (verified) ---------- */
+{n:"Black Hills Trails",a:"",s:"SD",tier:"local",r:"Sturgis, Rapid City, Black Hills singletrack",w:"https://www.blackhillstrails.org/"},
+{n:"Falls Area Singletrack",a:"FAST-SD",s:"SD",tier:"local",r:"Sioux Falls; Leaders Park, Great Bear, Tuthill Park",w:"https://www.fallsareasingletrack.org/"},
+
+/* ---------- MONTANA (additional, verified) ---------- */
+{n:"Pedal United",a:"",s:"MT",tier:"local",r:"Billings, south-central Montana",w:"https://pedalunited.org/"},
+
+/* ---------- WYOMING (verified) ---------- */
+{n:"Mountain Bike the Tetons",a:"MBT",s:"WY",tier:"local",r:"Teton County WY and Teton Valley ID; Cache Creek, Horseshoe Canyon",w:"https://www.mountainbiketetons.org/"},
+{n:"Central Wyoming Trails Alliance",a:"CWTA",s:"WY",tier:"local",r:"Casper, Casper Mountain",w:"https://www.centralwyomingtrails.org/"},
+
+/* ---------- ARKANSAS (verified) ---------- */
+{n:"Ozark Off-Road Cyclists",a:"OORC",s:"AR",tier:"local",r:"Arkansas Ozarks and River Valley; multiple sub-chapters",w:"https://oorc.org/"},
+{n:"Central Arkansas Trail Alliance",a:"CATA",s:"AR",tier:"local",r:"Little Rock area",w:"https://littlerock.gov/residents/bikeped-little-rock/community/clubs/"},
+{n:"Friends of Arkansas Singletrack",a:"FAST-AR",s:"AR",tier:"local",r:"Northwest Arkansas, OZ Trails region",w:"https://fasttrails.org/"},
+
+/* ---------- CALIFORNIA (verified via camtb.org/members plus independent search) ---------- */
+{n:"California Mountain Biking Coalition",a:"CAMTB",s:"CA",tier:"state",r:"Statewide coalition; 44 member trail stewardship orgs, 450,000+ riders",w:"https://camtb.org/"},
+{n:"Orogenesis Collective",a:"",s:"CA",tier:"state",p:"CAMTB",r:"Multi-state Canada-to-Mexico Orogenesis Trail corridor",w:"https://orogenesiscollective.org"},
+/* Northern California */
+{n:"Redwood Coast Mountain Bike Association",a:"RCMBA",s:"CA",tier:"local",p:"CAMTB",r:"Arcata, Eureka",w:"https://redwoodcoastmtb.org/"},
+{n:"Redding Trail Alliance",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Redding",w:"https://www.reddingtrailalliance.org/"},
+{n:"Bike Shasta",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Mount Shasta area (formerly Mount Shasta MBA)",w:"https://bikeshasta.org/"},
+{n:"Mendocino Coast Cyclists",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Fort Bragg",w:"https://mendocc.org/"},
+{n:"Willits Area Cyclists",a:"WAC",s:"CA",tier:"local",p:"CAMTB",r:"Willits",w:"https://wactrails.wixsite.com/ride"},
+{n:"Ukiah Valley Trail Group",a:"UVTG",s:"CA",tier:"local",p:"CAMTB",r:"Ukiah",w:"https://mendotrails.org/"},
+{n:"Trinity Trail Alliance",a:"TTA",s:"CA",tier:"local",r:"Weaverville, Weaver Basin trail system",w:"https://www.trinitytrailalliance.com/"},
+{n:"Chico Velo",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Chico; broader cycling club with trail advocacy arm",w:"https://www.chicovelo.org/"},
+/* Sierra Nevada & Gold Country */
+{n:"Sierra Buttes Trail Stewardship",a:"SBTS",s:"CA",tier:"local",p:"CAMTB",r:"Quincy/Downieville; Downieville Classic, Connected Communities project",w:"https://sierratrails.org"},
+{n:"Tahoe Area Mountain Biking Association",a:"TAMBA",s:"CA",tier:"local",p:"CAMTB",r:"Lake Tahoe basin",w:"https://tamba.org/"},
+{n:"Truckee Dirt Union",a:"TDU",s:"CA",tier:"local",p:"CAMTB",r:"Truckee",w:"https://www.truckeedirtunion.org/"},
+{n:"Bicyclists of Nevada County",a:"BONC",s:"CA",tier:"local",r:"Nevada City, Parliament Trail System",w:"https://www.bonc.org/"},
+{n:"Bear Valley Trail Stewardship",a:"BVTS",s:"CA",tier:"local",p:"CAMTB",r:"Bear Valley",w:"https://www.bearvalleytrails.org/"},
+{n:"Folsom Auburn Trail Riders Action Coalition",a:"FATRAC",s:"CA",tier:"local",p:"CAMTB",r:"Sacramento/Auburn area",w:"https://www.fatrac.org/"},
+{n:"Mother Lode Trail Stewardship",a:"MLTS",s:"CA",tier:"local",p:"CAMTB",r:"Placerville",w:"https://motherlodestewardship.org/"},
+{n:"Amador Trail Stewardship",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Amador County",w:"https://www.amadortrailstewardship.com/"},
+{n:"Arnold Rim Trail Association",a:"ART",s:"CA",tier:"local",p:"CAMTB",r:"Arnold, Calaveras County",w:"https://arnoldrimtrail.org/"},
+{n:"Groveland Trail Heads",a:"GTH",s:"CA",tier:"local",p:"CAMTB",r:"Groveland",w:"https://www.grovelandtrailheads.org/"},
+{n:"Yosemite Southgate Trail Cooperative",a:"YSGTC",s:"CA",tier:"local",p:"CAMTB",r:"Oakhurst, southern Yosemite",w:"https://www.southgatetrails.org/"},
+{n:"Tehachapi Mountain Trails Association",a:"TMTA",s:"CA",tier:"local",r:"Tehachapi",w:"https://www.tehachapitrails.com/"},
+/* San Francisco Bay Area */
+{n:"Santa Cruz Mountains Trail Stewardship",a:"SCMTS",s:"CA",tier:"local",p:"CAMTB",r:"Santa Cruz, South Bay",w:"https://santacruztrails.org/"},
+{n:"Marin County Bicycle Coalition",a:"MCBC",s:"CA",tier:"local",p:"CAMTB",r:"Marin County; broader cycling advocacy",w:"https://www.marinbike.org/"},
+{n:"Marin Trail Stewards",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Marin County MTB-specific trails (formerly Access4Bikes)",w:"https://access4bikes.com/"},
+{n:"Bicycle Trails Council of the East Bay",a:"BTCEB",s:"CA",tier:"local",p:"CAMTB",r:"Berkeley, Oakland",w:"https://btceb.org"},
+{n:"SF Urban Riders",a:"SFUR",s:"CA",tier:"local",p:"CAMTB",r:"San Francisco",w:"https://sfurbanriders.org/"},
+{n:"Silicon Valley Mountain Bikers",a:"SVMTB",s:"CA",tier:"local",p:"CAMTB",r:"San Jose, Santa Clara County",w:"https://www.svmtb.org"},
+{n:"Redwood Trails Alliance",a:"RTA",s:"CA",tier:"local",p:"CAMTB",r:"Napa and Sonoma counties",w:"https://trailsalliance.org/"},
+{n:"Bay Area Mountain Bikers",a:"BAMBI",s:"CA",tier:"local",p:"CAMTB",r:"Bay Area",w:"https://www.bambimtb.org/"},
+{n:"Stewards of Briones",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Pleasant Hill, East Bay",w:"https://stewardsofbriones.org"},
+{n:"Mount Diablo Trails Alliance",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Danville",w:"https://www.mountdiablotrailsalliance.org"},
+{n:"Coastside on Bikes",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Half Moon Bay",w:"https://coastsideonbikes.org/"},
+{n:"Rich City Rides",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Richmond",w:"https://www.richcityrides.org/"},
+/* Central California & Central Coast */
+{n:"Central Coast Concerned Mountain Bikers",a:"CCCMB",s:"CA",tier:"local",p:"CAMTB",r:"San Luis Obispo area",w:"https://www.cccmb.org/"},
+{n:"Monterey Off Road Cycling Association",a:"MORCA",s:"CA",tier:"local",p:"CAMTB",r:"Monterey, Fort Ord",w:"https://morcamtb.org/"},
+{n:"Central California Off-Road Cyclists",a:"CCORC",s:"CA",tier:"local",p:"CAMTB",r:"Fresno",w:"https://www.ccorc.net/"},
+{n:"Modesto Outdoor Recreation Alliance",a:"MORA",s:"CA",tier:"local",p:"CAMTB",r:"Modesto",w:"https://www.modestooutdoor.org/"},
+{n:"Kern River Mountain Bike Association",a:"KRMBA",s:"CA",tier:"local",r:"Kernville, Kern River Valley",w:"https://www.facebook.com/KernRiverMountainBike/"},
+/* Southern California */
+{n:"San Diego Mountain Biking Association",a:"SDMBA",s:"CA",tier:"local",p:"CAMTB",r:"San Diego County",w:"https://sdmba.com/"},
+{n:"Concerned Off-Road Bicyclists Association",a:"CORBA",s:"CA",tier:"local",p:"CAMTB",r:"Los Angeles, Santa Monica Mountains",w:"https://www.corbamtb.com/"},
+{n:"Lowelifes Respectable Citizens' Club",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Angeles National Forest",w:"http://lowelifesrcc.org/"},
+{n:"Mt. Wilson Bicycling Association",a:"MWBA",s:"CA",tier:"local",p:"CAMTB",r:"San Gabriel Mountains, Pasadena",w:"https://mwba.org/"},
+{n:"Sage Trail Alliance",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Santa Barbara",w:"https://sagetrail.org/"},
+{n:"Orange County Mountain Bike Association",a:"OCMTBA",s:"CA",tier:"local",p:"CAMTB",r:"Orange County (merged with SHARE MTB Club, 2022)",w:"https://www.ocmtba.com/"},
+{n:"Big Bear Cycling Association",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Big Bear",w:"https://bigbearcycling.com/"},
+{n:"Big Bear Trails / Southern California Mountains Foundation",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Big Bear",w:"https://mountainsfoundation.org/programs/big-bear-trails/"},
+{n:"Inland Valley Mountain Bike Association",a:"IVMTB",s:"CA",tier:"local",r:"Riverside, Inland Empire",w:"https://www.mtbproject.com/club/7000014/inland-valley-mountain-bike-association-ivmtb"},
 ];
 
 /* State centroids + rough polygon-free map: we use a grid cartogram
@@ -374,6 +510,30 @@ AZ:[2,5],NM:[3,5],KS:[4,5],AR:[5,5],TN:[6,5],NC:[7,5],SC:[8,5],DC:[9,5],
 OK:[4,6],LA:[5,6],MS:[6,6],AL:[7,6],GA:[8,6],
 HI:[0,7],TX:[4,7],FL:[9,7]
 };
+
+/* ---------- themes ---------- */
+const THEME_PALETTES={
+  moose:{
+    pie:["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"],
+    mapFrom:"#e6ded0",mapTo:"#3f5d3a"
+  },
+  elk:{
+    pie:["#b8860b","#d99a1f","#7a6a2e","#8f5a1f","#c99a3c","#5e4b1a","#e0b24a","#9c7024","#c2a15c","#734a12"],
+    mapFrom:"#efe4bf",mapTo:"#b8860b"
+  },
+  caribou:{
+    pie:["#3f6b6a","#4a90a4","#4a6b7c","#5f7480","#2f5560","#6fa8b8","#3a5a68","#7c95a0","#456f78","#5490a0"],
+    mapFrom:"#dbe6e8",mapTo:"#3f6b6a"
+  }
+};
+let currentTheme="moose";
+function applyTheme(name){
+  currentTheme=name;
+  document.documentElement.setAttribute("data-theme",name);
+  document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===name));
+  try{localStorage.setItem("mtbAtlasTheme",name)}catch(e){}
+  render();
+}
 
 /* ---------- state ---------- */
 let filters={q:"",state:"",tier:""};
@@ -445,7 +605,7 @@ function renderPie(){
   const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   if(!entries.length){$("p-pie").innerHTML='<p class="empty">Nothing to chart with those filters.</p>';return}
   const total=entries.reduce((s,[,n])=>s+n,0);
-  const palette=["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"];
+  const palette=THEME_PALETTES[currentTheme].pie;
   const cx=150,cy=150,rOuter=130,rInner=58;
   let ang=-Math.PI/2, paths="";
   entries.forEach(([st,n],i)=>{
@@ -475,13 +635,14 @@ function renderPie(){
 function renderMap(){
   const counts=stateCounts(visible());
   const max=Math.max(1,...Object.values(counts));
+  const {mapFrom,mapTo}=THEME_PALETTES[currentTheme];
   const cell=52,gap=4;
   const cols=12,rows=8;
   let sq="";
   Object.entries(GRID).forEach(([st,[c,r]])=>{
     const n=counts[st]||0;
     const t=n/max;
-    const fill=n?`color-mix(in srgb, #3f5d3a ${18+t*82}%, #e6ded0)`:"#e6ded0";
+    const fill=n?`color-mix(in srgb, ${mapTo} ${18+t*82}%, ${mapFrom})`:mapFrom;
     const x=c*(cell+gap), y=r*(cell+gap);
     sq+=`<g><rect class="state-path" data-state="${st}" x="${x}" y="${y}" width="${cell}" height="${cell}"
         rx="3" fill="${fill}"><title>${STATE_NAMES[st]}: ${n} listed</title></rect>
@@ -491,7 +652,7 @@ function renderMap(){
   $("p-map").innerHTML=`
     <p class="map-note">A grid cartogram — one tile per state, positioned by rough geography, shaded by how many organizations are listed. Click a tile to filter the directory. Empty tiles are states not yet researched, not states without advocacy groups.</p>
     <svg viewBox="0 0 ${cols*(cell+gap)} ${rows*(cell+gap)}" width="100%" role="img" aria-label="Map of organizations by state">${sq}</svg>
-    <div class="scalebar">None<span class="grad"></span>${max} orgs</div>`;
+    <div class="scalebar">None<span class="grad" style="background:linear-gradient(90deg,${mapFrom},${mapTo})"></span>${max} orgs</div>`;
   $("p-map").querySelectorAll("[data-state]").forEach(el=>
     el.addEventListener("click",()=>{
       const st=el.dataset.state;
@@ -527,6 +688,13 @@ function init(){
     }));
   document.querySelectorAll(".tabs button").forEach(b=>
     b.addEventListener("click",()=>{switchTab(b.dataset.panel);render()}));
+  document.querySelectorAll(".theme-swatch").forEach(b=>
+    b.addEventListener("click",()=>applyTheme(b.dataset.theme)));
+  let saved="moose";
+  try{saved=localStorage.getItem("mtbAtlasTheme")||"moose"}catch(e){}
+  document.documentElement.setAttribute("data-theme",saved);
+  currentTheme=saved;
+  document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===saved));
   renderCounts();render();
 }
 init();
