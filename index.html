@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f2efe6">
 <title>US MTB Trail Advocacy Atlas</title>
 <style>
 :root, [data-theme="moose"]{
@@ -40,6 +42,7 @@
   --tier-local:var(--loam);
 }
 *{box-sizing:border-box}
+html{background:var(--paper)}
 body{
   margin:0;background:var(--paper);color:var(--ink);
   font:16px/1.5 "Iowan Old Style",Charter,Georgia,serif;
@@ -64,7 +67,8 @@ header.mast{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom
   font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace;
   letter-spacing:.22em;text-transform:uppercase;color:var(--dirt);margin-bottom:10px;
 }
-h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em}
+h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em;transition:opacity .5s}
+h1.fading{opacity:0}
 .sub{margin:0;color:var(--slate);max-width:62ch;font-size:15px}
 
 /* ---- counters ---- */
@@ -158,8 +162,8 @@ ul.orgs li{
 .map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
 .state-path{stroke:var(--paper);stroke-width:1.2;cursor:pointer;transition:fill .15s}
 .state-path.state-detailed{stroke:var(--ink);stroke-width:2.4}
-.geo-point{cursor:pointer;transition:r .12s,opacity .12s}
-.geo-point:hover{opacity:.75;r:9}
+.geo-point{cursor:pointer;transition:opacity .12s,transform .12s;transform-box:fill-box;transform-origin:center}
+.geo-point:hover{opacity:.8;transform:scale(1.5)}
 .detail-statebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .detail-statebar button{
   font:600 13px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
@@ -167,12 +171,27 @@ ul.orgs li{
   border-radius:2px;cursor:pointer;
 }
 .detail-statebar button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.detail-hoverlabel{
-  min-height:20px;margin-bottom:10px;font:600 14px/1.3 "Iowan Old Style",Georgia,serif;
-  color:var(--ink);border-bottom:1.5px solid var(--rule);padding-bottom:10px;
+.detail-card{
+  min-height:78px;margin-bottom:12px;border:1.5px solid var(--rule);border-radius:3px;
+  background:#fff;padding:14px 16px;transition:border-color .15s;
 }
-.detail-hoverlabel .place{color:var(--slate);font:400 13px/1 ui-monospace,Menlo,monospace;margin-left:8px}
-.detail-hoverlabel.empty{color:var(--slate);font-style:italic;font-weight:400}
+.detail-card.empty{background:transparent;border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:78px}
+.detail-card-hint{color:var(--slate);font-style:italic;font-size:14px}
+.detail-card-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.detail-card-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+.detail-card-name{font:600 19px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
+.detail-card-abbr{font:600 12px ui-monospace,Menlo,monospace;color:var(--dirt);letter-spacing:.05em}
+.detail-card-tier{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
+.detail-card-close{margin-left:auto;border:0;background:none;color:var(--slate);font-size:22px;line-height:1;
+  cursor:pointer;padding:0 4px}
+.detail-card-close:hover{color:var(--clay)}
+.detail-card-region{margin-top:6px;color:var(--slate);font-size:14px}
+.detail-card-foot{margin-top:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.detail-card-link{color:var(--clay);font-weight:600;text-decoration:none;font-size:14px;border-bottom:1.5px solid var(--clay)}
+.detail-card-link:hover{background:var(--clay);color:#fff}
+.detail-card-noweb{color:var(--slate);font-style:italic;font-size:13px}
+.detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .state-path:hover{stroke:var(--ink);stroke-width:2}
 .maplabel{font:600 10px ui-monospace,Menlo,monospace;fill:#fff;pointer-events:none;text-anchor:middle}
 .maplabel.dark{fill:var(--slate)}
@@ -198,7 +217,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 
 <header class="mast">
   <div class="kicker">Post Millennium Renaissance &middot; Trail Advocacy Atlas</div>
-  <h1>Who builds the trails you ride</h1>
+  <h1 id="masthead-title">Who builds the trails you ride</h1>
   <p class="sub">A working directory of nonprofit mountain bike trail advocacy organizations in the United States, grouped by state and tiered from national umbrella down to local chapter.</p>
 </header>
 
@@ -623,12 +642,22 @@ const ORGS = [
 {n:"West Michigan Mountain Biking Alliance",a:"WMMBA",s:"MI",tier:"local",p:"MMBA",r:"Grand Rapids; 16 trail systems, 120+ miles",w:"https://www.wmmba.org/"},
 {n:"Southwest Michigan Mountain Biking Association",a:"SWMMBA",s:"MI",tier:"local",p:"MMBA",r:"Southwest Michigan; chapter since 1993",w:"https://www.swmmba.com/"},
 {n:"Salt Lake Valley Trails Society",a:"SLVTS",s:"UT",tier:"local",r:"Salt Lake Valley; Draper, Murray, Ensign Peak",status:"unconfirmed-active",w:"https://www.saltlakevalleytrailssociety.org/"},
+
+/* ---------- MARYLAND (verified via web search; MORE covers the broader DMV, filed under VA) ---------- */
+{n:"Gunpowder United Mountain Bike Operators",a:"GUMBO",s:"MD",tier:"local",r:"Gunpowder Falls State Park, Kingsville/Fallston, north of Baltimore",w:"https://www.littlegunpowder.com/"},
+{n:"Southern Maryland Mountain Bikers",a:"SMMB",s:"MD",tier:"local",r:"Southern Maryland; IMBA chapter",w:"https://ridesmmb.org/"},
+
+/* ---------- WASHINGTON DC ---------- */
+{n:"Mid-Atlantic Off-Road Enthusiasts (DC)",a:"MORE",s:"DC",tier:"local",p:"MORE",r:"DC-region trails; Rock Creek Park corridor — see MORE (VA) for the full regional org",w:"https://more-mtb.org/"},
+
+/* ---------- PUERTO RICO (verified via web search) ---------- */
+{n:"Love In Motion",a:"",s:"PR",tier:"local",r:"Islandwide; sustainable trail program development and nature access",w:"https://loveinmotion.org/"},
 ];
 
 /* State centroids + rough polygon-free map: we use a grid cartogram
    (square per state) — accurate enough for choropleth reading,
    and far lighter than embedding TopoJSON. */
-const STATE_NAMES={US:"National",AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"Washington DC"};
+const STATE_NAMES={US:"National",AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"Washington DC",PR:"Puerto Rico"};
 
 /* grid cartogram coordinates [col,row] */
 const GRID={
@@ -639,7 +668,7 @@ OR:[1,3],NV:[2,3],WY:[3,3],SD:[4,3],IA:[5,3],IN:[6,3],OH:[7,3],PA:[8,3],NJ:[9,3]
 CA:[1,4],UT:[2,4],CO:[3,4],NE:[4,4],MO:[5,4],KY:[6,4],WV:[7,4],VA:[8,4],MD:[9,4],DE:[10,4],
 AZ:[2,5],NM:[3,5],KS:[4,5],AR:[5,5],TN:[6,5],NC:[7,5],SC:[8,5],DC:[9,5],
 OK:[4,6],LA:[5,6],MS:[6,6],AL:[7,6],GA:[8,6],
-HI:[0,7],TX:[4,7],FL:[9,7]
+HI:[0,7],TX:[4,7],FL:[9,7],PR:[11,7]
 };
 
 /* ---------- themes ---------- */
@@ -658,10 +687,13 @@ const THEME_PALETTES={
   }
 };
 let currentTheme="moose";
+const THEME_PAPER={moose:"#f2efe6",elk:"#f6e8c4",caribou:"#eef3f0"};
 function applyTheme(name){
   currentTheme=name;
   document.documentElement.setAttribute("data-theme",name);
   document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===name));
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta&&THEME_PAPER[name])meta.setAttribute("content",THEME_PAPER[name]);
   try{localStorage.setItem("mtbAtlasTheme",name)}catch(e){}
   render();
 }
@@ -922,25 +954,47 @@ function renderDetailMap(){
       fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.5"></circle>`;
   });
   $("p-detail").innerHTML=`${statebar}
-    <div class="detail-hoverlabel empty" id="detail-hover">Hover any dot for the organization's name</div>
-    <p class="map-note">${pts.length} geocoded organizations in ${esc(STATE_NAMES[detailState])} — real trailhead, shop, or office locations, not estimates. Click a dot to open that org's website.</p>
+    <div class="detail-card empty" id="detail-card">
+      <div class="detail-card-inner">
+        <span class="detail-card-hint">Click any dot to see the organization here &middot; hover to preview</span>
+      </div>
+    </div>
+    <p class="map-note">${pts.length} geocoded organizations in ${esc(STATE_NAMES[detailState])} — real trailhead, shop, or office locations, not estimates. Click a dot to pin its details above; click the name to open its website.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(STATE_NAMES[detailState])} organizations, detailed map">
       <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.3" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5 4"/>${dots}
     </svg>
     <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
-  const label=document.getElementById("detail-hover");
+  const card=document.getElementById("detail-card");
+  const tierLabel={national:"National",regional:"Regional",state:"Statewide",local:"Local"};
+  let pinnedIdx=null;
+  function paintCard(o,pinned){
+    card.classList.remove("empty");
+    const web=o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener" class="detail-card-link">Visit website &rarr;</a>`:`<span class="detail-card-noweb">No website on file</span>`;
+    card.innerHTML=`<div class="detail-card-inner">
+      <div class="detail-card-main">
+        <span class="detail-card-dot tier-${o.tier}"></span>
+        <span class="detail-card-name">${esc(o.n)}</span>
+        ${o.a?`<span class="detail-card-abbr">${esc(o.a)}</span>`:""}
+        <span class="detail-card-tier">${tierLabel[o.tier]||o.tier}</span>
+        ${pinned?'<button class="detail-card-close" title="Clear">&times;</button>':""}
+      </div>
+      ${o.r?`<div class="detail-card-region">${esc(o.r)}</div>`:""}
+      <div class="detail-card-foot">${web}${o.p?`<span class="detail-card-parent">part of ${esc(o.p)}</span>`:""}</div>
+    </div>`;
+    const close=card.querySelector(".detail-card-close");
+    if(close)close.addEventListener("click",()=>{ pinnedIdx=null; clearCard(); });
+  }
+  function clearCard(){
+    card.classList.add("empty");
+    card.innerHTML='<div class="detail-card-inner"><span class="detail-card-hint">Click any dot to see the organization here &middot; hover to preview</span></div>';
+  }
   $("p-detail").querySelectorAll("[data-idx]").forEach(el=>{
-    const o=pts[+el.dataset.idx];
-    el.addEventListener("mouseenter",()=>{
-      label.classList.remove("empty");
-      label.innerHTML=`${esc(o.n)}${o.r?`<span class="place">${esc(o.r)}</span>`:""}`;
-    });
-    el.addEventListener("mouseleave",()=>{
-      label.classList.add("empty");
-      label.textContent="Hover any dot for the organization's name";
-    });
-    el.addEventListener("click",()=>{ if(o.w)window.open(o.w,"_blank","noopener"); });
+    const idx=+el.dataset.idx, o=pts[idx];
+    el.addEventListener("mouseenter",()=>{ if(pinnedIdx===null)paintCard(o,false); });
+    el.addEventListener("mouseleave",()=>{ if(pinnedIdx===null)clearCard(); });
+    el.addEventListener("click",()=>{ pinnedIdx=idx; paintCard(o,true);
+      card.scrollIntoView({behavior:"smooth",block:"nearest"}); });
   });
   wireDetailStateButtons();
 }
@@ -990,8 +1044,24 @@ function init(){
   document.documentElement.setAttribute("data-theme",saved);
   currentTheme=saved;
   document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===saved));
+  const metaInit=document.querySelector('meta[name="theme-color"]');
+  if(metaInit&&THEME_PAPER[saved])metaInit.setAttribute("content",THEME_PAPER[saved]);
   renderCounts();render();
 }
+/* periodic masthead title swap */
+(function(){
+  const titles=["Who builds the trails you ride","How trails get built"];
+  const el=document.getElementById("masthead-title");
+  if(!el)return;
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  let i=0;
+  setInterval(()=>{
+    i=(i+1)%titles.length;
+    el.classList.add("fading");
+    setTimeout(()=>{ el.textContent=titles[i]; el.classList.remove("fading"); },500);
+  },6000);
+})();
+
 init();
 </script>
 </body>
