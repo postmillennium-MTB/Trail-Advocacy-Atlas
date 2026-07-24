@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US MTB Trail Advocacy Atlas</title>
+<style>
+:root{
+  --ink:#12181c;
+  --paper:#f2efe6;
+  --dirt:#8c5a2b;
+  --loam:#3f5d3a;
+  --clay:#c1603a;
+  --slate:#5b6a72;
+  --rule:#ccc5b4;
+  --tier-national:#12181c;
+  --tier-state:#8c5a2b;
+  --tier-local:#3f5d3a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.5 "Iowan Old Style",Charter,Georgia,serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+
+/* ---- masthead ---- */
+header.mast{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+.kicker{
+  font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--dirt);margin-bottom:10px;
+}
+h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em}
+.sub{margin:0;color:var(--slate);max-width:62ch;font-size:15px}
+
+/* ---- counters ---- */
+.counts{display:flex;flex-wrap:wrap;gap:26px;margin:18px 0 24px;
+  font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
+.counts div{color:var(--slate)}
+.counts b{display:block;font:400 30px/1 "Iowan Old Style",Georgia,serif;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px}
+
+/* ---- controls ---- */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}
+input[type=search],select{
+  font:15px/1 inherit;padding:10px 12px;border:1.5px solid var(--rule);
+  background:#fff;border-radius:2px;color:var(--ink);
+}
+input[type=search]{flex:1;min-width:220px}
+input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offset:1px;border-color:var(--clay)}
+.tierbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 22px}
+.tierbar button{
+  font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 12px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);
+  border-radius:2px;cursor:pointer;
+}
+.tierbar button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:0;border-bottom:1.5px solid var(--rule);margin-bottom:22px}
+.tabs button{
+  font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 16px;border:0;background:none;color:var(--slate);cursor:pointer;
+  border-bottom:3px solid transparent;margin-bottom:-1.5px;
+}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--clay)}
+.panel[hidden]{display:none}
+
+/* ---- org list ---- */
+.stategroup{margin-bottom:34px}
+.stategroup h2{
+  font-size:13px;font-family:ui-monospace,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase;
+  margin:0 0 2px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);
+  display:flex;justify-content:space-between;align-items:baseline;
+}
+.stategroup h2 span{color:var(--slate);font-size:11px}
+ul.orgs{list-style:none;margin:0;padding:0}
+ul.orgs li{
+  display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--rule);
+}
+.tier-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:7px}
+.tier-national{background:var(--tier-national)}
+.tier-state{background:var(--tier-state)}
+.tier-local{background:var(--tier-local)}
+.org-main{flex:1;min-width:0}
+.org-name{font-weight:600}
+.org-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.org-name a:hover{background:var(--clay);color:#fff;border-color:var(--clay)}
+.abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt);margin-left:7px;letter-spacing:.05em}
+.org-region{color:var(--slate);font-size:14px;display:block;margin-top:1px}
+.parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--slate);border:1px solid var(--rule);padding:2px 6px;border-radius:2px;white-space:nowrap}
+.noweb{color:var(--slate);font-style:italic}
+.draft-flag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--clay);border:1px solid var(--clay);padding:2px 6px;border-radius:2px;white-space:nowrap}
+
+/* ---- pie ---- */
+.pie-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+.legend{list-style:none;margin:0;padding:0;font-size:14px}
+.legend li{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.legend li:hover{background:#fff}
+.swatch{width:13px;height:13px;flex:0 0 13px;border-radius:2px}
+.legend .n{margin-left:auto;font:600 13px ui-monospace,Menlo,monospace;color:var(--slate)}
+.slice{cursor:pointer;transition:opacity .15s}
+.slice:hover{opacity:.75}
+
+/* ---- map ---- */
+.map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
+.state-path{stroke:var(--paper);stroke-width:1.2;cursor:pointer;transition:fill .15s}
+.state-path:hover{stroke:var(--ink);stroke-width:2}
+.maplabel{font:600 10px ui-monospace,Menlo,monospace;fill:#fff;pointer-events:none;text-anchor:middle}
+.maplabel.dark{fill:var(--slate)}
+.scalebar{display:flex;align-items:center;gap:8px;margin-top:14px;
+  font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.scalebar .grad{height:11px;flex:1;max-width:230px;background:linear-gradient(90deg,#e6ded0,#3f5d3a)}
+
+.empty{padding:40px 0;color:var(--slate);text-align:center}
+footer{margin-top:50px;padding-top:16px;border-top:1.5px solid var(--rule);
+  color:var(--slate);font-size:13px;line-height:1.6}
+footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(--rule)}
+
+@media(max-width:760px){
+  .pie-layout{grid-template-columns:1fr}
+  .counts{gap:18px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">Post Millennium Renaissance &middot; Trail Advocacy Atlas</div>
+  <h1>Who builds the trails you ride</h1>
+  <p class="sub">A working directory of nonprofit mountain bike trail advocacy organizations in the United States, grouped by state and tiered from national umbrella down to local chapter.</p>
+</header>
+
+<div class="counts">
+  <div><b id="c-orgs">0</b>Organizations</div>
+  <div><b id="c-states">0</b>States covered</div>
+  <div><b id="c-state-lvl">0</b>Statewide coalitions</div>
+  <div><b id="c-top">—</b>Most organizations</div>
+</div>
+
+<div class="controls">
+  <input type="search" id="q" placeholder="Search name, abbreviation, region, or town…" aria-label="Search organizations">
+  <select id="statesel" aria-label="Filter by state"><option value="">All states</option></select>
+</div>
+<div class="tierbar" role="group" aria-label="Filter by tier">
+  <button data-tier="" aria-pressed="true">All tiers</button>
+  <button data-tier="national" aria-pressed="false">National</button>
+  <button data-tier="state" aria-pressed="false">Statewide</button>
+  <button data-tier="local" aria-pressed="false">Local</button>
+</div>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-panel="list">Directory</button>
+  <button role="tab" aria-selected="false" data-panel="pie">By state</button>
+  <button role="tab" aria-selected="false" data-panel="map">Map</button>
+</div>
+
+<div class="panel" id="p-list"></div>
+<div class="panel" id="p-pie" hidden></div>
+<div class="panel" id="p-map" hidden></div>
+
+<footer>
+  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. Idaho and Montana are assembled from web research, not a single coalition source, and are likely incomplete. Utah and Illinois are marked <span class="draft-flag" style="vertical-align:1px">draft</span> — supplied secondhand and not yet independently checked org-by-org for correct URLs or active status. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide body.<br>
+  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here.
+</footer>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   tier: national | state | local
+   parent: abbreviation of statewide/national body, if a chapter
+   ============================================================ */
+const ORGS = [
+/* ---------- NATIONAL ---------- */
+{n:"International Mountain Bicycling Association",a:"IMBA",s:"US",tier:"national",r:"National umbrella; 200+ chapters and 400+ affiliated clubs",w:"https://www.imba.com/"},
+{n:"National Interscholastic Cycling Association",a:"NICA",s:"US",tier:"national",r:"Youth development; state leagues nationwide",w:"https://www.nationalmtb.org/"},
+{n:"Trips for Kids",a:"",s:"US",tier:"national",r:"Youth cycling programs; chapter network across North America",w:"https://www.tripsforkids.org"},
+
+/* ---------- COLORADO (complete — comtb.org) ---------- */
+{n:"Colorado Mountain Bike Coalition",a:"COMTB",s:"CO",tier:"state",r:"Statewide coalition",w:"https://comtb.org/"},
+{n:"Headwaters Trails Alliance",a:"HTA",s:"CO",tier:"local",p:"COMTB",r:"Winter Park, Fraser, Grand County",w:"https://headwaterstrails.org/"},
+{n:"Meeker Area Mountain Bike Association",a:"MAMBA",s:"CO",tier:"local",p:"COMTB",r:"Meeker area",w:"https://www.facebook.com/groups/305312900125478/"},
+{n:"MoCo Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Craig and Moffat County",w:"https://www.facebook.com/MoCo-Trails-153561328612489/"},
+{n:"Routt County Riders",a:"RCR",s:"CO",tier:"local",p:"COMTB",r:"Steamboat Springs, Yampa Valley",w:"https://routtcountyriders.org/"},
+{n:"Colorado Plateau Mountain Bike Trail Association",a:"COPMOBA",s:"CO",tier:"local",p:"COMTB",r:"Grand Junction, Western Colorado",w:"https://www.copmoba.org/"},
+{n:"Delta Area Mountain Bikers",a:"DAMB",s:"CO",tier:"local",p:"COPMOBA",r:"Delta area",w:"https://www.copmoba.org/delta-area-mountain-bikers/"},
+{n:"Grand Valley Canyons",a:"GVC",s:"CO",tier:"local",p:"COPMOBA",r:"Palisade, Fruita, Loma, Mack, Grand Mesa",w:"https://www.copmoba.org/grand-valley-canyons/"},
+{n:"Hardscrabble Trails Coalition",a:"HTC",s:"CO",tier:"local",p:"COMTB",r:"Eagle and Gypsum",w:"https://www.hardscrabbletrailscoalition.org/"},
+{n:"Rifle Area Mountain Bike Organization",a:"RAMBO",s:"CO",tier:"local",p:"COMTB",r:"Rifle area",w:"http://riderifle.com/"},
+{n:"Roaring Fork Mountain Bike Association",a:"RFMBA",s:"CO",tier:"local",p:"COMTB",r:"Roaring Fork Valley, New Castle to Aspen",w:"https://www.rfmba.org/"},
+{n:"Vail Valley Mountain Trails Alliance",a:"VVMTA",s:"CO",tier:"local",p:"COMTB",r:"Vail and Eagle County",w:"https://www.vvmta.org/"},
+{n:"West End Trails Alliance",a:"WETA",s:"CO",tier:"local",p:"COMTB",r:"San Miguel, Montrose, southwest Mesa County",w:"https://www.westendtrails.org/"},
+{n:"Crested Butte Mountain Bike Association",a:"CBMBA",s:"CO",tier:"local",p:"COMTB",r:"Crested Butte area",w:"https://crestedbuttemountainbike.com/"},
+{n:"Gunnison Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Gunnison County",w:"https://gunnisontrails.org/"},
+{n:"Montrose Uncompahgre Trails",a:"MUT",s:"CO",tier:"local",p:"COPMOBA",r:"Montrose area",w:"https://www.copmoba.org/montrose/"},
+{n:"Ridgway Area Trails",a:"RAT",s:"CO",tier:"local",p:"COPMOBA",r:"Ridgway area",w:"https://www.copmoba.org/ridgway/"},
+{n:"San Miguel Bike Alliance",a:"SMBA",s:"CO",tier:"local",p:"COMTB",r:"Telluride area",w:"https://telluridesmba.org/"},
+{n:"Telluride Mountain Club",a:"TMC",s:"CO",tier:"local",p:"COMTB",r:"Telluride area",w:"https://www.telluridemountainclub.org/"},
+{n:"Developing Urban Singletrack Trails & Teams",a:"DUST2",s:"CO",tier:"local",p:"COMTB",r:"Pagosa Springs",w:"https://dustx2.org/"},
+{n:"Durango Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"Durango area",w:"https://www.durangotrails.org/"},
+{n:"Rico Trails Alliance",a:"RTA",s:"CO",tier:"local",p:"COMTB",r:"Rico area",w:"https://dustx2.org/"},
+{n:"Southwest Colorado Cycling Association",a:"SWCCA",s:"CO",tier:"local",p:"COMTB",r:"Cortez, Dolores, Mancos, Durango",w:"https://swcocycling.clubexpress.com/"},
+{n:"Boulder Mountainbike Alliance",a:"BMA",s:"CO",tier:"local",p:"COMTB",r:"Boulder and Gilpin Counties",w:"https://www.bouldermountainbike.org/"},
+{n:"Colorado Mountain Bike Association",a:"COMBA",s:"CO",tier:"local",p:"COMTB",r:"Denver, Jeffco, Clear Creek, Gilpin",w:"https://www.comba.org/"},
+{n:"Friends of Monument Preserve",a:"FOMP",s:"CO",tier:"local",p:"COMTB",r:"Monument area",w:"https://fomp.org/"},
+{n:"Medicine Wheel Trail Advocates",a:"MWTA",s:"CO",tier:"local",p:"COMTB",r:"Colorado Springs, Pikes Peak",w:"https://medwheel.org/"},
+{n:"Nederland Area Trails Organization",a:"NATO",s:"CO",tier:"local",p:"COMTB",r:"Nederland",w:"https://nederlandareatrails.org/"},
+{n:"Overland Mountain Bike Association",a:"OMBA",s:"CO",tier:"local",p:"COMTB",r:"Fort Collins to Laramie, Northern CO, Southern WY",w:"https://overlandmtb.org/"},
+{n:"Southern Colorado Trail Builders",a:"SCTB",s:"CO",tier:"local",p:"COMTB",r:"Pueblo",w:"https://www.socotrails.org/"},
+{n:"Buena Vista Singletrack Coalition",a:"BVSC",s:"CO",tier:"local",p:"COMTB",r:"Buena Vista area",w:"https://www.bvsingletrack.com/"},
+{n:"Cloud City Wheelers",a:"CCW",s:"CO",tier:"local",p:"COMTB",r:"Leadville and Lake County",w:"https://www.cloudcitywheelers.com/"},
+{n:"Fremont Adventure Recreation",a:"FAR",s:"CO",tier:"local",p:"COMTB",r:"Cañon City, Royal Gorge",w:"http://www.joinfar.org/"},
+{n:"Salida Mountain Trails",a:"SMT",s:"CO",tier:"local",p:"COMTB",r:"Salida area",w:"https://salidamountaintrails.org/"},
+{n:"Summit County Mountain Bike Association",a:"SCOMBA",s:"CO",tier:"local",p:"COMTB",r:"Breckenridge, Keystone, Frisco, Silverthorne",w:"https://www.scomba.org/"},
+{n:"Del Norte Trails Organization",a:"DNTO",s:"CO",tier:"local",p:"COMTB",r:"Del Norte, San Luis Valley",w:"https://www.delnortetrails.org/"},
+{n:"Cuchara Mountain Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",r:"Cuchara area",w:"https://www.facebook.com/groups/cucharamountaintrailsalliance"},
+{n:"La Veta Trails",a:"",s:"CO",tier:"local",p:"COMTB",r:"La Veta area",w:"https://www.lavetatrails.com/"},
+{n:"Trinidad Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",r:"Trinidad, Fishers Peak",w:"https://www.facebook.com/groups/1784514731767150/"},
+
+/* ---------- VERMONT (complete — vmba.org) ---------- */
+{n:"Vermont Mountain Bike Association",a:"VMBA",s:"VT",tier:"state",r:"Statewide; 28 chapters, shared membership platform",w:"https://vmba.org/"},
+{n:"Addison County Bike Club",a:"AC/BC",s:"VT",tier:"local",p:"VMBA",r:"Middlebury area",w:"https://vmba.org/trail_conditions/addison-county-bike-club/"},
+{n:"Ascutney Trails Association",a:"",s:"VT",tier:"local",p:"VMBA",r:"Mount Ascutney",w:"https://vmba.org/trail_conditions/ascutney-trails-association/"},
+{n:"Bennington Area Trail System",a:"BATS",s:"VT",tier:"local",p:"VMBA",r:"Bennington",w:"https://vmba.org/trail_conditions/bennington-area-trail-system/"},
+{n:"Brewster River Mountain Bike Club",a:"",s:"VT",tier:"local",p:"VMBA",r:"Jeffersonville, Cambridge",w:"https://vmba.org/trail_conditions/brewster-river-mountain-bike-club/"},
+{n:"Caledonia Trail Collaborative",a:"",s:"VT",tier:"local",p:"VMBA",r:"St. Johnsbury, Caledonia County",w:"https://vmba.org/trail_conditions/caledonia-trail-collaborative/"},
+{n:"Fellowship of the Wheel",a:"FOTW",s:"VT",tier:"local",p:"VMBA",r:"Burlington, Chittenden County",w:"https://vmba.org/trail_conditions/fellowship-of-the-wheel/"},
+{n:"Franklin County Mountain Bike Club",a:"",s:"VT",tier:"local",p:"VMBA",r:"St. Albans",w:"https://vmba.org/trail_conditions/franklin-county-mtb-club/"},
+{n:"Grateful Treads Mountain Bike Club",a:"",s:"VT",tier:"local",p:"VMBA",r:"Montgomery, Jay Peak area",w:"https://vmba.org/trail_conditions/grateful-treads-mountain-bike-club/"},
+{n:"Hoot, Toot & Whistle",a:"HTW",s:"VT",tier:"local",p:"VMBA",r:"Wilmington, West Dover",w:"https://vmba.org/trail_conditions/hoot-toot-whistle/"},
+{n:"Jamaica Area Mountain Bike Alliance",a:"JAMBA",s:"VT",tier:"local",p:"VMBA",r:"Jamaica",w:"https://vmba.org/trail_conditions/jamaica-area-mtb-alliance/"},
+{n:"Killington Mountain Bike Club",a:"KMBC",s:"VT",tier:"local",p:"VMBA",r:"Killington",w:"https://vmba.org/trail_conditions/killington-mountain-bike-club/"},
+{n:"Ludlow Area Sport Trails",a:"LAST",s:"VT",tier:"local",p:"VMBA",r:"Ludlow, Okemo",w:"https://vmba.org/trail_conditions/ludlow-area-sport-trails/"},
+{n:"Mad River Riders",a:"",s:"VT",tier:"local",p:"VMBA",r:"Mad River Valley, Waitsfield",w:"https://vmba.org/trail_conditions/mad-river-riders/"},
+{n:"Mendon Mountain Club",a:"",s:"VT",tier:"local",p:"VMBA",r:"Mendon, Rutland area",w:"https://vmba.org/trail_conditions/mendon-mountain-club/"},
+{n:"Montpelier Area Mountain Bike Association",a:"MAMBA",s:"VT",tier:"local",p:"VMBA",r:"Montpelier",w:"https://vmba.org/trail_conditions/montpelier-area-mtb-association-mamba/"},
+{n:"Millstone Trails Association",a:"MTA",s:"VT",tier:"local",p:"VMBA",r:"Barre, Websterville",w:"https://vmba.org/trail_conditions/%e2%80%8bmillstone-trails-association-mta/"},
+{n:"Northshire Area Trail System",a:"NATS",s:"VT",tier:"local",p:"VMBA",r:"Manchester, Northshire",w:"https://vmba.org/trail_conditions/northshire-area-trail-systems/"},
+{n:"Rochester/Randolph Area Sports Trail Alliance",a:"RASTA",s:"VT",tier:"local",p:"VMBA",r:"Rochester, Randolph",w:"https://vmba.org/trail_conditions/rochester-randolph-area-sports-trail-alliance/"},
+{n:"Richmond Mountain Trails",a:"RMT",s:"VT",tier:"local",p:"VMBA",r:"Richmond",w:"https://vmba.org/trail_conditions/richmond-mountain-trails/"},
+{n:"Riders in Plainfield & Marshfield",a:"RIPM",s:"VT",tier:"local",p:"VMBA",r:"Plainfield, Marshfield",w:"https://vmba.org/trail_conditions/riders-in-plainfield-marshfield/"},
+{n:"Slate Valley Trails",a:"SVT",s:"VT",tier:"local",p:"VMBA",r:"Poultney, Slate Valley",w:"https://vmba.org/trail_conditions/slate-valley-trails/"},
+{n:"Stowe Trails Partnership",a:"STP",s:"VT",tier:"local",p:"VMBA",r:"Stowe",w:"https://vmba.org/trail_conditions/stowetrailpartnership/"},
+{n:"Southern Vermont Trails Association",a:"SVTA",s:"VT",tier:"local",p:"VMBA",r:"Southern Vermont",w:"https://vmba.org/trail_conditions/southern-vt-trails-association/"},
+{n:"Upper Valley Mountain Bike Association",a:"UVMBA",s:"VT",tier:"local",p:"VMBA",r:"Upper Connecticut River Valley",w:"https://uvmba.org/"},
+{n:"Velomont Trail Collective",a:"",s:"VT",tier:"local",p:"VMBA",r:"Statewide long-distance trail corridor",w:"https://vmba.org/trail_conditions/velomont-trail/"},
+{n:"Woodstock Area Mountain Bike Association",a:"WAMBA",s:"VT",tier:"local",p:"VMBA",r:"Woodstock",w:"https://vmba.org/trail_conditions/woodstock-area-mountain-bike-association-wamba/"},
+{n:"Waterbury Area Trail Alliance",a:"WATA",s:"VT",tier:"local",p:"VMBA",r:"Waterbury",w:"https://vmba.org/trail_conditions/waterbury-area-trail-alliance-wata/"},
+{n:"Windham County Trails Alliance",a:"WCOTA",s:"VT",tier:"local",p:"VMBA",r:"Windham County, Brattleboro",w:"https://vmba.org/trail_conditions/windham-county-trails-alliance/"},
+{n:"Pine Hill Partnership",a:"",s:"VT",tier:"local",p:"VMBA",r:"Rutland; VMBA add-on partner",w:"https://pinehillpartnership.org/"},
+{n:"Millstone / MSTF Trails",a:"MSTF",s:"VT",tier:"local",p:"VMBA",r:"VMBA add-on partner network",w:"https://www.mstf.net/"},
+
+/* ---------- OREGON (complete OMBC roster) ---------- */
+{n:"Oregon Mountain Biking Coalition",a:"OMBC",s:"OR",tier:"state",r:"Statewide coalition of member organizations",w:"https://www.ormtbcoalition.org/"},
+{n:"44 Trails Association",a:"44Trails",s:"OR",tier:"local",p:"OMBC",r:"Hood River, Wasco County, Columbia Gorge",w:"http://www.44trails.org"},
+{n:"Alpine Trail Crew Association",a:"ATCA",s:"OR",tier:"local",p:"OMBC",r:"Alpine Trail, Willamette National Forest",w:"https://www.facebook.com/alpinetrailcrew"},
+{n:"Baker Loves Bikes",a:"",s:"OR",tier:"local",p:"OMBC",r:"Baker County",w:"http://bakercitycycling.org/"},
+{n:"Central Oregon Trail Alliance",a:"COTA",s:"OR",tier:"local",p:"OMBC",r:"Bend, Central Oregon",w:"http://www.cotamtb.com/"},
+{n:"Disciples of Dirt",a:"DOD",s:"OR",tier:"local",p:"OMBC",r:"Eugene, Springfield",w:"https://disciplesofdirt.org"},
+{n:"Greater Oakridge Area Trail Stewards",a:"GOATS",s:"OR",tier:"local",p:"OMBC",r:"Oakridge",w:"https://oakridgegoats.org/"},
+{n:"Hood River Area Trail Stewards",a:"HRATS",s:"OR",tier:"local",p:"OMBC",r:"Hood River, 30-mile radius into Washington",w:"https://www.hrats.org/"},
+{n:"Klamath Trails Alliance",a:"KTA",s:"OR",tier:"local",p:"OMBC",r:"Klamath County",w:"https://www.klamathtrails.org"},
+{n:"Northwest Trail Alliance",a:"NWTA",s:"OR",tier:"local",p:"OMBC",r:"Portland metro, Forest Park, Tillamook State Forest",w:"http://nw-trail.org/"},
+{n:"Oregon Timber Trail Alliance",a:"OTTA",s:"OR",tier:"state",p:"OMBC",r:"670-mile statewide backcountry corridor",w:"http://oregontimbertrail.org"},
+{n:"Rogue Valley Mountain Bike Association",a:"RVMBA",s:"OR",tier:"local",p:"OMBC",r:"Ashland, Medford, Grants Pass, Jacksonville",w:"http://rvmba.org/"},
+{n:"Salem Area Trail Alliance",a:"SATA",s:"OR",tier:"local",p:"OMBC",r:"Salem",w:"http://www.salemtrails.org/"},
+{n:"Trans-Cascadia",a:"",s:"OR",tier:"local",p:"OMBC",r:"Pacific Northwest backcountry trail restoration",w:"http://trans-cascadia.com"},
+{n:"Team Dirt",a:"",s:"OR",tier:"local",p:"OMBC",r:"Corvallis, Benton County",w:"https://teamdirt.org/"},
+{n:"Wallowa Mountains Bicycle Club",a:"",s:"OR",tier:"local",p:"OMBC",r:"Wallowa County",w:"https://www.wallowamountainsbicycleclub.com"},
+{n:"Bend Trails",a:"",s:"OR",tier:"local",r:"Bend trail information and stewardship",w:"https://bendtrails.org/"},
+{n:"Blackrock Mountain Bike Association",a:"BRMBA",s:"OR",tier:"local",r:"Falls City, Blackrock freeride area",w:"http://brmba.org/"},
+{n:"Blue Mountain Singletrack Trails Club",a:"BMSTC",s:"OR",tier:"local",r:"La Grande, Mount Emily Recreation Area",w:"https://www.meetmera.org/"},
+{n:"Eastern Oregon Trail Alliance",a:"EOTA",s:"OR",tier:"local",r:"Eastern Oregon",w:"https://eotatrails.com/"},
+{n:"Lower Umpqua Mountain Bike Riders",a:"LUMBR",s:"OR",tier:"local",r:"Reedsport, Lower Umpqua",w:""},
+{n:"Mt Hood Bicycle & Pedestrian Coalition",a:"",s:"OR",tier:"local",r:"Mount Hood corridor",w:"http://www.mthoodbikeped.com/"},
+{n:"Newport Trail Stewards",a:"NEWTS",s:"OR",tier:"local",r:"Newport, central coast",w:"https://newportnewts.com/"},
+{n:"North Coast Trail Alliance",a:"NCTA",s:"OR",tier:"local",p:"NWTA",r:"Astoria, Seaside, north coast",w:"http://www.nctrailalliance.com/"},
+{n:"Tillamook Off-Road Trail Alliance",a:"TORTA",s:"OR",tier:"local",r:"Tillamook County",w:""},
+{n:"Wild Rivers Coast Trail Alliance",a:"",s:"OR",tier:"local",r:"Southern Oregon coast, Brookings, Gold Beach",w:""},
+
+/* ---------- IDAHO (verified via web search, not a single coalition source) ---------- */
+{n:"Southwest Idaho Mountain Biking Association",a:"SWIMBA",s:"ID",tier:"local",r:"Boise, Ridge to Rivers trail system",w:"https://swimba.org/"},
+{n:"Central Idaho Mountain Bike Association",a:"CIMBA",s:"ID",tier:"local",r:"McCall, Tamarack, Bear Basin",w:"https://www.cimbarides.org/"},
+{n:"Friends of the Coeur d'Alene Trails",a:"",s:"ID",tier:"local",r:"Trail of the Coeur d'Alenes, Route of the Hiawatha, Silver Valley",w:"https://friendsofcdatrails.org/"},
+
+/* ---------- WASHINGTON (complete — Evergreen MTB Alliance chapters) ---------- */
+{n:"Evergreen Mountain Bike Alliance",a:"EMBA",s:"WA",tier:"state",r:"Statewide; 10 regional chapters, nation's largest state MTB association",w:"https://www.evergreenmtb.org/"},
+{n:"Evergreen — Cascades to Sound Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"I-90 corridor, Issaquah, North Bend",w:"https://www.evergreenmtb.org/chapters/cascadestosound"},
+{n:"Evergreen — Central Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Wenatchee Valley, Leavenworth to Chelan",w:"https://www.evergreenmtb.org/chapters/central"},
+{n:"Evergreen — Columbia Basin Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Tri-Cities, Columbia Basin",w:"https://www.evergreenmtb.org/chapters/columbiabasin"},
+{n:"Evergreen — Cowlitz-Naches Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"South-central Washington, Naches, Cowlitz",w:"https://www.evergreenmtb.org/chapters/cowlitz-naches"},
+{n:"Evergreen — East Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Spokane, eastern Washington",w:"https://www.evergreeneast.org/"},
+{n:"Evergreen — Kittitas Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Kittitas County, Cle Elum, Ellensburg",w:"https://www.evergreenmtb.org/chapters/kittitas"},
+{n:"Evergreen — Methow Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Methow Valley",w:"https://www.evergreenmtb.org/chapters/methow"},
+{n:"Evergreen — South Sound Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Olympia, South Puget Sound",w:"https://www.evergreenmtb.org/chapters/southsound"},
+{n:"Evergreen — Southwest Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Southwest Washington, Vancouver area",w:"https://www.evergreenmtb.org/chapters/southwest"},
+{n:"Evergreen — West Sound Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Kitsap Peninsula, West Puget Sound",w:"https://www.evergreenmtb.org/chapters/westsound"},
+
+/* ---------- MONTANA (verified via web search) ---------- */
+{n:"Missoula Mountain Bike Coalition",a:"MMBC",s:"MT",tier:"local",r:"Missoula and surrounding area",w:"https://www.mtbmissoula.org/"},
+{n:"Southwest Montana Mountain Bike Association",a:"SWMMBA",s:"MT",tier:"local",r:"Bozeman, Big Sky, Gallatin Valley",w:"https://www.southwestmontanamba.org/"},
+{n:"Flathead Area Mountain Bikers",a:"FAMB",s:"MT",tier:"local",r:"Flathead Valley, Whitefish, Kalispell, Bigfork",w:"https://www.flatheadamb.org/"},
+{n:"Whitefish Legacy Partners",a:"WLP",s:"MT",tier:"local",r:"Whitefish Trail, Whitefish",w:"https://www.whitefishlegacy.org/"},
+{n:"Bitterroot Trail Preservation Alliance",a:"",s:"MT",tier:"local",r:"Bitterroot Valley",w:""},
+
+/* ---------- UTAH (draft tier — supplied by user, not yet independently verified per-org) ---------- */
+{n:"Mountain Trails Foundation",a:"MTF",s:"UT",tier:"local",conf:"draft",r:"Park City; 400+ miles, paid year-round trail crew, IMBA Gold Ride Center",w:"https://www.mountaintrails.org/"},
+{n:"Trails Utah",a:"",s:"UT",tier:"state",conf:"draft",r:"Statewide planning, funding, easements, land-manager partnerships",w:"https://trailsutah.org/"},
+{n:"Bike Utah",a:"",s:"UT",tier:"state",conf:"draft",r:"Statewide active transportation and legislative advocacy (road + dirt)",w:"https://bikeutah.org/"},
+{n:"Wasatch Area Freeride Trails Association",a:"WAFTA",s:"UT",tier:"local",conf:"draft",r:"Wasatch Front, freeride and downhill trail advocacy",w:""},
+{n:"Lake Mountain Bicycle Club",a:"",s:"UT",tier:"local",conf:"draft",r:"Eagle Mountain, Cedar Valley, Lake Mountain",w:""},
+{n:"Trail Alliance of Southern Utah",a:"TASU",s:"UT",tier:"local",conf:"draft",r:"St. George, Hurricane, Cedar City (formerly Dixie MTB Trails Assoc.)",w:""},
+{n:"Moab Mountain Bike Association",a:"MMBA",s:"UT",tier:"local",conf:"draft",r:"Moab area",w:""},
+
+/* ---------- ILLINOIS (draft tier — supplied by user, not yet independently verified per-org) ---------- */
+{n:"Chicago Area Mountain Bikers",a:"CAMBr",s:"IL",tier:"local",conf:"draft",r:"Greater Chicago; 9+ trail systems, Cook/DuPage forest preserves",w:"https://www.cambr.org/"},
+{n:"Rockford Area Mountain Biking Alliance",a:"RAMBA",s:"IL",tier:"local",conf:"draft",r:"Rockford area",w:""},
+{n:"Rock River Valley Bicycle Club",a:"RRVBC",s:"IL",tier:"local",conf:"draft",r:"Dixon, Rock River Valley",w:""},
+{n:"Peoria Area Mountain Bike Association",a:"PAMBA",s:"IL",tier:"local",conf:"draft",r:"Peoria area",w:""},
+{n:"Comlara Off-Road Bicycling Association",a:"CORBA",s:"IL",tier:"local",conf:"draft",r:"Bloomington/Normal, Comlara County Park",w:""},
+{n:"Central Illinois Mountain Bike Association",a:"CIMBA",s:"IL",tier:"local",conf:"draft",r:"Decatur, Shelbyville, Lake Shelbyville",w:""},
+{n:"Kickapoo Mountain Bike Club",a:"KMBC",s:"IL",tier:"local",conf:"draft",r:"Kickapoo State Recreation Area, Champaign/Danville",w:""},
+{n:"Macomb Area Cycling MTB Club",a:"MAC MTBC",s:"IL",tier:"local",conf:"draft",r:"Macomb area",w:""},
+{n:"Friends of Off-Road Cycling",a:"FORC",s:"IL",tier:"local",conf:"draft",r:"Quad Cities (Rock Island IL / Davenport IA)",w:""},
+{n:"Shawnee Mountain Bike Association",a:"SMBA",s:"IL",tier:"local",conf:"draft",r:"Cobden, Shawnee National Forest",w:""},
+];
+
+/* State centroids + rough polygon-free map: we use a grid cartogram
+   (square per state) — accurate enough for choropleth reading,
+   and far lighter than embedding TopoJSON. */
+const STATE_NAMES={US:"National",AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"Washington DC"};
+
+/* grid cartogram coordinates [col,row] */
+const GRID={
+AK:[0,0],ME:[10,0],
+VT:[9,1],NH:[10,1],
+WA:[1,2],ID:[2,2],MT:[3,2],ND:[4,2],MN:[5,2],IL:[6,2],WI:[7,2],MI:[8,2],NY:[9,2],MA:[10,2],RI:[11,2],
+OR:[1,3],NV:[2,3],WY:[3,3],SD:[4,3],IA:[5,3],IN:[6,3],OH:[7,3],PA:[8,3],NJ:[9,3],CT:[10,3],
+CA:[1,4],UT:[2,4],CO:[3,4],NE:[4,4],MO:[5,4],KY:[6,4],WV:[7,4],VA:[8,4],MD:[9,4],DE:[10,4],
+AZ:[2,5],NM:[3,5],KS:[4,5],AR:[5,5],TN:[6,5],NC:[7,5],SC:[8,5],DC:[9,5],
+OK:[4,6],LA:[5,6],MS:[6,6],AL:[7,6],GA:[8,6],
+HI:[0,7],TX:[4,7],FL:[9,7]
+};
+
+/* ---------- state ---------- */
+let filters={q:"",state:"",tier:""};
+let activeTab="list";
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function matches(o){
+  if(filters.state && o.s!==filters.state) return false;
+  if(filters.tier && o.tier!==filters.tier) return false;
+  if(filters.q){
+    const hay=[o.n,o.a,o.r,o.p,STATE_NAMES[o.s]].filter(Boolean).join(" ").toLowerCase();
+    if(!hay.includes(filters.q.toLowerCase())) return false;
+  }
+  return true;
+}
+const visible=()=>ORGS.filter(matches);
+
+/* counts by state, excluding national tier */
+function stateCounts(list){
+  const m={};
+  list.filter(o=>o.s!=="US").forEach(o=>m[o.s]=(m[o.s]||0)+1);
+  return m;
+}
+
+/* ---------- counters ---------- */
+function renderCounts(){
+  const all=ORGS.filter(o=>o.s!=="US");
+  const c=stateCounts(ORGS);
+  const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+  $("c-orgs").textContent=ORGS.length;
+  $("c-states").textContent=Object.keys(c).length;
+  $("c-state-lvl").textContent=ORGS.filter(o=>o.tier==="state").length;
+  $("c-top").textContent=top?`${top[0]} · ${top[1]}`:"—";
+}
+
+/* ---------- directory ---------- */
+function renderList(){
+  const list=visible();
+  if(!list.length){$("p-list").innerHTML='<p class="empty">No organizations match those filters. Try a broader search.</p>';return}
+  const byState={};
+  list.forEach(o=>(byState[o.s]=byState[o.s]||[]).push(o));
+  const order=Object.keys(byState).sort((a,b)=>
+    a==="US"?-1:b==="US"?1:(STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b));
+  $("p-list").innerHTML=order.map(st=>{
+    const rows=byState[st].sort((a,b)=>{
+      const rank={state:0,national:0,local:1};
+      return (rank[a.tier]-rank[b.tier])||a.n.localeCompare(b.n);
+    }).map(o=>`
+      <li>
+        <span class="tier-dot tier-${o.tier}" title="${o.tier}"></span>
+        <span class="org-main">
+          <span class="org-name">${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">${esc(o.n)}</a>`:`<span class="noweb">${esc(o.n)}</span>`}${o.a?`<span class="abbr">${esc(o.a)}</span>`:""}</span>
+          ${o.r?`<span class="org-region">${esc(o.r)}</span>`:""}
+        </span>
+        ${o.p?`<span class="parent">${esc(o.p)}</span>`:""}
+        ${o.conf==="draft"?'<span class="draft-flag" title="Not yet independently verified — supplied secondhand, URL and status unconfirmed">draft</span>':""}
+      </li>`).join("");
+    return `<section class="stategroup">
+      <h2>${esc(STATE_NAMES[st]||st)}<span>${byState[st].length} listed</span></h2>
+      <ul class="orgs">${rows}</ul></section>`;
+  }).join("");
+}
+
+/* ---------- pie ---------- */
+function renderPie(){
+  const counts=stateCounts(visible());
+  const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){$("p-pie").innerHTML='<p class="empty">Nothing to chart with those filters.</p>';return}
+  const total=entries.reduce((s,[,n])=>s+n,0);
+  const palette=["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"];
+  const cx=150,cy=150,rOuter=130,rInner=58;
+  let ang=-Math.PI/2, paths="";
+  entries.forEach(([st,n],i)=>{
+    const sweep=(n/total)*Math.PI*2, end=ang+sweep, big=sweep>Math.PI?1:0;
+    const P=(r,a)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+    const[x1,y1]=P(rOuter,ang),[x2,y2]=P(rOuter,end),[x3,y3]=P(rInner,end),[x4,y4]=P(rInner,ang);
+    paths+=`<path class="slice" data-state="${st}" fill="${palette[i%palette.length]}"
+      d="M${x1} ${y1}A${rOuter} ${rOuter} 0 ${big} 1 ${x2} ${y2}L${x3} ${y3}A${rInner} ${rInner} 0 ${big} 0 ${x4} ${y4}Z">
+      <title>${STATE_NAMES[st]||st}: ${n} of ${total}</title></path>`;
+    ang=end;
+  });
+  const legend=entries.map(([st,n],i)=>`
+    <li data-state="${st}"><span class="swatch" style="background:${palette[i%palette.length]}"></span>
+    ${esc(STATE_NAMES[st]||st)}<span class="n">${n} · ${Math.round(n/total*100)}%</span></li>`).join("");
+  $("p-pie").innerHTML=`<div class="pie-layout">
+    <div><svg viewBox="0 0 300 300" width="100%" style="max-width:340px" role="img" aria-label="Organizations by state">
+      ${paths}
+      <text x="150" y="144" text-anchor="middle" style="font:600 34px Georgia,serif;fill:#12181c">${total}</text>
+      <text x="150" y="164" text-anchor="middle" style="font:600 9px ui-monospace,Menlo,monospace;fill:#5b6a72;letter-spacing:.16em">ORGANIZATIONS</text>
+    </svg></div>
+    <ul class="legend">${legend}</ul></div>`;
+  $("p-pie").querySelectorAll("[data-state]").forEach(el=>
+    el.addEventListener("click",()=>{filters.state=el.dataset.state;$("statesel").value=filters.state;switchTab("list");render()}));
+}
+
+/* ---------- map ---------- */
+function renderMap(){
+  const counts=stateCounts(visible());
+  const max=Math.max(1,...Object.values(counts));
+  const cell=52,gap=4;
+  const cols=12,rows=8;
+  let sq="";
+  Object.entries(GRID).forEach(([st,[c,r]])=>{
+    const n=counts[st]||0;
+    const t=n/max;
+    const fill=n?`color-mix(in srgb, #3f5d3a ${18+t*82}%, #e6ded0)`:"#e6ded0";
+    const x=c*(cell+gap), y=r*(cell+gap);
+    sq+=`<g><rect class="state-path" data-state="${st}" x="${x}" y="${y}" width="${cell}" height="${cell}"
+        rx="3" fill="${fill}"><title>${STATE_NAMES[st]}: ${n} listed</title></rect>
+      <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2-2}">${st}</text>
+      <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2+13}" style="font-size:13px">${n||""}</text></g>`;
+  });
+  $("p-map").innerHTML=`
+    <p class="map-note">A grid cartogram — one tile per state, positioned by rough geography, shaded by how many organizations are listed. Click a tile to filter the directory. Empty tiles are states not yet researched, not states without advocacy groups.</p>
+    <svg viewBox="0 0 ${cols*(cell+gap)} ${rows*(cell+gap)}" width="100%" role="img" aria-label="Map of organizations by state">${sq}</svg>
+    <div class="scalebar">None<span class="grad"></span>${max} orgs</div>`;
+  $("p-map").querySelectorAll("[data-state]").forEach(el=>
+    el.addEventListener("click",()=>{
+      const st=el.dataset.state;
+      if(!(counts[st])) return;
+      filters.state=st;$("statesel").value=st;switchTab("list");render();
+    }));
+}
+
+/* ---------- shell ---------- */
+function switchTab(name){
+  activeTab=name;
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
+  ["list","pie","map"].forEach(p=>$("p-"+p).hidden=(p!==name));
+}
+function render(){
+  if(activeTab==="list")renderList();
+  else if(activeTab==="pie")renderPie();
+  else renderMap();
+}
+
+function init(){
+  const sts=[...new Set(ORGS.map(o=>o.s))].sort((a,b)=>
+    a==="US"?-1:b==="US"?1:(STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b));
+  $("statesel").innerHTML='<option value="">All states</option>'+
+    sts.map(s=>`<option value="${s}">${esc(STATE_NAMES[s]||s)}</option>`).join("");
+  $("q").addEventListener("input",e=>{filters.q=e.target.value;render()});
+  $("statesel").addEventListener("change",e=>{filters.state=e.target.value;render()});
+  document.querySelectorAll(".tierbar button").forEach(b=>
+    b.addEventListener("click",()=>{
+      filters.tier=b.dataset.tier;
+      document.querySelectorAll(".tierbar button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+      render();
+    }));
+  document.querySelectorAll(".tabs button").forEach(b=>
+    b.addEventListener("click",()=>{switchTab(b.dataset.panel);render()}));
+  renderCounts();render();
+}
+init();
+</script>
+</body>
+</html>
