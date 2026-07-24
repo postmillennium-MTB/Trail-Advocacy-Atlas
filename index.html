@@ -15,25 +15,26 @@
   --rule:#ccc5b4;
 }
 [data-theme="elk"]{
-  --ink:#241a0d;
-  --paper:#f7f1de;
-  --dirt:#b8860b;
-  --loam:#7a6a2e;
-  --clay:#d99a1f;
-  --slate:#7d6a4a;
-  --rule:#e0cf9e;
+  --ink:#2e1608;
+  --paper:#f6e8c4;
+  --dirt:#a8731f;
+  --loam:#6b5518;
+  --clay:#d4900f;
+  --slate:#8a6f3f;
+  --rule:#e0cd9e;
 }
 [data-theme="caribou"]{
-  --ink:#182228;
-  --paper:#eef3f4;
-  --dirt:#4a6b7c;
-  --loam:#3f6b6a;
-  --clay:#4a90a4;
-  --slate:#5f7480;
-  --rule:#c9d6da;
+  --ink:#10191d;
+  --paper:#eef3f0;
+  --dirt:#4a6b73;
+  --loam:#5c7a5f;
+  --clay:#2f8fa3;
+  --slate:#62777c;
+  --rule:#cddad6;
 }
 :root{
   --tier-national:var(--ink);
+  --tier-regional:var(--clay);
   --tier-state:var(--dirt);
   --tier-local:var(--loam);
 }
@@ -112,6 +113,7 @@ ul.orgs li{
 }
 .tier-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:7px}
 .tier-national{background:var(--tier-national)}
+.tier-regional{background:var(--tier-regional)}
 .tier-state{background:var(--tier-state)}
 .tier-local{background:var(--tier-local)}
 .org-main{flex:1;min-width:0}
@@ -181,6 +183,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 <div class="tierbar" role="group" aria-label="Filter by tier">
   <button data-tier="" aria-pressed="true">All tiers</button>
   <button data-tier="national" aria-pressed="false">National</button>
+  <button data-tier="regional" aria-pressed="false">Regional</button>
   <button data-tier="state" aria-pressed="false">Statewide</button>
   <button data-tier="local" aria-pressed="false">Local</button>
 </div>
@@ -190,9 +193,9 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <button class="theme-swatch" data-theme="moose" aria-pressed="true">
     <span class="theme-dots"><i style="background:#12181c"></i><i style="background:#3f5d3a"></i><i style="background:#c1603a"></i></span>Moose</button>
   <button class="theme-swatch" data-theme="elk" aria-pressed="false">
-    <span class="theme-dots"><i style="background:#241a0d"></i><i style="background:#b8860b"></i><i style="background:#d99a1f"></i></span>Elk</button>
+    <span class="theme-dots"><i style="background:#2e1608"></i><i style="background:#6b5518"></i><i style="background:#d4900f"></i></span>Elk</button>
   <button class="theme-swatch" data-theme="caribou" aria-pressed="false">
-    <span class="theme-dots"><i style="background:#182228"></i><i style="background:#3f6b6a"></i><i style="background:#4a90a4"></i></span>Caribou</button>
+    <span class="theme-dots"><i style="background:#10191d"></i><i style="background:#5c7a5f"></i><i style="background:#2f8fa3"></i></span>Caribou</button>
 </div>
 
 <div class="tabs" role="tablist">
@@ -207,7 +210,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 
 <footer>
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
-  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here.
+  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here. Some entries link to Facebook, Trailforks, or MTB Project pages where no dedicated organization website could be found.
 </footer>
 
 </div>
@@ -222,7 +225,6 @@ const ORGS = [
 /* ---------- NATIONAL ---------- */
 {n:"International Mountain Bicycling Association",a:"IMBA",s:"US",tier:"national",r:"National umbrella; 200+ chapters and 400+ affiliated clubs",w:"https://www.imba.com/"},
 {n:"National Interscholastic Cycling Association",a:"NICA",s:"US",tier:"national",r:"Youth development; state leagues nationwide",w:"https://www.nationalmtb.org/"},
-{n:"Trips for Kids",a:"",s:"US",tier:"national",r:"Youth cycling programs; chapter network across North America",w:"https://www.tripsforkids.org"},
 
 /* ---------- COLORADO (complete — comtb.org) ---------- */
 {n:"Colorado Mountain Bike Coalition",a:"COMTB",s:"CO",tier:"state",r:"Statewide coalition",w:"https://comtb.org/"},
@@ -373,7 +375,7 @@ const ORGS = [
 {n:"Shawnee Mountain Bike Association",a:"SMBA-IL",s:"IL",tier:"local",r:"Cobden, Carbondale, Goreville, Shawnee National Forest",w:""},
 
 /* ---------- NEW ENGLAND MTB ASSOCIATION (regional umbrella, ME/NH chapters below) ---------- */
-{n:"New England Mountain Bike Association",a:"NEMBA",s:"US",tier:"national",r:"Regional umbrella for ME, NH, MA, CT, RI chapters",w:"https://www.nemba.org/"},
+{n:"New England Mountain Bike Association",a:"NEMBA",s:"US",tier:"regional",r:"Regional umbrella for ME, NH, MA, CT, RI chapters",w:"https://www.nemba.org/"},
 
 /* ---------- PENNSYLVANIA (verified via web search) ---------- */
 {n:"Susquehanna Area Mountain Bike Association",a:"SAMBA",s:"PA",tier:"local",r:"Harrisburg/Lebanon area; Swatara State Park, Rattling Creek IMBA Epic",w:"https://sambatrails.bike/"},
@@ -400,7 +402,7 @@ const ORGS = [
 {n:"Saratoga Mountain Bike Association",a:"SMBA-NY",s:"NY",tier:"local",r:"Capital Region/Saratoga; Daniels Road & Pittstown State Forests",w:"https://www.saratogamtb.org/"},
 
 /* ---------- SORBA (regional umbrella, 48 chapters across 8 SE states) ---------- */
-{n:"Southern Off-Road Bicycle Association",a:"SORBA",s:"US",tier:"national",r:"Regional umbrella, largest MTB nonprofit in the Southeast; chapters in AL, FL, GA, LA, MS, NC, SC, TN",w:"https://sorba.org/"},
+{n:"Southern Off-Road Bicycle Association",a:"SORBA",s:"US",tier:"regional",r:"Regional umbrella, largest MTB nonprofit in the Southeast; chapters in AL, FL, GA, LA, MS, NC, SC, TN",w:"https://sorba.org/"},
 
 /* ---------- GEORGIA (SORBA chapters, verified) ---------- */
 {n:"MTB Atlanta",a:"SORBA-ATL",s:"GA",tier:"local",p:"SORBA",r:"Metro Atlanta; Sope Creek, Cochran Mill, Southside Park",w:"https://www.mtbatlanta.com/"},
@@ -528,6 +530,37 @@ const ORGS = [
 {n:"Iron Range Off-Road Cyclists",a:"IROC",s:"MN",tier:"local",r:"Chisholm, Hibbing, Giant's Ridge; mine-land reclamation trails",w:"https://mtbproject.com/club/6282753/iron-range-off-road-cyclists-iroc"},
 {n:"Red Wing Area Mountain Bike Organization",a:"RAMBO",s:"MN",tier:"local",r:"Red Wing, southeastern Minnesota",w:"https://www.facebook.com/RedWingMTB/"},
 {n:"Mankato Area Mountain Bikers",a:"MAMBC",s:"MN",tier:"local",r:"Mankato, Minnesota River Valley",w:"https://mtbproject.com/club/7000017/mankato-area-mountain-bikers"},
+
+/* ---------- ARIZONA (verified via web search) ---------- */
+{n:"Colorado River Area Trail Alliance",a:"CRATA",s:"AZ",tier:"local",r:"Kingman, northwestern AZ, tri-state area",w:"https://www.facebook.com/AZCRATA/"},
+{n:"Desert Foothills Mountain Bike Association",a:"DFMBA",s:"AZ",tier:"local",r:"Cave Creek, north Phoenix valley",w:"https://www.dfmba.org/"},
+{n:"Flagstaff Biking Organization",a:"FBO",s:"AZ",tier:"local",r:"Flagstaff, Northern Arizona",w:"https://flagstaffbiking.org/"},
+{n:"Hawes Trail Alliance",a:"HTA",s:"AZ",tier:"local",r:"Mesa, Hawes Trail System",w:"https://hawestrailalliance.com/"},
+{n:"Prescott Mountain Bike Alliance",a:"PMBA",s:"AZ",tier:"local",r:"Prescott area public lands",w:"https://prescottmtb.com/"},
+{n:"Rim Country Mountain Biking Association",a:"RCMBA",s:"AZ",tier:"local",r:"Payson; Rumsey Park",w:"https://www.facebook.com/rimcountrymountainbikingassociation/"},
+{n:"Sonoran Desert Mountain Bicyclists",a:"SDMB",s:"AZ",tier:"local",r:"Tucson, Sonoran Desert",w:"https://sonorandesertmountainbicyclists.wildapricot.org/"},
+{n:"Tucson Off-Road Cyclists and Activists",a:"TORCA",s:"AZ",tier:"local",r:"Tucson; Mt. Lemmon, Santa Catalina Mountains",w:"https://torca.org/"},
+{n:"Verde Valley Cyclists Coalition",a:"VVCC",s:"AZ",tier:"local",r:"Sedona, Verde Valley",w:"https://www.vvcc.us/"},
+{n:"West Valley Trail Alliance",a:"WVTA",s:"AZ",tier:"local",r:"Goodyear; Estrella Mountain, White Tank Regional Parks",w:"https://www.westvalleytrailalliance.org/"},
+
+/* ---------- KANSAS (verified via web search) ---------- */
+{n:"Kansas Trails Council",a:"KTC",s:"KS",tier:"state",r:"Statewide natural-surface trail developer since 1974",w:"https://kstrails.org/"},
+{n:"Earth Riders Trails Association",a:"ERTA",s:"KS",tier:"local",r:"Kansas City metro, Kansas side",w:"https://kcparks.org/tag/earth-riders-trails-association/"},
+{n:"Thrive Allen County",a:"",s:"KS",tier:"local",r:"Iola; 60+ miles including Lehigh Portland State Park",w:"https://thriveallencounty.org/"},
+
+/* ---------- NEW JERSEY (verified, statewide) ---------- */
+{n:"Jersey Off Road Bicycle Association",a:"JORBA",s:"NJ",tier:"state",r:"Statewide; North, Central, South Jersey chapters",w:"https://jorba.org/"},
+
+/* ---------- NEW MEXICO (verified via web search) ---------- */
+{n:"Enchanted Circle Trails Association",a:"ECTA",s:"NM",tier:"local",r:"Taos region",w:"https://enchantedcircletrails.org/"},
+{n:"Taos Mountain Bike Association",a:"TMBA",s:"NM",tier:"local",r:"Taos; South Boundary Trail adopter",w:"https://www.taosmtb.org/"},
+{n:"Santa Fe Fat Tire Society",a:"SFFTS",s:"NM",tier:"local",r:"Santa Fe; La Tierra, Dale Ball trails",w:"https://santafefattiresociety.org/"},
+{n:"Southern New Mexico Mountain Biking",a:"SNMTB",s:"NM",tier:"local",r:"Las Cruces; youth mountain bike programming",w:"https://nmoutside.com/grant_recipients/snmtb-southern-new-mexico-mountain-biking/"},
+{n:"Southern New Mexico Trail Alliance",a:"SNMTA",s:"NM",tier:"local",r:"Las Cruces; Organ Mountains, Sierra Vista Trail",w:""},
+
+/* ---------- OKLAHOMA (verified via web search) ---------- */
+{n:"Oklahoma Mountain Bike Association",a:"OMBA-OK",s:"OK",tier:"state",r:"Statewide; Turkey Mountain, Arcadia Lake",w:"https://www.rideomba.org/"},
+{n:"Tahlequah Trails Association",a:"TTA-OK",s:"OK",tier:"local",r:"Cherokee County; Welling Ridge Trails",w:"https://www.tahlequahtrails.org/"},
 ];
 
 /* State centroids + rough polygon-free map: we use a grid cartogram
@@ -554,12 +587,12 @@ const THEME_PALETTES={
     mapFrom:"#e6ded0",mapTo:"#3f5d3a"
   },
   elk:{
-    pie:["#b8860b","#d99a1f","#7a6a2e","#8f5a1f","#c99a3c","#5e4b1a","#e0b24a","#9c7024","#c2a15c","#734a12"],
-    mapFrom:"#efe4bf",mapTo:"#b8860b"
+    pie:["#d4900f","#6b5518","#a8731f","#8a5a1f","#e0a83a","#4a3a10","#c9a45c","#8f6b2e","#b87a12","#5e4816"],
+    mapFrom:"#f0ddb0",mapTo:"#a8731f"
   },
   caribou:{
-    pie:["#3f6b6a","#4a90a4","#4a6b7c","#5f7480","#2f5560","#6fa8b8","#3a5a68","#7c95a0","#456f78","#5490a0"],
-    mapFrom:"#dbe6e8",mapTo:"#3f6b6a"
+    pie:["#2f8fa3","#5c7a5f","#4a6b73","#6fa8b8","#3f6b52","#1f4650","#7c9a85","#456f78","#8fb0ba","#2a5560"],
+    mapFrom:"#dbe6e2",mapTo:"#1f4650"
   }
 };
 let currentTheme="moose";
@@ -617,7 +650,7 @@ function renderList(){
     a==="US"?-1:b==="US"?1:(STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b));
   $("p-list").innerHTML=order.map(st=>{
     const rows=byState[st].sort((a,b)=>{
-      const rank={state:0,national:0,local:1};
+      const rank={national:0,regional:0,state:0,local:1};
       return (rank[a.tier]-rank[b.tier])||a.n.localeCompare(b.n);
     }).map(o=>`
       <li>
@@ -659,8 +692,8 @@ function renderPie(){
   $("p-pie").innerHTML=`<div class="pie-layout">
     <div><svg viewBox="0 0 300 300" width="100%" style="max-width:340px" role="img" aria-label="Organizations by state">
       ${paths}
-      <text x="150" y="144" text-anchor="middle" style="font:600 34px Georgia,serif;fill:#12181c">${total}</text>
-      <text x="150" y="164" text-anchor="middle" style="font:600 9px ui-monospace,Menlo,monospace;fill:#5b6a72;letter-spacing:.16em">ORGANIZATIONS</text>
+      <text x="150" y="144" text-anchor="middle" style="font:600 34px Georgia,serif;fill:var(--ink)">${total}</text>
+      <text x="150" y="164" text-anchor="middle" style="font:600 9px ui-monospace,Menlo,monospace;fill:var(--slate);letter-spacing:.16em">ORGANIZATIONS</text>
     </svg></div>
     <ul class="legend">${legend}</ul></div>`;
   $("p-pie").querySelectorAll("[data-state]").forEach(el=>
