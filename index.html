@@ -164,8 +164,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 <div class="panel" id="p-map" hidden></div>
 
 <footer>
-  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. Idaho and Montana are assembled from web research, not a single coalition source, and are likely incomplete. Utah and Illinois are marked <span class="draft-flag" style="vertical-align:1px">draft</span> — supplied secondhand and not yet independently checked org-by-org for correct URLs or active status. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide body.<br>
-  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here.
+  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. Idaho, Montana, Pennsylvania, Maine, New Hampshire, New York, Utah and Illinois are assembled org-by-org from web research and, for UT/IL, a list supplied by the site owner — every entry's URL and active status was independently checked before inclusion, but these states aren't full coalition rosters and may be missing groups. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England chapters).<br>
+  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here.
 </footer>
 
 </div>
@@ -309,26 +309,53 @@ const ORGS = [
 {n:"Whitefish Legacy Partners",a:"WLP",s:"MT",tier:"local",r:"Whitefish Trail, Whitefish",w:"https://www.whitefishlegacy.org/"},
 {n:"Bitterroot Trail Preservation Alliance",a:"",s:"MT",tier:"local",r:"Bitterroot Valley",w:""},
 
-/* ---------- UTAH (draft tier — supplied by user, not yet independently verified per-org) ---------- */
-{n:"Mountain Trails Foundation",a:"MTF",s:"UT",tier:"local",conf:"draft",r:"Park City; 400+ miles, paid year-round trail crew, IMBA Gold Ride Center",w:"https://www.mountaintrails.org/"},
-{n:"Trails Utah",a:"",s:"UT",tier:"state",conf:"draft",r:"Statewide planning, funding, easements, land-manager partnerships",w:"https://trailsutah.org/"},
-{n:"Bike Utah",a:"",s:"UT",tier:"state",conf:"draft",r:"Statewide active transportation and legislative advocacy (road + dirt)",w:"https://bikeutah.org/"},
-{n:"Wasatch Area Freeride Trails Association",a:"WAFTA",s:"UT",tier:"local",conf:"draft",r:"Wasatch Front, freeride and downhill trail advocacy",w:""},
-{n:"Lake Mountain Bicycle Club",a:"",s:"UT",tier:"local",conf:"draft",r:"Eagle Mountain, Cedar Valley, Lake Mountain",w:""},
-{n:"Trail Alliance of Southern Utah",a:"TASU",s:"UT",tier:"local",conf:"draft",r:"St. George, Hurricane, Cedar City (formerly Dixie MTB Trails Assoc.)",w:""},
-{n:"Moab Mountain Bike Association",a:"MMBA",s:"UT",tier:"local",conf:"draft",r:"Moab area",w:""},
+/* ---------- UTAH (verified via web search) ---------- */
+{n:"Mountain Trails Foundation",a:"MTF",s:"UT",tier:"local",r:"Park City; 400+ miles, paid year-round trail crew, IMBA Gold Ride Center",w:"https://mountaintrails.org/"},
+{n:"Trails Utah",a:"",s:"UT",tier:"state",r:"Statewide planning, funding, easements, land-manager partnerships",w:"https://trailsutah.org/"},
+{n:"Bike Utah",a:"",s:"UT",tier:"state",r:"Statewide active transportation and legislative advocacy (road + dirt)",w:"https://bikeutah.org/"},
+{n:"Wasatch Area Freeride Trails Association",a:"WAFTA",s:"UT",tier:"local",r:"Wasatch Front, freeride and downhill trail advocacy",w:"http://www.waftautah.com"},
+{n:"Lake Mountain Bicycle Club",a:"",s:"UT",tier:"local",r:"Eagle Mountain, Cedar Valley, Lake Mountain (aka Lake Mountain Flyers)",w:"https://www.lakemountainflyers.com/"},
+{n:"Trail Alliance of Southern Utah",a:"TASU",s:"UT",tier:"local",r:"St. George, Hurricane, Cedar City (formerly Dixie MTB Trails Assoc.)",w:"https://www.facebook.com/t.a.s.utah/"},
+{n:"Moab Mountain Bike Association",a:"MMBA",s:"UT",tier:"local",r:"Moab area; IMBA chapter",w:"https://www.moabmba.com/"},
 
-/* ---------- ILLINOIS (draft tier — supplied by user, not yet independently verified per-org) ---------- */
-{n:"Chicago Area Mountain Bikers",a:"CAMBr",s:"IL",tier:"local",conf:"draft",r:"Greater Chicago; 9+ trail systems, Cook/DuPage forest preserves",w:"https://www.cambr.org/"},
-{n:"Rockford Area Mountain Biking Alliance",a:"RAMBA",s:"IL",tier:"local",conf:"draft",r:"Rockford area",w:""},
-{n:"Rock River Valley Bicycle Club",a:"RRVBC",s:"IL",tier:"local",conf:"draft",r:"Dixon, Rock River Valley",w:""},
-{n:"Peoria Area Mountain Bike Association",a:"PAMBA",s:"IL",tier:"local",conf:"draft",r:"Peoria area",w:""},
-{n:"Comlara Off-Road Bicycling Association",a:"CORBA",s:"IL",tier:"local",conf:"draft",r:"Bloomington/Normal, Comlara County Park",w:""},
-{n:"Central Illinois Mountain Bike Association",a:"CIMBA",s:"IL",tier:"local",conf:"draft",r:"Decatur, Shelbyville, Lake Shelbyville",w:""},
-{n:"Kickapoo Mountain Bike Club",a:"KMBC",s:"IL",tier:"local",conf:"draft",r:"Kickapoo State Recreation Area, Champaign/Danville",w:""},
-{n:"Macomb Area Cycling MTB Club",a:"MAC MTBC",s:"IL",tier:"local",conf:"draft",r:"Macomb area",w:""},
-{n:"Friends of Off-Road Cycling",a:"FORC",s:"IL",tier:"local",conf:"draft",r:"Quad Cities (Rock Island IL / Davenport IA)",w:""},
-{n:"Shawnee Mountain Bike Association",a:"SMBA",s:"IL",tier:"local",conf:"draft",r:"Cobden, Shawnee National Forest",w:""},
+/* ---------- ILLINOIS (verified via web search) ---------- */
+{n:"Chicago Area Mountain Bikers",a:"CAMBr",s:"IL",tier:"local",r:"Greater Chicago; 7+ trail systems, 80+ miles",w:"https://www.cambr.org/"},
+{n:"Rockford Area Mountain Biking Alliance",a:"RAMBA",s:"IL",tier:"local",r:"Rockford area",w:"https://www.facebook.com/RockfordAreaMountainBikers/"},
+{n:"Rock River Valley Bicycle Club",a:"RRVBC",s:"IL",tier:"local",r:"Dixon, Lee/Whiteside/Ogle Counties; also maintains Dixon MTB trails",w:"https://www.facebook.com/groups/363513414800/"},
+{n:"Peoria Area Mountain Bike Association",a:"PAMBA",s:"IL",tier:"local",r:"Peoria area; 7 trail systems",w:"https://www.pambamtb.org/"},
+{n:"Comlara Off-Road Bicycling Association",a:"CORBA",s:"IL",tier:"local",r:"Bloomington/Normal, Comlara County Park",w:"https://comlaramtb.com/"},
+{n:"Central Illinois Mountain Bike Association",a:"CIMBA-IL",s:"IL",tier:"local",r:"Decatur, Shelbyville, Lake Shelbyville",w:"http://www.cimba.org/"},
+{n:"Kickapoo Mountain Bike Club",a:"KMBC",s:"IL",tier:"local",r:"Kickapoo State Recreation Area, Champaign/Danville",w:"https://kickapoo.bike/"},
+{n:"Macomb Area Cycling MTB Club",a:"MAC MTBC",s:"IL",tier:"local",r:"Macomb area, Spring Lake Park",w:"http://www.macmtbc.org/"},
+{n:"Friends of Off-Road Cycling",a:"FORC",s:"IL",tier:"local",r:"Quad Cities (Rock Island IL / Davenport IA)",w:"https://www.qcforc.org/"},
+{n:"Shawnee Mountain Bike Association",a:"SMBA-IL",s:"IL",tier:"local",r:"Cobden, Carbondale, Goreville, Shawnee National Forest",w:""},
+
+/* ---------- NEW ENGLAND MTB ASSOCIATION (regional umbrella, ME/NH chapters below) ---------- */
+{n:"New England Mountain Bike Association",a:"NEMBA",s:"US",tier:"national",r:"Regional umbrella for ME, NH, MA, CT, RI chapters",w:"https://www.nemba.org/"},
+
+/* ---------- PENNSYLVANIA (verified via web search) ---------- */
+{n:"Susquehanna Area Mountain Bike Association",a:"SAMBA",s:"PA",tier:"local",r:"Harrisburg/Lebanon area; Swatara State Park, Rattling Creek IMBA Epic",w:"https://sambatrails.bike/"},
+{n:"Berks Area Mountain Biking Association",a:"BAMBA",s:"PA",tier:"local",r:"Reading, Berks County; 200+ mile network",w:"https://berksmountainbiking.org/"},
+{n:"Trail Pittsburgh",a:"",s:"PA",tier:"local",r:"Greater Pittsburgh; 15 trail networks, 200+ miles",w:"https://www.trailpittsburgh.org/"},
+{n:"Nittany Mountain Biking Association",a:"NMBA",s:"PA",tier:"local",r:"State College, Centre County; Rothrock State Forest",w:"https://nittanymba.org/"},
+{n:"Valley Mountain Bikers",a:"VMB",s:"PA",tier:"local",r:"Lehigh Valley; Trexler Nature Preserve, Jacobsburg State Park",w:"https://www.bikevmb.com/"},
+
+/* ---------- MAINE (NEMBA chapters, verified) ---------- */
+{n:"Carrabassett Region NEMBA",a:"CRNEMBA",s:"ME",tier:"local",p:"NEMBA",r:"Carrabassett Valley, Sugarloaf area",w:"https://carrabassettnemba.org/"},
+{n:"Penobscot Region NEMBA",a:"",s:"ME",tier:"local",p:"NEMBA",r:"Bangor/Orono; Bangor City Forest, Orono Bog",w:"https://pr.nemba.org/"},
+{n:"Midcoast Maine NEMBA",a:"",s:"ME",tier:"local",p:"NEMBA",r:"Camden, Thomaston, coastal Maine",w:"https://www.nemba.org/chapters/midcoast-maine-nemba"},
+
+/* ---------- NEW HAMPSHIRE (verified) ---------- */
+{n:"Ride NoCo",a:"",s:"NH",tier:"local",r:"Mt. Washington Valley; formerly White Mountains NEMBA, went independent 2020",w:"https://ridenoco.org/"},
+{n:"Central NH NEMBA",a:"",s:"NH",tier:"local",p:"NEMBA",r:"Concord to Lakes Region; Franklin Falls fat-bike grooming",w:"https://www.nemba.org/chapters/central-nh-nemba"},
+{n:"Southern NH NEMBA",a:"",s:"NH",tier:"local",p:"NEMBA",r:"Nashua to Concord corridor; Bear Brook State Park, Yudicky Farm",w:"https://mtbproject.com/club/3889852/southern-nh-nemba"},
+
+/* ---------- NEW YORK (verified) ---------- */
+{n:"Barkeater Trails Alliance",a:"BETA",s:"NY",tier:"local",r:"Adirondacks/High Peaks; Lake Placid, Saranac Lake, Wilmington, Keene",w:"https://www.bikeadirondacks.com/"},
+{n:"New York City Mountain Bike Association",a:"NYCMTB",s:"NY",tier:"local",r:"Highbridge Park (Manhattan), Wolfe's Pond Park (Staten Island)",w:"https://nycmtb.org/"},
+{n:"Concerned Long Island Mountain Bicyclists",a:"CLIMB",s:"NY",tier:"local",r:"Long Island singletrack, Cunningham Park",w:"http://www.climbonline.org"},
+{n:"Cycle-CNY",a:"",s:"NY",tier:"local",r:"Southern Tier, Finger Lakes; Finger Lakes National Forest",w:"https://cycle-cny.com/"},
+{n:"Saratoga Mountain Bike Association",a:"SMBA-NY",s:"NY",tier:"local",r:"Capital Region/Saratoga; Daniels Road & Pittstown State Forests",w:"https://www.saratogamtb.org/"},
 ];
 
 /* State centroids + rough polygon-free map: we use a grid cartogram
