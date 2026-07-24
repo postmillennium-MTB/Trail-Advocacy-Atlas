@@ -26,9 +26,9 @@
 [data-theme="caribou"]{
   --ink:#29343a;
   --paper:#eef3f0;
-  --dirt:#4a6b73;
-  --loam:#5c7a5f;
-  --clay:#2f8fa3;
+  --dirt:#ff2fb0;
+  --loam:#00e6a8;
+  --clay:#00d4ff;
   --slate:#62777c;
   --rule:#cddad6;
 }
@@ -44,6 +44,17 @@ body{
   margin:0;background:var(--paper);color:var(--ink);
   font:16px/1.5 "Iowan Old Style",Charter,Georgia,serif;
   -webkit-font-smoothing:antialiased;
+}
+[data-theme="caribou"] body{
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(ellipse 340px 220px at 8% 15%, rgba(0,212,255,.10), transparent 62%),
+    radial-gradient(ellipse 260px 320px at 92% 8%, rgba(0,230,168,.10), transparent 60%),
+    radial-gradient(ellipse 380px 260px at 70% 85%, rgba(41,52,58,.08), transparent 62%),
+    radial-gradient(ellipse 300px 220px at 15% 78%, rgba(0,230,168,.09), transparent 60%),
+    radial-gradient(ellipse 260px 300px at 95% 55%, rgba(255,47,176,.06), transparent 60%),
+    radial-gradient(ellipse 420px 240px at 40% 40%, rgba(98,119,124,.07), transparent 65%);
+  background-attachment:fixed;
 }
 .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
 
@@ -77,6 +88,8 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
   border-radius:2px;cursor:pointer;
 }
 .tierbar button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tierbar button#reset-filters{margin-left:6px;border-style:dashed;color:var(--clay);border-color:var(--clay)}
+.tierbar button#reset-filters:hover{background:var(--clay);color:#fff}
 
 /* ---- theme switcher ---- */
 .themebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 18px}
@@ -206,6 +219,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <button data-tier="regional" aria-pressed="false">Regional</button>
   <button data-tier="state" aria-pressed="false">Statewide</button>
   <button data-tier="local" aria-pressed="false">Local</button>
+  <button id="reset-filters" type="button" title="Clear search, state, and tier filters">Reset</button>
 </div>
 
 <div class="themebar" role="group" aria-label="Color theme">
@@ -215,18 +229,18 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <button class="theme-swatch" data-theme="elk" aria-pressed="false">
     <span class="theme-dots"><i style="background:#3d332a"></i><i style="background:#6b5518"></i><i style="background:#d4900f"></i></span>Elk</button>
   <button class="theme-swatch" data-theme="caribou" aria-pressed="false">
-    <span class="theme-dots"><i style="background:#29343a"></i><i style="background:#5c7a5f"></i><i style="background:#2f8fa3"></i></span>Caribou</button>
+    <span class="theme-dots"><i style="background:#29343a"></i><i style="background:#00e6a8"></i><i style="background:#00d4ff"></i></span>Caribou</button>
 </div>
 
 <div class="tabs" role="tablist">
-  <button role="tab" aria-selected="true" data-panel="list">Directory</button>
-  <button role="tab" aria-selected="false" data-panel="pie">By state</button>
+  <button role="tab" aria-selected="false" data-panel="list">Directory</button>
+  <button role="tab" aria-selected="true" data-panel="pie">By state</button>
   <button role="tab" aria-selected="false" data-panel="map">Map</button>
   <button role="tab" aria-selected="false" data-panel="detail">Trailhead map</button>
 </div>
 
-<div class="panel" id="p-list"></div>
-<div class="panel" id="p-pie" hidden></div>
+<div class="panel" id="p-list" hidden></div>
+<div class="panel" id="p-pie"></div>
 <div class="panel" id="p-map" hidden></div>
 <div class="panel" id="p-detail" hidden></div>
 
@@ -639,8 +653,8 @@ const THEME_PALETTES={
     mapFrom:"#f0ddb0",mapTo:"#a8731f"
   },
   caribou:{
-    pie:["#2f8fa3","#5c7a5f","#4a6b73","#6fa8b8","#3f6b52","#1f4650","#7c9a85","#456f78","#8fb0ba","#2a5560"],
-    mapFrom:"#dbe6e2",mapTo:"#1f4650"
+    pie:["#00d4ff","#ff2fb0","#00e6a8","#2f5560","#7c9a85","#456f78","#8fb0ba","#5490a0","#3f6b52","#1f4650"],
+    mapFrom:"#dbe6e2",mapTo:"#00a8c2"
   }
 };
 let currentTheme="moose";
@@ -656,9 +670,48 @@ function applyTheme(name){
 const POINT_MAP_STATES=["CA","CO","VT","OR"];
 let detailState="CA";
 
+/* Simplified state boundary outlines [lat,lng] — hand-simplified, not survey-grade,
+   just enough vertices to read as the state's shape at this zoom level. */
+const STATE_OUTLINES={
+  CO:[[41,-109],[41,-102],[37,-102],[37,-109],[41,-109]],
+  OR:[[46.25,-124.05],[45.96,-124.08],[45.5,-124.02],[44.9,-124.02],[44.3,-124.08],
+      [43.3,-124.25],[42.8,-124.42],[42.0,-124.35],[42.0,-117.03],[42.9,-117.0],
+      [44.0,-117.0],[44.9,-116.92],[45.6,-116.98],[45.93,-117.0],[45.9,-118.8],
+      [45.8,-120.6],[45.68,-121.5],[45.62,-122.7],[45.75,-123.2],[46.15,-123.4],[46.25,-124.05]],
+  CA:[[42.0,-124.35],[42.0,-120.0],[39.0,-120.0],[38.9,-119.99],[35.8,-114.63],
+      [34.87,-114.63],[34.3,-114.45],[33.4,-114.5],[32.75,-114.72],[32.53,-117.13],
+      [33.0,-117.35],[33.7,-118.2],[34.05,-119.0],[34.45,-120.0],[35.15,-120.6],
+      [35.4,-121.0],[36.2,-121.6],[36.6,-121.9],[37.2,-122.4],[37.8,-122.5],
+      [38.0,-122.9],[38.3,-123.1],[39.0,-123.8],[39.8,-123.85],[40.4,-124.1],
+      [40.8,-124.2],[41.5,-124.1],[42.0,-124.35]],
+  VT:[[45.0,-73.35],[45.0,-71.5],[44.5,-71.62],[44.0,-71.98],[43.6,-72.32],
+      [43.0,-72.45],[42.75,-73.26],[43.0,-73.3],[43.5,-73.4],[44.0,-73.35],
+      [44.5,-73.32],[44.8,-73.35],[45.0,-73.35]]
+};
+
+/* Shared: project [lat,lng] points into an SVG viewBox, accounting for longitude
+   compression at latitude, and return both a point-projector and a ready outline path. */
+function buildProjection(pts,outlineCoords,W,H,pad){
+  const allLat=pts.map(p=>p.lat).concat(outlineCoords.map(c=>c[0]));
+  const allLng=pts.map(p=>p.lng).concat(outlineCoords.map(c=>c[1]));
+  const latMin=Math.min(...allLat),latMax=Math.max(...allLat);
+  const lngMin=Math.min(...allLng),lngMax=Math.max(...allLng);
+  const latC=(latMin+latMax)/2;
+  const cosLat=Math.cos(latC*Math.PI/180);
+  const xRaw=lng=>lng*cosLat, yRaw=lat=>-lat;
+  const x0=xRaw(lngMin),x1=xRaw(lngMax),y0=yRaw(latMax),y1=yRaw(latMin);
+  const spanX=Math.max(x1-x0,0.02), spanY=Math.max(y1-y0,0.02);
+  const scale=Math.min((W-pad*2)/spanX,(H-pad*2)/spanY);
+  const offX=pad+((W-pad*2)-spanX*scale)/2, offY=pad+((H-pad*2)-spanY*scale)/2;
+  const px=lng=>offX+(xRaw(lng)-x0)*scale;
+  const py=lat=>offY+(yRaw(lat)-y0)*scale;
+  const outlinePath="M"+outlineCoords.map(([lat,lng])=>`${px(lng).toFixed(1)} ${py(lat).toFixed(1)}`).join(" L")+" Z";
+  return {px,py,outlinePath};
+}
+
 /* ---------- state ---------- */
 let filters={q:"",state:"",tier:""};
-let activeTab="list";
+let activeTab="pie";
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -819,19 +872,8 @@ function renderPointMap(list){
     return;
   }
   const W=640,H=520,pad=34;
-  const lats=pts.map(p=>p.lat), lngs=pts.map(p=>p.lng);
-  const latMin=Math.min(...lats),latMax=Math.max(...lats);
-  const lngMin=Math.min(...lngs),lngMax=Math.max(...lngs);
-  const latC=(latMin+latMax)/2;
-  const cosLat=Math.cos(latC*Math.PI/180);
-  // equirectangular projection with longitude corrected for latitude
-  const xRaw=lng=>lng*cosLat, yRaw=lat=>-lat;
-  const x0=xRaw(lngMin),x1=xRaw(lngMax),y0=yRaw(latMax),y1=yRaw(latMin);
-  const spanX=Math.max(x1-x0,0.02), spanY=Math.max(y1-y0,0.02);
-  const scale=Math.min((W-pad*2)/spanX,(H-pad*2)/spanY);
-  const offX=pad+((W-pad*2)-spanX*scale)/2, offY=pad+((H-pad*2)-spanY*scale)/2;
-  const px=lng=>offX+(xRaw(lng)-x0)*scale;
-  const py=lat=>offY+(yRaw(lat)-y0)*scale;
+  const outline=STATE_OUTLINES[filters.state]||[];
+  const {px,py,outlinePath}=buildProjection(pts,outline,W,H,pad);
   const palette=THEME_PALETTES[currentTheme].pie;
   const tierColorVar={national:"var(--ink)",regional:"var(--clay)",state:"var(--dirt)",local:"var(--loam)"};
   let dots="";
@@ -844,7 +886,8 @@ function renderPointMap(list){
   });
   $("p-map").innerHTML=`
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that org. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
-    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">${dots}</svg>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
+      <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
     <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
   $("p-map").querySelectorAll("[data-idx]").forEach(el=>
     el.addEventListener("click",()=>{
@@ -867,18 +910,8 @@ function renderDetailMap(){
     return;
   }
   const W=760,H=620,pad=40;
-  const lats=pts.map(p=>p.lat), lngs=pts.map(p=>p.lng);
-  const latMin=Math.min(...lats),latMax=Math.max(...lats);
-  const lngMin=Math.min(...lngs),lngMax=Math.max(...lngs);
-  const latC=(latMin+latMax)/2;
-  const cosLat=Math.cos(latC*Math.PI/180);
-  const xRaw=lng=>lng*cosLat, yRaw=lat=>-lat;
-  const x0=xRaw(lngMin),x1=xRaw(lngMax),y0=yRaw(latMax),y1=yRaw(latMin);
-  const spanX=Math.max(x1-x0,0.02), spanY=Math.max(y1-y0,0.02);
-  const scale=Math.min((W-pad*2)/spanX,(H-pad*2)/spanY);
-  const offX=pad+((W-pad*2)-spanX*scale)/2, offY=pad+((H-pad*2)-spanY*scale)/2;
-  const px=lng=>offX+(xRaw(lng)-x0)*scale;
-  const py=lat=>offY+(yRaw(lat)-y0)*scale;
+  const outline=STATE_OUTLINES[detailState]||[];
+  const {px,py,outlinePath}=buildProjection(pts,outline,W,H,pad);
   const palette=THEME_PALETTES[currentTheme].pie;
   const tierColorVar={national:"var(--ink)",regional:"var(--clay)",state:"var(--dirt)",local:"var(--loam)"};
   let dots="";
@@ -892,7 +925,8 @@ function renderDetailMap(){
     <div class="detail-hoverlabel empty" id="detail-hover">Hover any dot for the organization's name</div>
     <p class="map-note">${pts.length} geocoded organizations in ${esc(STATE_NAMES[detailState])} — real trailhead, shop, or office locations, not estimates. Click a dot to open that org's website.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(STATE_NAMES[detailState])} organizations, detailed map">
-      <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>${dots}
+      <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
+      <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.3" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5 4"/>${dots}
     </svg>
     <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
   const label=document.getElementById("detail-hover");
@@ -935,12 +969,18 @@ function init(){
     sts.map(s=>`<option value="${s}">${esc(STATE_NAMES[s]||s)}</option>`).join("");
   $("q").addEventListener("input",e=>{filters.q=e.target.value;render()});
   $("statesel").addEventListener("change",e=>{filters.state=e.target.value;render()});
-  document.querySelectorAll(".tierbar button").forEach(b=>
+  document.querySelectorAll(".tierbar button[data-tier]").forEach(b=>
     b.addEventListener("click",()=>{
       filters.tier=b.dataset.tier;
-      document.querySelectorAll(".tierbar button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+      document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x===b));
       render();
     }));
+  $("reset-filters").addEventListener("click",()=>{
+    filters.q="";filters.state="";filters.tier="";
+    $("q").value="";$("statesel").value="";
+    document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===""));
+    render();
+  });
   document.querySelectorAll(".tabs button").forEach(b=>
     b.addEventListener("click",()=>{switchTab(b.dataset.panel);render()}));
   document.querySelectorAll(".theme-swatch").forEach(b=>
