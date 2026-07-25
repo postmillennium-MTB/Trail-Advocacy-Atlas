@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <meta name="theme-color" content="#f2efe6">
 <title>US MTB Trail Advocacy Atlas</title>
 <style>
@@ -34,7 +35,7 @@
   --slate:#62777c;
   --rule:#cddad6;
 }
-:root{color-scheme:light}
+:root{color-scheme:only light}
 :root{
   --tier-national:var(--ink);
   --tier-regional:var(--clay);
@@ -42,9 +43,9 @@
   --tier-local:var(--loam);
 }
 *{box-sizing:border-box}
-html{background:var(--paper)}
+html{background-color:var(--paper) !important}
 body{
-  margin:0;background:var(--paper);color:var(--ink);
+  margin:0;background-color:var(--paper) !important;color:var(--ink) !important;
   font:16px/1.5 "Iowan Old Style",Charter,Georgia,serif;
   -webkit-font-smoothing:antialiased;
 }
@@ -172,10 +173,10 @@ ul.orgs li{
 }
 .detail-statebar button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .detail-card{
-  min-height:78px;margin-bottom:12px;border:1.5px solid var(--rule);border-radius:3px;
-  background:#fff;padding:14px 16px;transition:border-color .15s;
+  min-height:112px;margin-bottom:12px;border:1.5px solid var(--rule);border-radius:3px;
+  background:#fff;padding:14px 16px;transition:border-color .15s;box-sizing:border-box;
 }
-.detail-card.empty{background:transparent;border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:78px}
+.detail-card.empty{background:transparent;border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:112px}
 .detail-card-hint{color:var(--slate);font-style:italic;font-size:14px}
 .detail-card-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .detail-card-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
@@ -933,7 +934,7 @@ function renderPointMap(list){
 /* ---------- dedicated four-state detail card (self-contained, own state selector) ---------- */
 function renderDetailMap(){
   const statebar=`<div class="detail-statebar" role="group" aria-label="Choose a state">
-    ${POINT_MAP_STATES.map(st=>`<button data-detail-state="${st}" aria-pressed="${st===detailState}">${esc(STATE_NAMES[st])}</button>`).join("")}
+    ${POINT_MAP_STATES.map(st=>`<button type="button" data-detail-state="${st}" aria-pressed="${st===detailState}">${esc(STATE_NAMES[st])}</button>`).join("")}
   </div>`;
   const pts=ORGS.filter(o=>o.s===detailState&&o.lat!=null&&o.lng!=null);
   if(!pts.length){
@@ -959,7 +960,7 @@ function renderDetailMap(){
         <span class="detail-card-hint">Click any dot to see the organization here &middot; hover to preview</span>
       </div>
     </div>
-    <p class="map-note">${pts.length} geocoded organizations in ${esc(STATE_NAMES[detailState])} — real trailhead, shop, or office locations, not estimates. Click a dot to pin its details above; click the name to open its website.</p>
+    <p class="map-note" style="min-height:42px">${pts.length} geocoded organizations in ${esc(STATE_NAMES[detailState])} — real trailhead, shop, or office locations, not estimates. Click a dot to pin its details above; click the name to open its website.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(STATE_NAMES[detailState])} organizations, detailed map">
       <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.3" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5 4"/>${dots}
@@ -1000,7 +1001,12 @@ function renderDetailMap(){
 }
 function wireDetailStateButtons(){
   $("p-detail").querySelectorAll("[data-detail-state]").forEach(b=>
-    b.addEventListener("click",()=>{ detailState=b.dataset.detailState; renderDetailMap(); }));
+    b.addEventListener("click",()=>{
+      const y=window.scrollY;
+      detailState=b.dataset.detailState;
+      renderDetailMap();
+      window.scrollTo(0,y);
+    }));
 }
 
 /* ---------- shell ---------- */
