@@ -1,4 +1,47 @@
 <!DOCTYPE html>
+<!--
+==================================================================================
+  US MTB TRAIL ADVOCACY ATLAS  —  single-file, zero-dependency tool
+  Post Millennium Renaissance  ·  postmillenniumrenaissance.com
+==================================================================================
+
+  FILE MAP  (approximate line numbers — they shift as the file is edited;
+             search the ALL-CAPS section labels below to jump reliably)
+
+  <head> / <style> ............... top of file
+    · THEME PALETTES (CSS) ........ the 3 color themes (Moose / Elk / Caribou)
+    · BASE + LAYOUT .............. body, masthead, wrap
+    · CONTROLS .................. search box, tier filter, reset, theme swatches
+    · TABS + PANELS ............. the 4 tab buttons
+    · DIRECTORY LIST styles
+    · PIE CHART styles
+    · MAP styles (cartogram + point maps + detail card)
+
+  <body> ......................... the page markup (mostly empty shells that
+                                   JavaScript fills in — masthead, controls,
+                                   4 empty <div> panels)
+
+  <script>
+    · DATA: ORGS ................ the big array — every organization is one line
+    · DATA: STATE_NAMES / GRID .. state labels + cartogram tile positions
+    · THEME_PALETTES (JS) ....... chart/map colors per theme (mirror of CSS)
+    · STATE_OUTLINES ............ simplified state boundary shapes for point maps
+    · buildProjection() ......... shared lat/lng -> SVG coordinate math
+    · matches() / visible() ..... the search + filter logic
+    · renderCounts() ............ the 4 stat numbers up top
+    · renderList() .............. Directory tab
+    · renderPie() ............... By State tab (donut chart)
+    · renderMap() ............... Map tab (cartogram, or point map for CA/CO/VT/OR)
+    · renderPointMap() .......... inline point map
+    · renderDetailMap() ......... Trailhead Map tab (big standalone point map)
+    · switchTab() / render() .... which tab is showing
+    · init() .................... wires up all the buttons on page load
+    · title swap ................ rotates the headline every few seconds
+
+  TO ADD ORGANIZATIONS: find the right state in the ORGS array and add a line.
+  TO ADD A THEME: edit BOTH the CSS [data-theme] block AND the JS THEME_PALETTES.
+==================================================================================
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -8,6 +51,7 @@
 <meta name="theme-color" content="#f2efe6">
 <title>US MTB Trail Advocacy Atlas</title>
 <style>
+/* ==== THEME PALETTES (CSS) — the 3 color themes; mirror colors in JS THEME_PALETTES ==== */
 :root, [data-theme="moose"]{
   --ink:#2b2f2c;
   --paper:#f2efe6;
@@ -64,11 +108,13 @@ body{
 
 /* ---- masthead ---- */
 header.mast{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+.mast-link{display:block;text-decoration:none;color:inherit}
+.mast-link:hover h1{color:var(--clay)}
 .kicker{
   font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace;
   letter-spacing:.22em;text-transform:uppercase;color:var(--dirt);margin-bottom:10px;
 }
-h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em;transition:opacity .5s}
+h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em;transition:opacity .5s,color .2s}
 h1.fading{opacity:0}
 .sub{margin:0;color:var(--slate);max-width:62ch;font-size:15px}
 
@@ -159,6 +205,37 @@ ul.orgs li{
 .slice{cursor:pointer;transition:opacity .15s}
 .slice:hover{opacity:.75}
 
+/* ---- charts tab ---- */
+.chart-card{border:1.5px solid var(--rule);border-radius:4px;padding:20px 18px 14px;background:#fff;margin-bottom:26px}
+.chart-card h3{margin:0 0 4px;font-size:16px;letter-spacing:-.01em}
+.chart-card .chart-desc{color:var(--slate);font-size:13px;margin:0 0 14px;max-width:65ch}
+.chart-axis-label{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;fill:var(--slate)}
+.chart-hover-line{stroke:var(--slate);stroke-width:1;stroke-dasharray:3 3;opacity:0;pointer-events:none}
+.chart-hover-dot{opacity:0;pointer-events:none}
+.chart-hoverzone{fill:transparent;cursor:crosshair}
+.chart-tooltip{
+  position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);
+  font:600 12px ui-monospace,Menlo,monospace;padding:6px 9px;border-radius:3px;opacity:0;
+  transition:opacity .1s;white-space:nowrap;transform:translate(-50%,-115%);z-index:5;
+}
+.chart-svg-wrap{position:relative}
+.cap-legend{display:flex;gap:20px;flex-wrap:wrap;margin:2px 0 14px;font:600 11px ui-monospace,Menlo,monospace;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.cap-legend span{display:inline-flex;align-items:center;gap:6px}
+.cap-legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+.cap-legend i.tier-top{background:var(--clay)}
+.cap-legend i.tier-mid{background:var(--dirt)}
+.cap-legend i.tier-low{background:var(--loam)}
+.cap-list{max-height:640px;overflow-y:auto}
+.cap-row{display:grid;grid-template-columns:44px 1fr 120px;align-items:center;gap:10px;padding:3px 0}
+.cap-code{font:600 12px ui-monospace,Menlo,monospace;color:var(--ink);text-align:right}
+.cap-track{position:relative;height:13px;background:var(--paper);border-radius:2px;overflow:hidden}
+.cap-fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px 0 0 2px}
+.cap-row.tier-top .cap-fill{background:var(--clay)}
+.cap-row.tier-mid .cap-fill{background:var(--dirt)}
+.cap-row.tier-low .cap-fill{background:var(--loam)}
+.cap-val{font:600 12px ui-monospace,Menlo,monospace;color:var(--slate)}
+
 /* ---- map ---- */
 .map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
 .state-path{stroke:var(--paper);stroke-width:1.2;cursor:pointer;transition:fill .15s}
@@ -214,11 +291,17 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 </style>
 </head>
 <body>
+<!-- ============ PAGE MARKUP ============
+     Most of these are empty shells that JavaScript fills in at runtime.
+     The 4 <div class="panel"> blocks below get populated by the render*() functions. -->
 <div class="wrap">
 
+<!-- masthead: clickable, links to postmillenniumrenaissance.com; title rotates via JS -->
 <header class="mast">
-  <div class="kicker">Post Millennium Renaissance &middot; Trail Advocacy Atlas</div>
-  <h1 id="masthead-title">Who builds the trails you ride</h1>
+  <a class="mast-link" href="https://www.postmillenniumrenaissance.com" target="_blank" rel="noopener">
+    <div class="kicker">Post Millennium Renaissance &middot; Trail Advocacy Atlas</div>
+    <h1 id="masthead-title">Who builds the trails you ride</h1>
+  </a>
   <p class="sub">A working directory of nonprofit mountain bike trail advocacy organizations in the United States, grouped by state and tiered from national umbrella down to local chapter.</p>
 </header>
 
@@ -229,6 +312,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <div><b id="c-top">—</b>Most organizations</div>
 </div>
 
+<!-- controls: search box, state dropdown, tier filter + reset, theme swatches -->
 <div class="controls">
   <input type="search" id="q" placeholder="Search name, abbreviation, region, or town…" aria-label="Search organizations">
   <select id="statesel" aria-label="Filter by state"><option value="">All states</option></select>
@@ -252,17 +336,20 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
     <span class="theme-dots"><i style="background:#29343a"></i><i style="background:#00e6a8"></i><i style="background:#00d4ff"></i></span>Caribou</button>
 </div>
 
+<!-- the 4 tabs; the panels below are filled by render*() in the script -->
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="false" data-panel="list">Directory</button>
   <button role="tab" aria-selected="true" data-panel="pie">By state</button>
   <button role="tab" aria-selected="false" data-panel="map">Map</button>
   <button role="tab" aria-selected="false" data-panel="detail">Trailhead map</button>
+  <button role="tab" aria-selected="false" data-panel="charts">Charts</button>
 </div>
 
 <div class="panel" id="p-list" hidden></div>
 <div class="panel" id="p-pie"></div>
 <div class="panel" id="p-map" hidden></div>
 <div class="panel" id="p-detail" hidden></div>
+<div class="panel" id="p-charts" hidden></div>
 
 <footer>
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
@@ -273,9 +360,20 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 
 <script>
 /* ============================================================
-   DATA
-   tier: national | state | local
-   parent: abbreviation of statewide/national body, if a chapter
+   DATA: ORGS  —  every organization is ONE line in this array.
+   Fields:
+     n   = full name (required)
+     a   = abbreviation shown next to name ("" if none)
+     s   = 2-letter state, "US" for national/regional, "PR" Puerto Rico
+     tier= national | regional | state | local
+     r   = one-line region/description (shown under the name)
+     c   = extra town names for SEARCH ONLY (not displayed)
+     w   = website URL ("" renders as plain text, no link)
+     p   = parent org's abbreviation, if this is a chapter
+     lat,lng = real coordinates (only CA/CO/VT/OR have these)
+     status  = "unconfirmed-active" (real org, activity uncertain)
+     conf    = "draft" (not yet independently verified)
+   TO ADD AN ORG: copy a line, keep the trailing comma, fill in fields.
    ============================================================ */
 const ORGS = [
 {n:"International Mountain Bicycling Association",a:"IMBA",s:"US",tier:"national",r:"National umbrella; 200+ chapters and 400+ affiliated clubs",w:"https://www.imba.com/"},
@@ -658,7 +756,11 @@ const ORGS = [
 /* State centroids + rough polygon-free map: we use a grid cartogram
    (square per state) — accurate enough for choropleth reading,
    and far lighter than embedding TopoJSON. */
+/* ==== DATA: STATE_NAMES (labels) + GRID (cartogram tile positions) ==== */
 const STATE_NAMES={US:"National",AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"Washington DC",PR:"Puerto Rico"};
+/* 2026-projected state population estimates (Census-derived, via worldpopulationreview.com).
+   Used only for the "orgs per capita" chart in the Charts tab — not used anywhere else. */
+const STATE_POPULATION={CA:39345844,TX:32101064,FL:23659198,NY:20003435,PA:13073016,IL:12735249,OH:11940399,GA:11401288,NC:11343875,MI:10155806,NJ:9590076,VA:8940572,WA:8074082,AZ:7691212,TN:7378861,MA:7169608,IN:7011912,MO:6297538,MD:6285380,CO:6036620,WI:5988406,MN:5863405,SC:5650232,AL:5223121,KY:4629682,LA:4621500,OR:4281848,OK:4148818,CT:3702543,UT:3574825,NV:3310833,IA:3246320,AR:3133502,KS:2989188,MS:2958148,NM:2124222,ID:2058594,NE:2030421,WV:1764892,HI:1430688,NH:1422166,ME:1421310,MT:1151831,RI:1118627,DE:1069781,SD:943078,ND:805329,AK:738003,VT:642805,WY:590784,PR:3167149,DC:695980};
 
 /* grid cartogram coordinates [col,row] */
 const GRID={
@@ -673,6 +775,7 @@ HI:[0,7],TX:[4,7],FL:[9,7],PR:[11,7]
 };
 
 /* ---------- themes ---------- */
+/* ==== THEME_PALETTES (JS) — chart/map colors per theme. MUST mirror the CSS [data-theme] blocks up top. ==== */
 const THEME_PALETTES={
   moose:{
     pie:["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"],
@@ -705,6 +808,7 @@ let detailState="CA";
 
 /* Simplified state boundary outlines [lat,lng] — hand-simplified, not survey-grade,
    just enough vertices to read as the state's shape at this zoom level. */
+/* ==== STATE_OUTLINES — hand-simplified boundary shapes for the CA/CO/VT/OR point maps ==== */
 const STATE_OUTLINES={
   CO:[[41,-109],[41,-102],[37,-102],[37,-109],[41,-109]],
   OR:[[46.25,-124.05],[45.96,-124.08],[45.5,-124.02],[44.9,-124.02],[44.3,-124.08],
@@ -724,6 +828,7 @@ const STATE_OUTLINES={
 
 /* Shared: project [lat,lng] points into an SVG viewBox, accounting for longitude
    compression at latitude, and return both a point-projector and a ready outline path. */
+/* ==== buildProjection() — shared lat/lng -> SVG coordinate math (used by both point maps) ==== */
 function buildProjection(pts,outlineCoords,W,H,pad){
   const allLat=pts.map(p=>p.lat).concat(outlineCoords.map(c=>c[0]));
   const allLng=pts.map(p=>p.lng).concat(outlineCoords.map(c=>c[1]));
@@ -749,6 +854,7 @@ let activeTab="pie";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+/* ==== SEARCH + FILTER — matches() decides if one org passes the current search/state/tier filters ==== */
 function matches(o){
   if(filters.state && o.s!==filters.state) return false;
   if(filters.tier && o.tier!==filters.tier) return false;
@@ -768,6 +874,7 @@ function stateCounts(list){
 }
 
 /* ---------- counters ---------- */
+/* ==== renderCounts() — the 4 big stat numbers at the top ==== */
 function renderCounts(){
   const all=ORGS.filter(o=>o.s!=="US");
   const c=stateCounts(ORGS);
@@ -779,6 +886,7 @@ function renderCounts(){
 }
 
 /* ---------- directory ---------- */
+/* ==== renderList() — DIRECTORY tab ==== */
 function renderList(){
   const list=visible();
   if(!list.length){$("p-list").innerHTML='<p class="empty">No organizations match those filters. Try a broader search.</p>';return}
@@ -807,7 +915,156 @@ function renderList(){
   }).join("");
 }
 
+/* ---------- charts tab ---------- */
+/* ==== renderCharts() — CHARTS tab: orange area chart + line chart, both built from stateCounts() ==== */
+function renderCharts(){
+  const list=visible();
+  const counts=stateCounts(list);
+  const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([s,n])=>({s,n,name:STATE_NAMES[s]||s}));
+  if(!rows.length){
+    $("p-charts").innerHTML='<p class="empty">No organizations match those filters.</p>';
+    return;
+  }
+  const total=rows.reduce((s,r)=>s+r.n,0);
+  let cum=0;
+  const cumRows=rows.map(r=>{ cum+=r.n; return {...r, cumPct:cum/total*100}; });
+
+  /* ---- shared geometry ---- */
+  const W=880,H=260,padL=44,padR=18,padT=16,padB=8;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xAt=i=>padL+(rows.length===1?plotW/2:(i/(rows.length-1))*plotW);
+  const maxN=Math.max(...rows.map(r=>r.n));
+  const yAtN=n=>padT+plotH-(n/maxN)*plotH;
+  const yAtPct=p=>padT+plotH-(p/100)*plotH;
+
+  /* ---- area chart path (orange/clay) ---- */
+  const areaLine=rows.map((r,i)=>`${i===0?"M":"L"}${xAt(i).toFixed(1)} ${yAtN(r.n).toFixed(1)}`).join(" ");
+  const areaFill=`${areaLine} L${xAt(rows.length-1).toFixed(1)} ${(padT+plotH).toFixed(1)} L${xAt(0).toFixed(1)} ${(padT+plotH).toFixed(1)} Z`;
+  const areaDots=rows.map((r,i)=>`<circle class="chart-hover-dot" data-i="${i}" cx="${xAt(i).toFixed(1)}" cy="${yAtN(r.n).toFixed(1)}" r="4" fill="var(--clay)" stroke="var(--paper)" stroke-width="1.5"/>`).join("");
+  const areaYTicks=[0,.25,.5,.75,1].map(f=>{
+    const val=Math.round(maxN*f), y=yAtN(val);
+    return `<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--rule)" stroke-width="1"/>
+      <text class="chart-axis-label" x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end">${val}</text>`;
+  }).join("");
+
+  /* ---- line chart path (cumulative %) ---- */
+  const lineLine=cumRows.map((r,i)=>`${i===0?"M":"L"}${xAt(i).toFixed(1)} ${yAtPct(r.cumPct).toFixed(1)}`).join(" ");
+  const lineDots=cumRows.map((r,i)=>`<circle class="chart-hover-dot" data-i="${i}" cx="${xAt(i).toFixed(1)}" cy="${yAtPct(r.cumPct).toFixed(1)}" r="4" fill="var(--dirt)" stroke="var(--paper)" stroke-width="1.5"/>`).join("");
+  const lineYTicks=[0,25,50,75,100].map(p=>{
+    const y=yAtPct(p);
+    return `<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--rule)" stroke-width="1"/>
+      <text class="chart-axis-label" x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end">${p}%</text>`;
+  }).join("");
+  // mark the "top N states = 50%/80%" reference points
+  const half=cumRows.findIndex(r=>r.cumPct>=50);
+  const eighty=cumRows.findIndex(r=>r.cumPct>=80);
+
+  $("p-charts").innerHTML=`
+    <div class="chart-card">
+      <h3>Organizations by state</h3>
+      <p class="chart-desc">All ${rows.length} states/territories with at least one listed org, ranked highest to lowest. Hover the line for exact counts.</p>
+      <div class="chart-svg-wrap" id="area-wrap">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Organizations by state, area chart">
+          <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
+          ${areaYTicks}
+          <path d="${areaFill}" fill="var(--clay)" fill-opacity="0.22"/>
+          <path d="${areaLine}" fill="none" stroke="var(--clay)" stroke-width="2"/>
+          ${areaDots}
+          <line class="chart-hover-line" id="area-hoverline" x1="0" x2="0" y1="${padT}" y2="${padT+plotH}"/>
+          <rect class="chart-hoverzone" id="area-hoverzone" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}"/>
+        </svg>
+        <div class="chart-tooltip" id="area-tooltip"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Cumulative share of all organizations</h3>
+      <p class="chart-desc">Walking through states in rank order, what share of all ${total} organizations do you reach? ${half>=0?`The top ${half+1} states alone account for half.`:""} ${eighty>=0?`The top ${eighty+1} reach 80%.`:""} A steep early climb means the atlas is concentrated in a handful of well-researched states.</p>
+      <div class="chart-svg-wrap" id="line-wrap">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative share of organizations, line chart">
+          <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
+          ${lineYTicks}
+          <path d="${lineLine}" fill="none" stroke="var(--dirt)" stroke-width="2.5"/>
+          ${lineDots}
+          <line class="chart-hover-line" id="line-hoverline" x1="0" x2="0" y1="${padT}" y2="${padT+plotH}"/>
+          <rect class="chart-hoverzone" id="line-hoverzone" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}"/>
+        </svg>
+        <div class="chart-tooltip" id="line-tooltip"></div>
+      </div>
+    </div>`;
+
+  /* ---- per-capita bar chart (3rd chart, appended separately since it's a different layout) ---- */
+  const capRows=rows
+    .filter(r=>STATE_POPULATION[r.s])
+    .map(r=>({...r, perM:r.n/STATE_POPULATION[r.s]*1000000}))
+    .sort((a,b)=>b.perM-a.perM);
+  const maxPerM=Math.max(...capRows.map(r=>r.perM));
+  const capBars=capRows.map(r=>{
+    const pct=Math.max(r.perM/maxPerM*100,1.5);
+    const tier=r.perM>2?"tier-top":r.perM>=0.9?"tier-mid":"tier-low";
+    return `<div class="cap-row ${tier}" title="${esc(r.name)}: ${r.n} org${r.n===1?"":"s"} / ${STATE_POPULATION[r.s].toLocaleString()} residents">
+      <span class="cap-code">${r.s}</span>
+      <span class="cap-track"><span class="cap-fill" style="width:${pct}%"></span></span>
+      <span class="cap-val">${r.perM.toFixed(2)}/M &middot; n=${r.n}</span>
+    </div>`;
+  }).join("");
+  $("p-charts").innerHTML+=`
+    <div class="chart-card">
+      <h3>Organizations per million residents</h3>
+      <p class="chart-desc">Same org counts, now weighted by each state's population (2026-projected Census estimates) — orgs per 1,000,000 residents, highest to lowest. <strong>Read this as research-coverage, not advocacy density:</strong> Vermont, Colorado, and Oregon rank highest partly because they're the states the atlas has most thoroughly sourced from a single coalition list, not necessarily because they have proportionally more trail advocacy than everywhere else.</p>
+      <div class="cap-legend">
+        <span><i class="tier-top"></i>Top tier (&gt;2/million)</span>
+        <span><i class="tier-mid"></i>Mid tier (0.9&ndash;2/million)</span>
+        <span><i class="tier-low"></i>Lower tier (&lt;0.9/million)</span>
+      </div>
+      <div class="cap-list">${capBars}</div>
+    </div>`;
+  wireChartHover("area", rows, i=>`${rows[i].name}: ${rows[i].n} org${rows[i].n===1?"":"s"}`, xAt);
+  wireChartHover("line", cumRows, i=>`Top ${i+1} states: ${cumRows[i].cumPct.toFixed(1)}% of orgs`, xAt);
+}
+function wireChartHover(prefix, rows, labelFn, xAt){
+  const svg=$(prefix+"-wrap").querySelector("svg");
+  const zone=$(prefix+"-hoverzone");
+  const hoverline=$(prefix+"-hoverline");
+  const tooltip=$(prefix+"-tooltip");
+  const dots=[...svg.querySelectorAll(".chart-hover-dot")];
+  function nearestIdx(mouseX){
+    let best=0,bestD=Infinity;
+    rows.forEach((_,i)=>{ const d=Math.abs(xAt(i)-mouseX); if(d<bestD){bestD=d;best=i} });
+    return best;
+  }
+  function show(evt){
+    const rect=svg.getBoundingClientRect();
+    const scaleX=880/rect.width;
+    const mouseX=(evt.clientX-rect.left)*scaleX;
+    const i=nearestIdx(mouseX);
+    const dot=dots[i];
+    hoverline.style.opacity=1;
+    hoverline.setAttribute("x1",dot.getAttribute("cx"));
+    hoverline.setAttribute("x2",dot.getAttribute("cx"));
+    dots.forEach(d=>d.style.opacity=0);
+    dot.style.opacity=1;
+    const cx=parseFloat(dot.getAttribute("cx"))/880*rect.width;
+    const cy=parseFloat(dot.getAttribute("cy"))/260*rect.height;
+    tooltip.style.left=cx+"px";
+    tooltip.style.top=cy+"px";
+    tooltip.textContent=labelFn(i);
+    tooltip.style.opacity=1;
+  }
+  function hide(){
+    hoverline.style.opacity=0;
+    dots.forEach(d=>d.style.opacity=0);
+    tooltip.style.opacity=0;
+  }
+  zone.addEventListener("mousemove",show);
+  zone.addEventListener("mouseleave",hide);
+  zone.addEventListener("touchstart",e=>{show(e.touches[0]);e.preventDefault()},{passive:false});
+  zone.addEventListener("touchmove",e=>{show(e.touches[0]);e.preventDefault()},{passive:false});
+  zone.addEventListener("touchend",hide);
+}
+
 /* ---------- pie ---------- */
+/* ==== renderPie() — BY STATE tab (donut chart) ==== */
 function renderPie(){
   const list=visible();
   const counts=stateCounts(list);
@@ -849,6 +1106,7 @@ function renderPie(){
 }
 
 /* ---------- map ---------- */
+/* ==== renderMap() — MAP tab: cartogram grid, or hands off to renderPointMap() for CA/CO/VT/OR ==== */
 function renderMap(){
   const list=visible();
   if(filters.state && POINT_MAP_STATES.includes(filters.state)){
@@ -896,6 +1154,7 @@ function renderMap(){
 }
 
 /* ---------- point map (real coordinates, CA/CO/VT/OR only) ---------- */
+/* ==== renderPointMap() — inline real-coordinate point map (shown inside the Map tab) ==== */
 function renderPointMap(list){
   const pts=list.filter(o=>o.lat!=null&&o.lng!=null);
   if(!pts.length){
@@ -932,6 +1191,7 @@ function renderPointMap(list){
 }
 
 /* ---------- dedicated four-state detail card (self-contained, own state selector) ---------- */
+/* ==== renderDetailMap() — TRAILHEAD MAP tab (big standalone map w/ its own state selector + click-to-pin card) ==== */
 function renderDetailMap(){
   const statebar=`<div class="detail-statebar" role="group" aria-label="Choose a state">
     ${POINT_MAP_STATES.map(st=>`<button type="button" data-detail-state="${st}" aria-pressed="${st===detailState}">${esc(STATE_NAMES[st])}</button>`).join("")}
@@ -1010,18 +1270,21 @@ function wireDetailStateButtons(){
 }
 
 /* ---------- shell ---------- */
+/* ==== TAB SWITCHING — switchTab() shows/hides panels, render() calls the right render*() for the active tab ==== */
 function switchTab(name){
   activeTab=name;
   document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
-  ["list","pie","map","detail"].forEach(p=>$("p-"+p).hidden=(p!==name));
+  ["list","pie","map","detail","charts"].forEach(p=>$("p-"+p).hidden=(p!==name));
 }
 function render(){
   if(activeTab==="list")renderList();
   else if(activeTab==="pie")renderPie();
   else if(activeTab==="detail")renderDetailMap();
+  else if(activeTab==="charts")renderCharts();
   else renderMap();
 }
 
+/* ==== init() — runs once on load: builds the state dropdown, wires up every button, restores saved theme ==== */
 function init(){
   const sts=[...new Set(ORGS.map(o=>o.s))].sort((a,b)=>
     a==="US"?-1:b==="US"?1:(STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b));
