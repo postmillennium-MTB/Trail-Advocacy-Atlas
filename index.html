@@ -236,12 +236,60 @@ ul.orgs li{
 .cap-row.tier-low .cap-fill{background:var(--loam)}
 .cap-val{font:600 12px ui-monospace,Menlo,monospace;color:var(--slate)}
 
+/* ---- structure tree ---- */
+.tree-h{font-size:13px;font-family:ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;
+  margin:26px 0 10px;padding-bottom:6px;border-bottom:1.5px solid var(--ink)}
+.tree-h-note{text-transform:none;letter-spacing:0;color:var(--slate);font-weight:400}
+ul.tree-root,ul.tree-children{list-style:none;margin:0;padding:0}
+ul.tree-children{margin-left:16px;padding-left:14px;border-left:1.5px solid var(--rule)}
+.tree-root li{padding:1px 0}
+.tree-root summary{cursor:pointer;padding:7px 0;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;list-style:revert}
+.tree-root summary:hover{background:#fff}
+.tree-leaf{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:7px 0 7px 22px;border-bottom:1px solid var(--rule)}
+.tree-name{font-weight:600}
+.tree-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.tree-name a:hover{background:var(--clay);color:#fff}
+.tree-abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt);letter-spacing:.05em}
+.tree-state{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.tree-count,.tree-span{margin-left:auto;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
+.tree-span{margin-left:8px}
+.tree-standalone{max-height:520px;overflow-y:auto}
+.has-map{color:var(--clay);font-size:9px;margin-left:6px;vertical-align:2px}
+
+/* ---- near me ---- */
+.near-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+.near-btn{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+  padding:11px 16px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:2px;cursor:pointer}
+.near-btn:hover{background:var(--clay);border-color:var(--clay)}
+.near-btn-alt{background:#fff;color:var(--slate);border-color:var(--rule)}
+.near-btn-alt:hover{background:var(--clay);color:#fff;border-color:var(--clay)}
+.near-or{color:var(--slate);font-size:13px;font-style:italic}
+#near-town{flex:1;min-width:200px;font:15px/1 inherit;padding:10px 12px;border:1.5px solid var(--rule);
+  background:#fff;border-radius:2px;color:var(--ink)}
+.near-status{color:var(--slate);font-size:13px;min-height:20px;margin-bottom:10px}
+.near-anchor{font-size:14px;color:var(--slate);padding:10px 0;border-bottom:1.5px solid var(--ink);margin-bottom:4px}
+.near-anchor strong{color:var(--ink)}
+.near-clear{margin-left:10px;border:0;background:none;color:var(--clay);cursor:pointer;
+  font:600 11px ui-monospace,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
+ul.near-list{list-style:none;margin:0;padding:0}
+ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule)}
+.near-dist{font:600 20px/1 "Iowan Old Style",Georgia,serif;color:var(--clay);min-width:62px;text-align:right}
+.near-dist small{font:600 10px ui-monospace,Menlo,monospace;color:var(--slate);margin-left:2px}
+.near-main{flex:1;min-width:0}
+.near-name{font-weight:600;display:flex;align-items:center;gap:8px}
+.near-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.near-name a:hover{background:var(--clay);color:#fff}
+.near-meta{display:block;color:var(--slate);font-size:13px;margin-top:2px}
+
 /* ---- map ---- */
 .map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
 .state-path{stroke:var(--paper);stroke-width:1.2;cursor:pointer;transition:fill .15s}
 .state-path.state-detailed{stroke:var(--ink);stroke-width:2.4}
-.geo-point{cursor:pointer;transition:opacity .12s,transform .12s;transform-box:fill-box;transform-origin:center}
-.geo-point:hover{opacity:.8;transform:scale(1.5)}
+.geo-hit{cursor:pointer}
+.geo-dot{pointer-events:none;transition:opacity .12s,transform .12s;transform-box:fill-box;transform-origin:center}
+.geo-hit:hover + .geo-dot{opacity:.85;transform:scale(1.5)}
 .detail-statebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .detail-statebar button{
   font:600 13px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
@@ -343,6 +391,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <button role="tab" aria-selected="false" data-panel="map">Map</button>
   <button role="tab" aria-selected="false" data-panel="detail">Trailhead map</button>
   <button role="tab" aria-selected="false" data-panel="charts">Charts</button>
+  <button role="tab" aria-selected="false" data-panel="tree">Structure</button>
+  <button role="tab" aria-selected="false" data-panel="near">Near me</button>
 </div>
 
 <div class="panel" id="p-list" hidden></div>
@@ -350,9 +400,11 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 <div class="panel" id="p-map" hidden></div>
 <div class="panel" id="p-detail" hidden></div>
 <div class="panel" id="p-charts" hidden></div>
+<div class="panel" id="p-tree" hidden></div>
+<div class="panel" id="p-near" hidden></div>
 
 <footer>
-  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body, <b>statewide</b> = coalition of local orgs, <b>local</b> = town, county or regional group. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
+  <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body spanning the whole country (IMBA, NICA); <b>regional</b> = umbrella spanning multiple states or a broad multi-community footprint (NEMBA, SORBA, MORE); <b>statewide</b> = coalition of local orgs within one state; <b>local</b> = town, county, or regional chapter. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
   Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here. Some entries link to Facebook, Trailforks, or MTB Project pages where no dedicated organization website could be found.
 </footer>
 
@@ -399,7 +451,7 @@ const ORGS = [
 {n:"Telluride Mountain Club",a:"TMC",s:"CO",tier:"local",p:"COMTB",c:"Telluride Mountain Village",r:"Telluride area",lat:37.9375,lng:-107.8123,w:"https://www.telluridemountainclub.org/"},
 {n:"Developing Urban Singletrack Trails & Teams",a:"DUST2",s:"CO",tier:"local",p:"COMTB",r:"Pagosa Springs",lat:37.2695,lng:-107.0098,w:"https://dustx2.org/"},
 {n:"Durango Trails",a:"",s:"CO",tier:"local",p:"COMTB",c:"Durango",r:"Durango area",lat:37.274,lng:-107.8792,w:"https://www.durangotrails.org/"},
-{n:"Rico Trails Alliance",a:"RTA",s:"CO",tier:"local",p:"COMTB",c:"Rico Dolores",r:"Rico area",lat:37.6928,lng:-108.0304,w:"https://dustx2.org/"},
+{n:"Rico Trails Alliance",a:"RTA",s:"CO",tier:"local",p:"COMTB",c:"Rico Dolores",r:"Rico area",lat:37.6928,lng:-108.0304,w:"https://www.ricotrailsalliance.org/"},
 {n:"Southwest Colorado Cycling Association",a:"SWCCA",s:"CO",tier:"local",p:"COMTB",r:"Cortez, Dolores, Mancos, Durango",lat:37.3489,lng:-108.5859,w:"https://swcocycling.clubexpress.com/"},
 {n:"Boulder Mountainbike Alliance",a:"BMA",s:"CO",tier:"local",p:"COMTB",c:"Boulder",r:"Boulder and Gilpin Counties",lat:40.0169,lng:-105.2824,w:"https://www.bouldermountainbike.org/"},
 {n:"Colorado Mountain Bike Association",a:"COMBA",s:"CO",tier:"local",p:"COMTB",c:"Denver Golden Evergreen Idaho Springs",r:"Denver, Jeffco, Clear Creek, Gilpin",lat:39.7452,lng:-104.9922,w:"https://www.comba.org/"},
@@ -675,6 +727,9 @@ const ORGS = [
 {n:"Hi-Lo SORBA",a:"",s:"GA",tier:"local",p:"SORBA",r:"Sandersville",w:"https://www.hilosorba.org/"},
 {n:"Northshore Off-Road Bicycling Association",a:"NORBA",s:"LA",tier:"local",p:"SORBA",r:"Madisonville, Northshore; Bogue Chitto State Park",w:"https://www.norbatrails.org/"},
 {n:"Mid-Atlantic Off-Road Enthusiasts",a:"MORE",s:"VA",tier:"regional",r:"IMBA chapter covering the entire DMV; 900+ miles across 63 state and county parks in MD, VA, and DC",w:"https://more-mtb.org/"},
+{n:"Shenandoah Valley Bicycle Coalition",a:"SVBC",s:"VA",tier:"local",r:"Harrisonburg, Rockingham County; IMBA Bronze Ride Center, George Washington NF advocacy",c:"Harrisonburg Staunton Massanutten Bridgewater",w:"https://svbcoalition.org/"},
+{n:"Blue Ridge Off-Road Cyclists",a:"BROC",s:"VA",tier:"local",r:"Roanoke region; East Coast's only IMBA Silver Ride Center, Carvins Cove and Explore Park",c:"Roanoke Salem Blacksburg Clifton Forge",w:"https://blueridgeoffroadcyclists.org/"},
+{n:"rvaMORE",a:"",s:"VA",tier:"local",r:"Richmond region; IMBA Bronze Ride Center, Pocahontas State Park, James River Park",c:"Richmond Chesterfield Midlothian",w:"https://rvamore.org/"},
 {n:"Berkshire NEMBA",a:"",s:"MA",tier:"local",p:"NEMBA",r:"Western Massachusetts",w:"https://sites.google.com/view/berkshire-nemba/home"},
 {n:"Blackstone Valley NEMBA",a:"",s:"MA",tier:"local",p:"NEMBA",r:"Central MA; Vietnam Trail Network",w:"https://www.nemba.org/chapters/blackstone-valley-nemba"},
 {n:"Cape Cod NEMBA",a:"",s:"MA",tier:"local",p:"NEMBA",r:"Cape Cod",w:"https://www.nemba.org/chapters/cape-cod-nemba"},
@@ -747,7 +802,7 @@ const ORGS = [
 {n:"Southern Maryland Mountain Bikers",a:"SMMB",s:"MD",tier:"local",r:"Southern Maryland; IMBA chapter",w:"https://ridesmmb.org/"},
 
 /* ---------- WASHINGTON DC ---------- */
-{n:"Mid-Atlantic Off-Road Enthusiasts (DC)",a:"MORE",s:"DC",tier:"local",p:"MORE",r:"DC-region trails; Rock Creek Park corridor — see MORE (VA) for the full regional org",w:"https://more-mtb.org/"},
+{n:"Mid-Atlantic Off-Road Enthusiasts (DC)",a:"",s:"DC",tier:"local",p:"MORE",r:"DC-region trails; Rock Creek Park corridor — see MORE (VA) for the full regional org",w:"https://more-mtb.org/"},
 
 /* ---------- PUERTO RICO (verified via web search) ---------- */
 {n:"Love In Motion",a:"",s:"PR",tier:"local",r:"Islandwide; sustainable trail program development and nature access",w:"https://loveinmotion.org/"},
@@ -876,7 +931,6 @@ function stateCounts(list){
 /* ---------- counters ---------- */
 /* ==== renderCounts() — the 4 big stat numbers at the top ==== */
 function renderCounts(){
-  const all=ORGS.filter(o=>o.s!=="US");
   const c=stateCounts(ORGS);
   const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
   $("c-orgs").textContent=ORGS.length;
@@ -1091,8 +1145,8 @@ function renderPie(){
     ang=end;
   });
   const legend=entries.map(([st,n],i)=>`
-    <li data-state="${st}"><span class="swatch" style="background:${palette[i%palette.length]}"></span>
-    ${esc(STATE_NAMES[st]||st)}<span class="n">${n} · ${Math.round(n/total*100)}%</span></li>`).join("");
+    <li data-state="${st}" title="${POINT_MAP_STATES.includes(st)?"Opens the trailhead map for "+esc(STATE_NAMES[st]):"Opens "+esc(STATE_NAMES[st]||st)+" in the Directory"}"><span class="swatch" style="background:${palette[i%palette.length]}"></span>
+    ${esc(STATE_NAMES[st]||st)}${POINT_MAP_STATES.includes(st)?'<span class="has-map" title="Has a trailhead map">&#9679;</span>':""}<span class="n">${n} · ${Math.round(n/total*100)}%</span></li>`).join("");
   $("p-pie").innerHTML=`<div class="pie-layout">
     <div><svg viewBox="0 0 300 300" width="100%" style="max-width:340px" role="img" aria-label="Organizations by state">
       <rect x="0" y="0" width="300" height="300" fill="var(--paper)"/>
@@ -1102,7 +1156,165 @@ function renderPie(){
     </svg></div>
     <ul class="legend">${legend}</ul></div>`;
   $("p-pie").querySelectorAll("[data-state]").forEach(el=>
-    el.addEventListener("click",()=>{filters.state=el.dataset.state;$("statesel").value=filters.state;switchTab("list");render()}));
+    el.addEventListener("click",()=>{
+      const st=el.dataset.state;
+      if(POINT_MAP_STATES.includes(st)){
+        // this state has real coordinates — go straight to its trailhead map
+        detailState=st;
+        switchTab("detail");render();
+        return;
+      }
+      filters.state=st;$("statesel").value=st;switchTab("list");render();
+    }));
+}
+
+/* ---------- structure tree ---------- */
+/* ==== renderTree() — STRUCTURE tab: recursive parent/chapter hierarchy from the `p` field ==== */
+function renderTree(){
+  const list=visible();
+  if(!list.length){$("p-tree").innerHTML='<p class="empty">No organizations match those filters.</p>';return}
+  // index children by parent abbreviation
+  /* Resolve each child to a SPECIFIC parent object, not just an abbreviation string.
+     Abbreviations collide across states (MMBA = Moab UT and Michigan MI), so prefer a
+     parent in the same state, then fall back to a national/regional (US) umbrella. */
+  const byAbbr={};
+  list.forEach(o=>{ if(o.a){ (byAbbr[o.a]=byAbbr[o.a]||[]).push(o); } });
+  const key=o=>o.n+"|"+o.s;
+  function resolveParent(child){
+    const cands=byAbbr[child.p];
+    if(!cands||!cands.length)return null;
+    return cands.find(p=>p.s===child.s&&key(p)!==key(child))
+        || cands.find(p=>p.s==="US"&&key(p)!==key(child))
+        || cands.find(p=>key(p)!==key(child))
+        || null;
+  }
+  const childrenOf={};
+  const hasParent=new Set();
+  list.forEach(o=>{
+    if(!o.p)return;
+    const par=resolveParent(o);
+    if(!par)return;
+    (childrenOf[key(par)]=childrenOf[key(par)]||[]).push(o);
+    hasParent.add(key(o));
+  });
+  const kidsOf=o=>childrenOf[key(o)]||[];
+  const roots=list.filter(o=>!hasParent.has(key(o)));
+  const umbrellas=roots.filter(o=>kidsOf(o).length)
+    .sort((a,b)=>kidsOf(b).length-kidsOf(a).length);
+  const standalone=roots.filter(o=>!kidsOf(o).length)
+    .sort((a,b)=>(STATE_NAMES[a.s]||a.s).localeCompare(STATE_NAMES[b.s]||b.s)||a.n.localeCompare(b.n));
+
+  function countDescendants(o,seen){
+    seen=seen||new Set();
+    if(seen.has(key(o)))return 0;
+    seen.add(key(o));
+    return kidsOf(o).reduce((sum,c)=>sum+1+countDescendants(c,seen),0);
+  }
+  function nodeHTML(o,depth,seen){
+    seen=seen||new Set();
+    // guard against self-parenting or circular parent refs in the data
+    const cyclic=seen.has(key(o));
+    const kids=cyclic?[]:kidsOf(o).slice().sort((a,b)=>
+      (STATE_NAMES[a.s]||a.s).localeCompare(STATE_NAMES[b.s]||b.s)||a.n.localeCompare(b.n));
+    seen=new Set(seen).add(key(o));
+    const label=`<span class="tier-dot tier-${o.tier}"></span>
+      <span class="tree-name">${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">${esc(o.n)}</a>`:esc(o.n)}</span>
+      ${o.a?`<span class="tree-abbr">${esc(o.a)}</span>`:""}
+      <span class="tree-state">${esc(STATE_NAMES[o.s]||o.s)}</span>`;
+    if(!kids.length) return `<li class="tree-leaf">${label}</li>`;
+    const total=countDescendants(o);
+    return `<li><details${depth===0?"":" open"}>
+      <summary>${label}<span class="tree-count">${total} below</span></summary>
+      <ul class="tree-children">${kids.map(k=>nodeHTML(k,depth+1,seen)).join("")}</ul>
+    </details></li>`;
+  }
+
+  const spanStates=o=>{
+    const set=new Set(), seen=new Set();
+    (function walk(x){
+      if(seen.has(key(x)))return;
+      seen.add(key(x));
+      set.add(x.s); kidsOf(x).forEach(walk);
+    })(o);
+    set.delete("US");
+    return set.size;
+  };
+
+  $("p-tree").innerHTML=`
+    <p class="map-note">How the movement is actually organized. Umbrella bodies are listed first with their chapters nested underneath — click any row with a triangle to expand or collapse it. Nesting can go three deep (COMTB &rarr; COPMOBA &rarr; Delta Area Mountain Bikers, for example). Organizations that operate entirely on their own are listed separately at the bottom.</p>
+    <h3 class="tree-h">Umbrella organizations and their chapters</h3>
+    <ul class="tree-root">${umbrellas.map(o=>{
+      const st=spanStates(o);
+      return nodeHTML(o,0).replace('</summary>',`<span class="tree-span">${st} state${st===1?"":"s"}</span></summary>`);
+    }).join("")}</ul>
+    <h3 class="tree-h">Independent organizations <span class="tree-h-note">(${standalone.length} with no parent body listed)</span></h3>
+    <ul class="tree-root tree-standalone">${standalone.map(o=>nodeHTML(o,0)).join("")}</ul>`;
+}
+
+/* ---------- near me ---------- */
+/* ==== renderNear() — NEAR ME tab: geolocation or town search against the geocoded orgs ==== */
+let nearAnchor=null; // {lat,lng,label}
+function haversineMiles(lat1,lng1,lat2,lng2){
+  const R=3958.8, toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function renderNear(){
+  const geo=ORGS.filter(o=>o.lat!=null&&o.lng!=null);
+  const covered=POINT_MAP_STATES.map(s=>STATE_NAMES[s]).join(", ");
+  let resultHTML="";
+  if(nearAnchor){
+    const ranked=geo.map(o=>({...o,dist:haversineMiles(nearAnchor.lat,nearAnchor.lng,o.lat,o.lng)}))
+      .sort((a,b)=>a.dist-b.dist).slice(0,12);
+    const tierLabel={national:"National",regional:"Regional",state:"Statewide",local:"Local"};
+    resultHTML=`
+      <div class="near-anchor">Measuring from <strong>${esc(nearAnchor.label)}</strong>
+        <button type="button" id="near-clear" class="near-clear">clear</button></div>
+      <ul class="near-list">${ranked.map(o=>`
+        <li>
+          <span class="near-dist">${o.dist<1?"&lt;1":Math.round(o.dist)}<small>mi</small></span>
+          <span class="near-main">
+            <span class="near-name"><span class="tier-dot tier-${o.tier}"></span>${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">${esc(o.n)}</a>`:esc(o.n)}</span>
+            <span class="near-meta">${esc(STATE_NAMES[o.s]||o.s)} &middot; ${tierLabel[o.tier]||o.tier}${o.r?" &middot; "+esc(o.r):""}</span>
+          </span>
+        </li>`).join("")}</ul>`;
+  }
+  $("p-near").innerHTML=`
+    <p class="map-note"><strong>Coverage note:</strong> this searches the ${geo.length} organizations that have precise coordinates — currently ${covered} only. If you're outside those four states you'll get a technically-correct but useless answer (the nearest org, hundreds of miles away). Everything else in the atlas is still findable through the Directory and search.</p>
+    <div class="near-controls">
+      <button type="button" id="near-geo" class="near-btn">Use my location</button>
+      <span class="near-or">or</span>
+      <input type="search" id="near-town" placeholder="Type a town — e.g. Durango, Truckee, Stowe" aria-label="Search by town name">
+      <button type="button" id="near-town-go" class="near-btn near-btn-alt">Search</button>
+    </div>
+    <div id="near-status" class="near-status"></div>
+    ${resultHTML}`;
+
+  const status=$("near-status");
+  $("near-geo").addEventListener("click",()=>{
+    if(!navigator.geolocation){status.textContent="This browser doesn't support location lookup — try the town search instead.";return}
+    status.textContent="Asking your browser for your location…";
+    navigator.geolocation.getCurrentPosition(
+      pos=>{ nearAnchor={lat:pos.coords.latitude,lng:pos.coords.longitude,label:"your current location"}; renderNear(); },
+      err=>{ status.textContent = err.code===1
+        ? "Location permission was declined — no problem, use the town search instead."
+        : "Couldn't get your location. Try the town search instead."; }
+    );
+  });
+  function townSearch(){
+    const q=$("near-town").value.trim().toLowerCase();
+    if(!q){status.textContent="Type a town name first.";return}
+    // match against city tags and region text of geocoded orgs
+    const hit=geo.find(o=>((o.c||"")+" "+(o.r||"")+" "+o.n).toLowerCase().includes(q));
+    if(!hit){status.textContent=`No geocoded organization mentions "${$("near-town").value.trim()}". Try a nearby larger town, or a town in ${covered}.`;return}
+    nearAnchor={lat:hit.lat,lng:hit.lng,label:$("near-town").value.trim()};
+    renderNear();
+  }
+  $("near-town-go").addEventListener("click",townSearch);
+  $("near-town").addEventListener("keydown",e=>{ if(e.key==="Enter")townSearch(); });
+  const clr=$("near-clear");
+  if(clr)clr.addEventListener("click",()=>{nearAnchor=null;renderNear();});
 }
 
 /* ---------- map ---------- */
@@ -1172,16 +1384,15 @@ function renderPointMap(list){
   pts.forEach((o,i)=>{
     const cx=px(o.lng),cy=py(o.lat);
     const r=o.tier==="local"?4.5:6.5;
-    dots+=`<circle class="geo-point" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r}"
-      fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.3">
-      <title>${esc(o.n)}${o.r?" — "+esc(o.r):""}</title></circle>`;
+    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+7}" fill="transparent"><title>${esc(o.n)}${o.r?" — "+esc(o.r):""}</title></circle>
+      <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.3"/></g>`;
   });
   $("p-map").innerHTML=`
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that org. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
     <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
-  $("p-map").querySelectorAll("[data-idx]").forEach(el=>
+  $("p-map").querySelectorAll(".geo-hit").forEach(el=>
     el.addEventListener("click",()=>{
       const o=pts[+el.dataset.idx];
       if(o.w)window.open(o.w,"_blank","noopener");
@@ -1211,8 +1422,8 @@ function renderDetailMap(){
   pts.forEach((o,i)=>{
     const cx=px(o.lng),cy=py(o.lat);
     const r=o.tier==="local"?5:7.5;
-    dots+=`<circle class="geo-point" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r}"
-      fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.5"></circle>`;
+    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+8}" fill="transparent"/>
+      <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.5"/></g>`;
   });
   $("p-detail").innerHTML=`${statebar}
     <div class="detail-card empty" id="detail-card">
@@ -1250,7 +1461,7 @@ function renderDetailMap(){
     card.classList.add("empty");
     card.innerHTML='<div class="detail-card-inner"><span class="detail-card-hint">Click any dot to see the organization here &middot; hover to preview</span></div>';
   }
-  $("p-detail").querySelectorAll("[data-idx]").forEach(el=>{
+  $("p-detail").querySelectorAll(".geo-hit").forEach(el=>{
     const idx=+el.dataset.idx, o=pts[idx];
     el.addEventListener("mouseenter",()=>{ if(pinnedIdx===null)paintCard(o,false); });
     el.addEventListener("mouseleave",()=>{ if(pinnedIdx===null)clearCard(); });
@@ -1274,13 +1485,15 @@ function wireDetailStateButtons(){
 function switchTab(name){
   activeTab=name;
   document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
-  ["list","pie","map","detail","charts"].forEach(p=>$("p-"+p).hidden=(p!==name));
+  ["list","pie","map","detail","charts","tree","near"].forEach(p=>$("p-"+p).hidden=(p!==name));
 }
 function render(){
   if(activeTab==="list")renderList();
   else if(activeTab==="pie")renderPie();
   else if(activeTab==="detail")renderDetailMap();
   else if(activeTab==="charts")renderCharts();
+  else if(activeTab==="tree")renderTree();
+  else if(activeTab==="near")renderNear();
   else renderMap();
 }
 
