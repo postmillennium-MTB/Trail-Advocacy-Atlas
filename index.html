@@ -22,39 +22,51 @@
                                    4 empty <div> panels)
 
   <script>
-    · DATA: ORGS ................ the big array — every organization is one line
-    · DATA: STATE_NAMES / GRID .. state labels + cartogram tile positions
-    · THEME_PALETTES (JS) ....... chart/map colors per theme (mirror of CSS)
+    ==== ALL DATA LIVES IN ONE CONTIGUOUS BLOCK AT THE TOP ====
+    · ORGS ...................... the big array — every organization is one line
+    · STATE_NAMES ............... state code -> display name
+    · STATE_POPULATION .......... only used by the per-capita chart
+    · GRID ...................... cartogram tile positions
     · STATE_OUTLINES ............ simplified state boundary shapes for point maps
-    · buildProjection() ......... shared lat/lng -> SVG coordinate math
+    · POINT_MAP_STATES .......... which states have real per-org coordinates
+    · TIER_COLORS / TIER_LABELS . tier -> color and display label
+    · THEMES registry ........... THE list of color themes — add one line to add one
+    · TABS registry ............. THE list of tabs — add one line to add a tab
+    · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
+    ==== everything past "END OF DATA" is logic ====
+    · runtime state ............. filters / activeTab / detailState
+    · applyTheme() .............. swaps theme + updates mobile meta tag
+    · buildProjection() ......... lat/lng -> SVG coords (heavily commented; the
+                                  cos(latitude) correction is the non-obvious part)
     · matches() / visible() ..... the search + filter logic
     · renderCounts() ............ the 4 stat numbers up top
     · renderList() .............. Directory tab
+    · renderCharts() ............ Charts tab (3 charts)
     · renderPie() ............... By State tab (donut chart)
+    · renderTree() .............. Structure tab (parent/chapter hierarchy)
+    · renderNear() .............. Near me tab (geolocation / town search)
     · renderMap() ............... Map tab (cartogram, or point map for CA/CO/VT/OR)
     · renderPointMap() .......... inline point map
     · renderDetailMap() ......... Trailhead Map tab (big standalone point map)
-    · switchTab() / render() .... which tab is showing
+    · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
     · init() .................... wires up all the buttons on page load
     · title swap ................ rotates the headline every few seconds
 
   TO ADD ORGANIZATIONS: find the right state in the ORGS array and add a line.
-  TO ADD A THEME: edit BOTH the CSS [data-theme] block AND the JS THEME_PALETTES.
+  TO ADD A TAB:   add ONE line to the TABS registry (and write its render function).
+  TO ADD A THEME: add ONE line to the THEMES registry + one CSS [data-theme] block.
 ==================================================================================
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="favicon.ico">
-<link rel="icon" type="image/png" href="favicon-32x32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <meta name="theme-color" content="#f2efe6">
 <title>US MTB Trail Advocacy Atlas</title>
 <style>
-/* ==== THEME PALETTES (CSS) — the 3 color themes; mirror colors in JS THEME_PALETTES ==== */
+/* ==== THEME PALETTES (CSS) — one block per theme; ids must match the JS THEMES registry ==== */
 :root, [data-theme="moose"]{
   --ink:#2b2f2c;
   --paper:#f2efe6;
@@ -377,34 +389,17 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <button id="reset-filters" type="button" title="Clear search, state, and tier filters">Reset</button>
 </div>
 
+<!-- Theme swatches are BUILT FROM THE `THEMES` REGISTRY in the script below. -->
 <div class="themebar" role="group" aria-label="Color theme">
   <span>Palette</span>
-  <button class="theme-swatch" data-theme="moose" aria-pressed="true">
-    <span class="theme-dots"><i style="background:#2b2f2c"></i><i style="background:#3f5d3a"></i><i style="background:#c1603a"></i></span>Moose</button>
-  <button class="theme-swatch" data-theme="elk" aria-pressed="false">
-    <span class="theme-dots"><i style="background:#3d332a"></i><i style="background:#6b5518"></i><i style="background:#d4900f"></i></span>Elk</button>
-  <button class="theme-swatch" data-theme="caribou" aria-pressed="false">
-    <span class="theme-dots"><i style="background:#29343a"></i><i style="background:#00e6a8"></i><i style="background:#00d4ff"></i></span>Caribou</button>
+  <span id="themebar-buttons" style="display:contents"></span>
 </div>
 
-<!-- the 4 tabs; the panels below are filled by render*() in the script -->
-<div class="tabs" role="tablist">
-  <button role="tab" aria-selected="false" data-panel="list">Directory</button>
-  <button role="tab" aria-selected="true" data-panel="pie">By state</button>
-  <button role="tab" aria-selected="false" data-panel="map">Map</button>
-  <button role="tab" aria-selected="false" data-panel="detail">Trailhead map</button>
-  <button role="tab" aria-selected="false" data-panel="charts">Charts</button>
-  <button role="tab" aria-selected="false" data-panel="tree">Structure</button>
-  <button role="tab" aria-selected="false" data-panel="near">Near me</button>
-</div>
-
-<div class="panel" id="p-list" hidden></div>
-<div class="panel" id="p-pie"></div>
-<div class="panel" id="p-map" hidden></div>
-<div class="panel" id="p-detail" hidden></div>
-<div class="panel" id="p-charts" hidden></div>
-<div class="panel" id="p-tree" hidden></div>
-<div class="panel" id="p-near" hidden></div>
+<!-- Tabs and panels are BUILT FROM THE `TABS` REGISTRY in the script below.
+     Don't add markup here — add one entry to TABS and both the button and its
+     panel appear automatically. -->
+<div class="tabs" role="tablist" id="tabbar"></div>
+<div id="panels"></div>
 
 <footer>
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body spanning the whole country (IMBA, NICA); <b>regional</b> = umbrella spanning multiple states or a broad multi-community footprint (NEMBA, SORBA, MORE); <b>statewide</b> = coalition of local orgs within one state; <b>local</b> = town, county, or regional chapter. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
@@ -832,38 +827,7 @@ OK:[4,6],LA:[5,6],MS:[6,6],AL:[7,6],GA:[8,6],
 HI:[0,7],TX:[4,7],FL:[9,7],PR:[11,7]
 };
 
-/* ---------- themes ---------- */
-/* ==== THEME_PALETTES (JS) — chart/map colors per theme. MUST mirror the CSS [data-theme] blocks up top. ==== */
-const THEME_PALETTES={
-  moose:{
-    pie:["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"],
-    mapFrom:"#e6ded0",mapTo:"#3f5d3a"
-  },
-  elk:{
-    pie:["#d4900f","#6b5518","#a8731f","#8a5a1f","#e0a83a","#4a3a10","#c9a45c","#8f6b2e","#b87a12","#5e4816"],
-    mapFrom:"#f0ddb0",mapTo:"#a8731f"
-  },
-  caribou:{
-    pie:["#00d4ff","#ff2fb0","#00e6a8","#2f5560","#7c9a85","#456f78","#8fb0ba","#5490a0","#3f6b52","#1f4650"],
-    mapFrom:"#dbe6e2",mapTo:"#00a8c2"
-  }
-};
-let currentTheme="moose";
-const THEME_PAPER={moose:"#f2efe6",elk:"#f6e8c4",caribou:"#eef3f0"};
-function applyTheme(name){
-  currentTheme=name;
-  document.documentElement.setAttribute("data-theme",name);
-  document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===name));
-  const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta&&THEME_PAPER[name])meta.setAttribute("content",THEME_PAPER[name]);
-  try{localStorage.setItem("mtbAtlasTheme",name)}catch(e){}
-  render();
-}
-
-/* States with real geocoded org locations, for the detailed point map */
-const POINT_MAP_STATES=["CA","CO","VT","OR"];
-let detailState="CA";
-
+/* ---------- geocoding / map data ---------- */
 /* Simplified state boundary outlines [lat,lng] — hand-simplified, not survey-grade,
    just enough vertices to read as the state's shape at this zoom level. */
 /* ==== STATE_OUTLINES — hand-simplified boundary shapes for the CA/CO/VT/OR point maps ==== */
@@ -884,30 +848,176 @@ const STATE_OUTLINES={
       [44.5,-73.32],[44.8,-73.35],[45.0,-73.35]]
 };
 
+/* States that have real per-org coordinates, so they get a point map instead of a grid tile. */
+/* ==== TIER LOOKUPS — single source of truth for tier colors and labels.
+   Used by the point maps, the detail card, and the Near me list. If you ever add a
+   fifth tier, add it here ONCE and everywhere downstream picks it up. Note the CSS
+   also has matching --tier-* variables and .tier-* dot classes that must agree. ==== */
+const TIER_COLORS={national:"var(--ink)",regional:"var(--clay)",state:"var(--dirt)",local:"var(--loam)"};
+const TIER_LABELS={national:"National",regional:"Regional",state:"Statewide",local:"Local"};
+const POINT_MAP_STATES=["CA","CO","VT","OR"];
+
+/* ==== THEMES REGISTRY — the single source of truth for every color theme. ========
+   TO ADD A THEME: add ONE entry here, then add a matching CSS block:
+       [data-theme="yourid"]{ --ink:..; --paper:..; --dirt:..; --loam:..; --clay:..;
+                              --slate:..; --rule:..; }
+   The swatch button, the chart colors, the map gradient, and the mobile browser
+   theme-color tag all derive from this array. (The CSS block still has to be written
+   by hand — CSS custom properties can't be generated from JS.)
+
+     id       matches the CSS [data-theme="..."] selector
+     label    visible button text
+     swatch   3 hex colors for the little preview dot on the button
+     paper    background hex — also sent to <meta name="theme-color"> for mobile
+     pie      chart slice colors, cycled in order
+     mapFrom  lightest end of the cartogram gradient
+     mapTo    darkest end of the cartogram gradient
+   ================================================================================ */
+const THEMES=[
+  {
+    id:"moose", label:"Moose",
+    swatch:["#2b2f2c","#3f5d3a","#c1603a"], paper:"#f2efe6",
+    pie:["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"],
+    mapFrom:"#e6ded0", mapTo:"#3f5d3a"
+  },
+  {
+    id:"elk", label:"Elk",
+    swatch:["#3d332a","#6b5518","#d4900f"], paper:"#f6e8c4",
+    pie:["#d4900f","#6b5518","#a8731f","#8a5a1f","#e0a83a","#4a3a10","#c9a45c","#8f6b2e","#b87a12","#5e4816"],
+    mapFrom:"#f0ddb0", mapTo:"#a8731f"
+  },
+  {
+    id:"caribou", label:"Caribou",
+    swatch:["#29343a","#00e6a8","#00d4ff"], paper:"#eef3f0",
+    pie:["#00d4ff","#ff2fb0","#00e6a8","#2f5560","#7c9a85","#456f78","#8fb0ba","#5490a0","#3f6b52","#1f4650"],
+    mapFrom:"#dbe6e2", mapTo:"#00a8c2"
+  }
+];
+const DEFAULT_THEME="moose";
+/* Lookup by id, so callers can do THEME.byId[currentTheme].pie */
+const THEME_BY_ID=Object.fromEntries(THEMES.map(t=>[t.id,t]));
+let currentTheme=DEFAULT_THEME;
+
+/* ==== TABS REGISTRY — the single source of truth for every tab. =================
+   TO ADD A TAB: write your render function, then add ONE line here. The button,
+   the panel <div>, the show/hide logic, and the render dispatch all derive from
+   this array — there is nothing else to edit.
+
+     id      unique key; the panel becomes <div id="p-{id}">
+     label   the visible button text
+     render  the function that fills that panel
+
+   `render` is stored as a name string, not a direct reference, because the render
+   functions are declared further down the file — looking them up by name at click
+   time avoids any declaration-order trap.
+   ================================================================================ */
+const TABS=[
+  {id:"list",   label:"Directory",     render:"renderList"},
+  {id:"pie",    label:"By state",      render:"renderPie"},
+  {id:"map",    label:"Map",           render:"renderMap"},
+  {id:"detail", label:"Trailhead map", render:"renderDetailMap"},
+  {id:"charts", label:"Charts",        render:"renderCharts"},
+  {id:"tree",   label:"Structure",     render:"renderTree"},
+  {id:"near",   label:"Near me",       render:"renderNear"},
+];
+const DEFAULT_TAB="pie";
+
+/* ================== END OF DATA — everything below is logic ================== */
+
+/* ---------- tuning constants (named so they're findable, not buried in functions) ---------- */
+const MIN_PROJECTION_SPAN=0.02;   // floor on lat/lng span, prevents divide-by-zero on a single point
+const DOT_R_LOCAL=5;              // radius of a "local" tier dot on the point maps
+const DOT_R_UMBRELLA=7.5;         // radius of national/regional/state dots (drawn larger)
+const DOT_HIT_PADDING=8;          // invisible click-target padding around each dot; keep >=6 so
+                                  // small dots stay easy to hit with a mouse or finger
+const PER_CAPITA_HIGH=2;          // orgs-per-million above this = "top tier" on the capita chart
+const PER_CAPITA_MID=0.9;         // ...and above this = "mid tier"; below = "lower tier"
+const TITLE_ROTATE_MS=6000;       // how long each masthead headline shows before swapping
+const TITLE_FADE_MS=500;          // fade duration for that swap (must match the CSS transition)
+const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists
+const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
+
+
+/* ---------- runtime state (what the user has currently selected) ---------- */
+let filters={q:"",state:"",tier:""};   // search box, state dropdown, tier filter
+let activeTab=null;                    // set from DEFAULT_TAB in init()
+let detailState="CA";                  // which state the Trailhead map tab is showing
+// (currentTheme lives with the THEMES registry above, since it defaults from it)
+
+
+/* ---------- themes ---------- */
+
+
+/* States with real geocoded org locations, for the detailed point map */
+
+
 /* Shared: project [lat,lng] points into an SVG viewBox, accounting for longitude
    compression at latitude, and return both a point-projector and a ready outline path. */
+/* ---------- theme logic ---------- */
+/* Build the theme swatch buttons from the THEMES registry. */
+function buildThemeSwatches(){
+  const bar=$("themebar-buttons");
+  if(!bar)return;
+  bar.innerHTML=THEMES.map(t=>
+    `<button type="button" class="theme-swatch" data-theme="${t.id}" aria-pressed="${t.id===currentTheme}">
+      <span class="theme-dots">${t.swatch.map(c=>`<i style="background:${c}"></i>`).join("")}</span>${esc(t.label)}</button>`
+  ).join("");
+  bar.querySelectorAll(".theme-swatch").forEach(b=>
+    b.addEventListener("click",()=>applyTheme(b.dataset.theme)));
+}
+function applyTheme(name){
+  const theme=THEME_BY_ID[name]||THEME_BY_ID[DEFAULT_THEME];
+  currentTheme=theme.id;
+  document.documentElement.setAttribute("data-theme",theme.id);
+  document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===theme.id));
+  // keep the mobile browser's address-bar tint in step with the page background
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute("content",theme.paper);
+  try{localStorage.setItem("mtbAtlasTheme",theme.id)}catch(e){}
+  render();
+}
+
+
 /* ==== buildProjection() — shared lat/lng -> SVG coordinate math (used by both point maps) ==== */
 function buildProjection(pts,outlineCoords,W,H,pad){
+  // Consider BOTH the org dots and the state outline when finding the bounding box,
+  // so the outline can never get cropped off the edge of the SVG.
   const allLat=pts.map(p=>p.lat).concat(outlineCoords.map(c=>c[0]));
   const allLng=pts.map(p=>p.lng).concat(outlineCoords.map(c=>c[1]));
   const latMin=Math.min(...allLat),latMax=Math.max(...allLat);
   const lngMin=Math.min(...allLng),lngMax=Math.max(...allLng);
-  const latC=(latMin+latMax)/2;
-  const cosLat=Math.cos(latC*Math.PI/180);
-  const xRaw=lng=>lng*cosLat, yRaw=lat=>-lat;
-  const x0=xRaw(lngMin),x1=xRaw(lngMax),y0=yRaw(latMax),y1=yRaw(latMin);
-  const spanX=Math.max(x1-x0,0.02), spanY=Math.max(y1-y0,0.02);
+
+  // Longitude lines converge toward the poles, so a degree of longitude covers less
+  // ground than a degree of latitude — by cos(latitude). Without this correction,
+  // northern states (Vermont) come out noticeably stretched sideways. We use the
+  // middle of the bounding box as the reference latitude, which is accurate enough
+  // for a single state at this zoom.
+  const midLat=(latMin+latMax)/2;
+  const lngSquish=Math.cos(midLat*Math.PI/180);
+
+  // Flatten lat/lng into unitless plane coords. Latitude is NEGATED because latitude
+  // increases going north, but SVG's y-axis increases going DOWN the screen.
+  const flatX=lng=>lng*lngSquish, flatY=lat=>-lat;
+  const x0=flatX(lngMin),x1=flatX(lngMax),y0=flatY(latMax),y1=flatY(latMin);
+
+  // Scale to fit inside the padded box, using the SAME scale for both axes so the
+  // state doesn't get distorted. The 0.02 floor guards against a divide-by-zero if
+  // every point happens to share a latitude or longitude.
+  const spanX=Math.max(x1-x0,MIN_PROJECTION_SPAN), spanY=Math.max(y1-y0,MIN_PROJECTION_SPAN);
   const scale=Math.min((W-pad*2)/spanX,(H-pad*2)/spanY);
+
+  // Center whatever's left over, so the shape sits in the middle rather than top-left.
   const offX=pad+((W-pad*2)-spanX*scale)/2, offY=pad+((H-pad*2)-spanY*scale)/2;
-  const px=lng=>offX+(xRaw(lng)-x0)*scale;
-  const py=lat=>offY+(yRaw(lat)-y0)*scale;
-  const outlinePath="M"+outlineCoords.map(([lat,lng])=>`${px(lng).toFixed(1)} ${py(lat).toFixed(1)}`).join(" L")+" Z";
-  return {px,py,outlinePath};
+
+  // The two functions callers actually use: lng/lat -> SVG x/y.
+  const projX=lng=>offX+(flatX(lng)-x0)*scale;
+  const projY=lat=>offY+(flatY(lat)-y0)*scale;
+
+  const outlinePath="M"+outlineCoords.map(([lat,lng])=>`${projX(lng).toFixed(1)} ${projY(lat).toFixed(1)}`).join(" L")+" Z";
+  return {projX,projY,outlinePath};
 }
 
 /* ---------- state ---------- */
-let filters={q:"",state:"",tier:""};
-let activeTab="pie";
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1058,7 +1168,7 @@ function renderCharts(){
   const maxPerM=Math.max(...capRows.map(r=>r.perM));
   const capBars=capRows.map(r=>{
     const pct=Math.max(r.perM/maxPerM*100,1.5);
-    const tier=r.perM>2?"tier-top":r.perM>=0.9?"tier-mid":"tier-low";
+    const tier=r.perM>PER_CAPITA_HIGH?"tier-top":r.perM>=PER_CAPITA_MID?"tier-mid":"tier-low";
     return `<div class="cap-row ${tier}" title="${esc(r.name)}: ${r.n} org${r.n===1?"":"s"} / ${STATE_POPULATION[r.s].toLocaleString()} residents">
       <span class="cap-code">${r.s}</span>
       <span class="cap-track"><span class="cap-fill" style="width:${pct}%"></span></span>
@@ -1076,15 +1186,21 @@ function renderCharts(){
       </div>
       <div class="cap-list">${capBars}</div>
     </div>`;
-  wireChartHover("area", rows, i=>`${rows[i].name}: ${rows[i].n} org${rows[i].n===1?"":"s"}`, xAt);
-  wireChartHover("line", cumRows, i=>`Top ${i+1} states: ${cumRows[i].cumPct.toFixed(1)}% of orgs`, xAt);
+  wireChartHover("area", rows, i=>`${rows[i].name}: ${rows[i].n} org${rows[i].n===1?"":"s"}`, xAt, W, H);
+  wireChartHover("line", cumRows, i=>`Top ${i+1} states: ${cumRows[i].cumPct.toFixed(1)}% of orgs`, xAt, W, H);
 }
-function wireChartHover(prefix, rows, labelFn, xAt){
+/* wireChartHover — attaches crosshair + tooltip behavior to one chart.
+   svgW / svgH MUST be the same viewBox dimensions the chart was drawn with: the mouse
+   arrives in screen pixels, but the dots' cx/cy are in viewBox units, so we scale
+   between the two. These are passed in (not hardcoded) so changing a chart's size in
+   renderCharts() can't silently misalign the tooltips. */
+function wireChartHover(prefix, rows, labelFn, xAt, svgW, svgH){
   const svg=$(prefix+"-wrap").querySelector("svg");
   const zone=$(prefix+"-hoverzone");
   const hoverline=$(prefix+"-hoverline");
   const tooltip=$(prefix+"-tooltip");
   const dots=[...svg.querySelectorAll(".chart-hover-dot")];
+  // walk every plotted x-position and keep the one closest to the cursor
   function nearestIdx(mouseX){
     let best=0,bestD=Infinity;
     rows.forEach((_,i)=>{ const d=Math.abs(xAt(i)-mouseX); if(d<bestD){bestD=d;best=i} });
@@ -1092,7 +1208,8 @@ function wireChartHover(prefix, rows, labelFn, xAt){
   }
   function show(evt){
     const rect=svg.getBoundingClientRect();
-    const scaleX=880/rect.width;
+    // convert cursor position from screen px into the SVG's own coordinate space
+    const scaleX=svgW/rect.width;
     const mouseX=(evt.clientX-rect.left)*scaleX;
     const i=nearestIdx(mouseX);
     const dot=dots[i];
@@ -1101,8 +1218,9 @@ function wireChartHover(prefix, rows, labelFn, xAt){
     hoverline.setAttribute("x2",dot.getAttribute("cx"));
     dots.forEach(d=>d.style.opacity=0);
     dot.style.opacity=1;
-    const cx=parseFloat(dot.getAttribute("cx"))/880*rect.width;
-    const cy=parseFloat(dot.getAttribute("cy"))/260*rect.height;
+    // convert the dot's viewBox coords back into screen px to place the HTML tooltip
+    const cx=parseFloat(dot.getAttribute("cx"))/svgW*rect.width;
+    const cy=parseFloat(dot.getAttribute("cy"))/svgH*rect.height;
     tooltip.style.left=cx+"px";
     tooltip.style.top=cy+"px";
     tooltip.textContent=labelFn(i);
@@ -1135,7 +1253,7 @@ function renderPie(){
     return;
   }
   const total=entries.reduce((s,[,n])=>s+n,0);
-  const palette=THEME_PALETTES[currentTheme].pie;
+  const palette=THEME_BY_ID[currentTheme].pie;
   const cx=150,cy=150,rOuter=130,rInner=58;
   let ang=-Math.PI/2, paths="";
   entries.forEach(([st,n],i)=>{
@@ -1258,7 +1376,7 @@ function renderTree(){
 /* ==== renderNear() — NEAR ME tab: geolocation or town search against the geocoded orgs ==== */
 let nearAnchor=null; // {lat,lng,label}
 function haversineMiles(lat1,lng1,lat2,lng2){
-  const R=3958.8, toRad=d=>d*Math.PI/180;
+  const R=EARTH_RADIUS_MILES, toRad=d=>d*Math.PI/180;
   const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
   const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
@@ -1269,9 +1387,8 @@ function renderNear(){
   let resultHTML="";
   if(nearAnchor){
     const ranked=geo.map(o=>({...o,dist:haversineMiles(nearAnchor.lat,nearAnchor.lng,o.lat,o.lng)}))
-      .sort((a,b)=>a.dist-b.dist).slice(0,12);
-    const tierLabel={national:"National",regional:"Regional",state:"Statewide",local:"Local"};
-    resultHTML=`
+      .sort((a,b)=>a.dist-b.dist).slice(0,NEAR_ME_RESULTS);
+      resultHTML=`
       <div class="near-anchor">Measuring from <strong>${esc(nearAnchor.label)}</strong>
         <button type="button" id="near-clear" class="near-clear">clear</button></div>
       <ul class="near-list">${ranked.map(o=>`
@@ -1279,7 +1396,7 @@ function renderNear(){
           <span class="near-dist">${o.dist<1?"&lt;1":Math.round(o.dist)}<small>mi</small></span>
           <span class="near-main">
             <span class="near-name"><span class="tier-dot tier-${o.tier}"></span>${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">${esc(o.n)}</a>`:esc(o.n)}</span>
-            <span class="near-meta">${esc(STATE_NAMES[o.s]||o.s)} &middot; ${tierLabel[o.tier]||o.tier}${o.r?" &middot; "+esc(o.r):""}</span>
+            <span class="near-meta">${esc(STATE_NAMES[o.s]||o.s)} &middot; ${TIER_LABELS[o.tier]||o.tier}${o.r?" &middot; "+esc(o.r):""}</span>
           </span>
         </li>`).join("")}</ul>`;
   }
@@ -1339,7 +1456,7 @@ function renderMap(){
     return;
   }
   const max=Math.max(1,...Object.values(counts));
-  const {mapFrom,mapTo}=THEME_PALETTES[currentTheme];
+  const {mapFrom,mapTo}=THEME_BY_ID[currentTheme];
   const cell=52,gap=4;
   const cols=12,rows=8;
   let sq="";
@@ -1380,15 +1497,14 @@ function renderPointMap(list){
   }
   const W=640,H=520,pad=34;
   const outline=STATE_OUTLINES[filters.state]||[];
-  const {px,py,outlinePath}=buildProjection(pts,outline,W,H,pad);
-  const palette=THEME_PALETTES[currentTheme].pie;
-  const tierColorVar={national:"var(--ink)",regional:"var(--clay)",state:"var(--dirt)",local:"var(--loam)"};
+  const {projX,projY,outlinePath}=buildProjection(pts,outline,W,H,pad);
+  const palette=THEME_BY_ID[currentTheme].pie;
   let dots="";
   pts.forEach((o,i)=>{
-    const cx=px(o.lng),cy=py(o.lat);
-    const r=o.tier==="local"?4.5:6.5;
-    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+7}" fill="transparent"><title>${esc(o.n)}${o.r?" — "+esc(o.r):""}</title></circle>
-      <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.3"/></g>`;
+    const cx=projX(o.lng),cy=projY(o.lat);
+    const r=o.tier==="local"?DOT_R_LOCAL:DOT_R_UMBRELLA;
+    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+DOT_HIT_PADDING}" fill="transparent"><title>${esc(o.n)}${o.r?" — "+esc(o.r):""}</title></circle>
+      <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${TIER_COLORS[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.3"/></g>`;
   });
   $("p-map").innerHTML=`
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that org. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
@@ -1418,15 +1534,14 @@ function renderDetailMap(){
   }
   const W=760,H=620,pad=40;
   const outline=STATE_OUTLINES[detailState]||[];
-  const {px,py,outlinePath}=buildProjection(pts,outline,W,H,pad);
-  const palette=THEME_PALETTES[currentTheme].pie;
-  const tierColorVar={national:"var(--ink)",regional:"var(--clay)",state:"var(--dirt)",local:"var(--loam)"};
+  const {projX,projY,outlinePath}=buildProjection(pts,outline,W,H,pad);
+  const palette=THEME_BY_ID[currentTheme].pie;
   let dots="";
   pts.forEach((o,i)=>{
-    const cx=px(o.lng),cy=py(o.lat);
-    const r=o.tier==="local"?5:7.5;
-    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+8}" fill="transparent"/>
-      <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${tierColorVar[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.5"/></g>`;
+    const cx=projX(o.lng),cy=projY(o.lat);
+    const r=o.tier==="local"?DOT_R_LOCAL:DOT_R_UMBRELLA;
+    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+DOT_HIT_PADDING}" fill="transparent"/>
+      <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${TIER_COLORS[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.5"/></g>`;
   });
   $("p-detail").innerHTML=`${statebar}
     <div class="detail-card empty" id="detail-card">
@@ -1441,7 +1556,6 @@ function renderDetailMap(){
     </svg>
     <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
   const card=document.getElementById("detail-card");
-  const tierLabel={national:"National",regional:"Regional",state:"Statewide",local:"Local"};
   let pinnedIdx=null;
   function paintCard(o,pinned){
     card.classList.remove("empty");
@@ -1451,7 +1565,7 @@ function renderDetailMap(){
         <span class="detail-card-dot tier-${o.tier}"></span>
         <span class="detail-card-name">${esc(o.n)}</span>
         ${o.a?`<span class="detail-card-abbr">${esc(o.a)}</span>`:""}
-        <span class="detail-card-tier">${tierLabel[o.tier]||o.tier}</span>
+        <span class="detail-card-tier">${TIER_LABELS[o.tier]||o.tier}</span>
         ${pinned?'<button class="detail-card-close" title="Clear">&times;</button>':""}
       </div>
       ${o.r?`<div class="detail-card-region">${esc(o.r)}</div>`:""}
@@ -1484,20 +1598,28 @@ function wireDetailStateButtons(){
 }
 
 /* ---------- shell ---------- */
-/* ==== TAB SWITCHING — switchTab() shows/hides panels, render() calls the right render*() for the active tab ==== */
+
+/* Build the tab buttons and their (empty) panels from the registry. */
+function buildTabs(){
+  $("tabbar").innerHTML=TABS.map(t=>
+    `<button type="button" role="tab" aria-selected="${t.id===activeTab}" data-panel="${t.id}">${esc(t.label)}</button>`
+  ).join("");
+  $("panels").innerHTML=TABS.map(t=>
+    `<div class="panel" id="p-${t.id}"${t.id===activeTab?"":" hidden"}></div>`
+  ).join("");
+  $("tabbar").querySelectorAll("button").forEach(b=>
+    b.addEventListener("click",()=>{switchTab(b.dataset.panel);render()}));
+}
 function switchTab(name){
   activeTab=name;
-  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
-  ["list","pie","map","detail","charts","tree","near"].forEach(p=>$("p-"+p).hidden=(p!==name));
+  $("tabbar").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
+  TABS.forEach(t=>$("p-"+t.id).hidden=(t.id!==name));
 }
 function render(){
-  if(activeTab==="list")renderList();
-  else if(activeTab==="pie")renderPie();
-  else if(activeTab==="detail")renderDetailMap();
-  else if(activeTab==="charts")renderCharts();
-  else if(activeTab==="tree")renderTree();
-  else if(activeTab==="near")renderNear();
-  else renderMap();
+  const tab=TABS.find(t=>t.id===activeTab)||TABS.find(t=>t.id===DEFAULT_TAB);
+  const fn=window[tab.render];
+  if(typeof fn==="function")fn();
+  else console.error("Tab '"+tab.id+"' points at missing render function:",tab.render);
 }
 
 /* ==== init() — runs once on load: builds the state dropdown, wires up every button, restores saved theme ==== */
@@ -1520,18 +1642,17 @@ function init(){
     document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===""));
     render();
   });
-  document.querySelectorAll(".tabs button").forEach(b=>
-    b.addEventListener("click",()=>{switchTab(b.dataset.panel);render()}));
-  document.querySelectorAll(".theme-swatch").forEach(b=>
-    b.addEventListener("click",()=>applyTheme(b.dataset.theme)));
-  let saved="moose";
-  try{saved=localStorage.getItem("mtbAtlasTheme")||"moose"}catch(e){}
-  document.documentElement.setAttribute("data-theme",saved);
+  activeTab=DEFAULT_TAB;
+  buildTabs();
+  // restore the saved theme (falling back to the default if it's unknown/missing),
+  // then let applyTheme() do the actual work so there's only one code path for it
+  let saved=DEFAULT_THEME;
+  try{saved=localStorage.getItem("mtbAtlasTheme")||DEFAULT_THEME}catch(e){}
+  if(!THEME_BY_ID[saved])saved=DEFAULT_THEME;
   currentTheme=saved;
-  document.querySelectorAll(".theme-swatch").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===saved));
-  const metaInit=document.querySelector('meta[name="theme-color"]');
-  if(metaInit&&THEME_PAPER[saved])metaInit.setAttribute("content",THEME_PAPER[saved]);
-  renderCounts();render();
+  buildThemeSwatches();
+  applyTheme(saved);   // sets data-theme, meta tag, pressed state, and calls render()
+  renderCounts();
 }
 /* periodic masthead title swap */
 (function(){
@@ -1543,8 +1664,8 @@ function init(){
   setInterval(()=>{
     i=(i+1)%titles.length;
     el.classList.add("fading");
-    setTimeout(()=>{ el.textContent=titles[i]; el.classList.remove("fading"); },500);
-  },6000);
+    setTimeout(()=>{ el.textContent=titles[i]; el.classList.remove("fading"); },TITLE_FADE_MS);
+  },TITLE_ROTATE_MS);
 })();
 
 init();
