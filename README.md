@@ -2,7 +2,7 @@
 
 A single-file, zero-dependency directory of nonprofit mountain bike trail advocacy organizations across the United States. Searchable, filterable by tier and state, with a donut chart, a 50-state cartogram, and real geocoded trailhead maps for four states. Built to the same architecture as PMR's other tools: one HTML file, no build step, deploy anywhere.
 
-**Current status:** 369 organizations across all 50 states, Washington DC, and Puerto Rico.
+**Current status:** 373 organizations across all 50 states, Washington DC, and Puerto Rico.
 
 ---
 
@@ -36,7 +36,7 @@ Everything lives in one JavaScript array near the top of the `<script>` block, c
 - `national` — umbrella bodies spanning the whole country (IMBA, NICA). Dark dot.
 - `regional` — umbrella bodies or single orgs spanning multiple states or a broad multi-community footprint within one state (NEMBA, SORBA, MORE, Oregon Timber Trail Alliance). Neon/accent-colored dot.
 - `state` — a statewide coalition of local orgs, or a single org that's the de facto statewide voice (JORBA in NJ, KYMBA in KY, CAMTB in CA). Brown/gold dot.
-- `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 344 of 369. Green dot.
+- `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 348 of 373. Green dot.
 
 To add a new organization, find the right state section and insert a line following the same pattern. If in doubt, hand the file to Claude with "add these orgs to the atlas" — that's how this whole thing was built, incrementally, one state or one pasted list at a time.
 
