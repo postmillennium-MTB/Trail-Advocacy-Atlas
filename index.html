@@ -425,6 +425,28 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 }
 .why-slider input[type=range]:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
 .why-hint{margin:5px 0 0;font-size:12px;line-height:1.45;color:var(--slate)}
+/* Inline hover/focus info icon, e.g. next to "Maintenance / mile / year" */
+.info-ico{position:relative;display:inline-flex;vertical-align:-3px;margin-left:4px;color:var(--slate);cursor:help}
+.info-ico svg{display:block;width:13px;height:13px}
+.info-ico:hover,.info-ico:focus{color:var(--clay);outline:none}
+.info-tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:210px;background:var(--ink);color:var(--paper);font:400 11px/1.5 ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none;z-index:20;text-align:left}
+.info-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.info-ico:hover .info-tip,.info-ico:focus .info-tip{opacity:1;visibility:visible}
+/* Maintenance-inflation pill group — matches .tierbar's square-cornered,
+   monospace-uppercase toggle-button look rather than importing the ROI
+   calculator's rounded-pill style, so it reads as native to this page. */
+.why-pill-grp{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 4px}
+.why-pill{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;padding:6px 10px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
+.why-pill:hover{border-color:var(--clay);color:var(--clay)}
+.why-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* MOBILE STICKY COST SUMMARY — hidden on desktop; on phones it pins the two
+   headline totals to the top of the results column so they stay on screen
+   while scrolling through the funding chart, time chart, and ledger below. */
+.why-mobile-summary{display:none}
+.wms-item{flex:1;text-align:center}
+.wms-lbl{display:block;font:600 9px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--slate);margin-bottom:3px}
+.wms-val{display:block;font:400 18px/1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
+.wms-item.opt2 .wms-val{color:var(--clay)}
 .why-reset{
   font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:9px 13px;border:1.5px dashed var(--clay);background:#fff;color:var(--clay);
@@ -500,6 +522,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   .why-layout{grid-template-columns:1fr}
   .why-inputs{position:static}
   .why-stats{grid-template-columns:1fr}
+  .why-mobile-summary{display:flex;gap:8px;position:sticky;top:0;z-index:6;background:#fff;border:1.5px solid var(--rule);border-radius:4px;padding:9px 11px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 }
 @media(max-width:760px){
   .pie-layout{grid-template-columns:1fr}
@@ -1133,11 +1156,13 @@ const WHY_INPUTS=[
    hint:"Turnkey professional singletrack, machine cut and hand finished. Contractor surveys cluster at $25K–$80K/mi; rock, bridging, and steep or wet ground push past that. The low end of this slider is realistic only for easy soil on gentle terrain."},
   {key:"plan",      group:"project", label:"Planning, design & permitting",   min:0,     max:25,     step:1,    value:12,    fmt:whyPct,
    hint:"As a share of construction cost. Covers alignment flagging, environmental review, and the municipal staff hours pulled off other duties. Rarely appears on the capital line, but it is real money."},
-  {key:"maint",     group:"project", label:"Maintenance / mile / year",       min:500,   max:8000,   step:250,  value:2500,  fmt:whyCash,
-   hint:"American Trails puts routine singletrack upkeep at $1,500–$5,000/mi/yr."},
+  {key:"maint",     group:"project", label:"Maintenance / mile / year",       min:500,   max:8000,   step:250,  value:1500,  fmt:whyCash,
+   hint:"American Trails puts routine singletrack upkeep at $1,500–$5,000/mi/yr.",
+   tip:"Rocky, high-elevation-change, or jump-line trails generally require higher annual maintenance. Smooth, flowing singletrack often costs less to maintain."},
   {key:"grant",     group:"project", label:"Public grant funding",            min:0,     max:80,     step:5,    value:25,    fmt:whyPct,
    hint:"RTP, RAISE, CMAQ and state programs. Applied to BOTH options — a town does not need a non-profit to apply for public money, and any tool that implies otherwise is selling something."},
-  {key:"years",     group:"project", label:"Comparison horizon",              min:5,     max:30,     step:1,    value:20,    fmt:v=>v+" yrs"},
+  {key:"years",     group:"project", label:"Comparison horizon",              min:0,     max:30,     step:1,    value:20,    fmt:v=>v===0?"Build only":v+" yrs",
+   hint:"Drag to 0 to compare construction cost alone, with no ongoing maintenance included on either side."},
 
   {key:"volhours",  group:"partner", label:"Volunteer construction hours",    min:0,     max:15000,  step:100,  value:2500,  fmt:whyNum,
    hint:"Total hours the non-profit mobilizes for hand finishing across the whole build, not per year."},
@@ -1180,6 +1205,7 @@ const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
 /* ---------- runtime state (what the user has currently selected) ---------- */
 let filters={q:"",state:"",tier:""};   // search box, state dropdown, tier filter
 let activeTab=null;                    // set from DEFAULT_TAB in init()
+let curWhyInfl=0;                      // Why tab's own maintenance-inflation rate
 let detailState="CA";                  // which state the Trailhead map tab is showing
 // (currentTheme lives with the THEMES registry above, since it defaults from it)
 
@@ -1916,25 +1942,35 @@ function computeWhy(v){
   const grantForgone  = grant1-grant2;
 
   // ---- Operating cost over the horizon --------------------------------------
-  const annualMaint1  = v.miles*v.maint;
-  const annualMaint2  = annualMaint1*(1-v.adopt/100)+v.coord;
-  const opex1         = annualMaint1*v.years;
-  const opex2         = annualMaint2*v.years;
+  // Annual maintenance in Year 1 uses the flat per-mile rate entered above. If
+  // maintenance inflation is on, every later year compounds by
+  // (1 + inflation)^(yr-1) — same convention the ROI calculator's own
+  // maintenance line uses. Coordination cost is held flat (a fixed annual
+  // retainer, not a per-mile cost that scales with trail condition).
+  const annualMaint1     = v.miles*v.maint;
+  const annualMaint2Base = annualMaint1*(1-v.adopt/100)+v.coord;
 
-  const total1 = mun1+opex1, total2 = mun2+opex2;
-
-  // Year-by-year cumulative municipal outlay, year 0 = capital only.
-  const series=[];
-  for(let y=0;y<=v.years;y++) series.push({y, a:mun1+annualMaint1*y, b:mun2+annualMaint2*y});
+  const series=[{y:0,a:mun1,b:mun2}];
+  let opex1=0, opex2=0, cum1=mun1, cum2=mun2;
+  for(let y=1;y<=v.years;y++){
+    const infl    = Math.pow(1+v.inflation/100,y-1);
+    const maintYr1= annualMaint1*infl;
+    const maintYr2= maintYr1*(1-v.adopt/100)+v.coord;
+    opex1+=maintYr1; opex2+=maintYr2;
+    cum1+=maintYr1;   cum2+=maintYr2;
+    series.push({y,a:cum1,b:cum2});
+  }
 
   // If Option 2 ever overtakes Option 1, say which year — the partnership is not
   // automatically cheaper and the chart should be able to show that.
   let crossover=null;
   for(const p of series){ if(p.b>p.a){crossover=p.y;break} }
 
+  const total1 = mun1+opex1, total2 = mun2+opex2;
+
   return {construction,planningFull,planning2,planningGift,handworkCost,volValueRaw,volCredit,
           volCapped,volWasted,capex1,grant1,mun1,capex2,grant2,privateUsed,privateSpare,mun2,
-          grantForgone,annualMaint1,annualMaint2,opex1,opex2,total1,total2,series,crossover,
+          grantForgone,annualMaint1,annualMaint2:annualMaint2Base,opex1,opex2,total1,total2,series,crossover,
           delta:total1-total2, deltaPct:total1>0?(total1-total2)/total1*100:0};
 }
 
@@ -1942,6 +1978,7 @@ function computeWhy(v){
 function whyValues(){
   const v={};
   WHY_INPUTS.forEach(i=>{const el=$("why-"+i.key); v[i.key]=el?parseFloat(el.value):i.value});
+  v.inflation=curWhyInfl;
   return v;
 }
 
@@ -1962,6 +1999,12 @@ function whyBar(name,total,segs){
 const whyLegend=items=>`<div class="why-legend">${
   items.map(i=>`<span><i style="background:${i.color}"></i>${esc(i.label)}</span>`).join("")}</div>`;
 
+function setWhyInflation(r){
+  curWhyInfl=r;
+  document.querySelectorAll("#why-inflation-pills .why-pill").forEach(b=>b.classList.toggle("active",+b.dataset.rate===r));
+  updateWhy();
+}
+
 /* Round a value up to a clean 1/2/2.5/5/10 × 10ⁿ for the chart's y-axis. */
 function whyNiceMax(v){
   if(!(v>0))return 1;
@@ -1979,7 +2022,7 @@ function renderWhy(){
     WHY_INPUTS.forEach(i=>$("why-"+i.key).addEventListener("input",updateWhy));
     $("why-reset").addEventListener("click",()=>{
       WHY_INPUTS.forEach(i=>{$("why-"+i.key).value=i.value});
-      updateWhy();
+      setWhyInflation(0);
     });
     whyBuilt=true;
   }
@@ -1987,18 +2030,36 @@ function renderWhy(){
 }
 
 function whyShellHTML(){
+  const infoIcon=`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>`;
+  const inflationPills=`
+        <div class="why-slider">
+          <p class="why-slider-top" style="display:block"><span>Maintenance cost inflation</span></p>
+          <div class="why-pill-grp" id="why-inflation-pills">
+            <button class="why-pill active" data-rate="0" onclick="setWhyInflation(0)">Off</button>
+            <button class="why-pill" data-rate="1" onclick="setWhyInflation(1)">1%</button>
+            <button class="why-pill" data-rate="2" onclick="setWhyInflation(2)">2%</button>
+            <button class="why-pill" data-rate="3" onclick="setWhyInflation(3)">3%</button>
+            <button class="why-pill" data-rate="4" onclick="setWhyInflation(4)">4%</button>
+            <button class="why-pill" data-rate="5" onclick="setWhyInflation(5)">5%</button>
+          </div>
+          <p class="why-hint">Compounds annually on the maintenance line, for both options.</p>
+        </div>`;
   const groups=WHY_GROUPS.map(g=>`
     <div class="why-group">
       <h4>${esc(g.title)}</h4>
       <p class="why-group-sub">${esc(g.sub)}</p>
-      ${WHY_INPUTS.filter(i=>i.group===g.id).map(i=>`
+      ${WHY_INPUTS.filter(i=>i.group===g.id).map(i=>{
+        const tip=i.tip?`<span class="info-ico" tabindex="0" role="img" aria-label="${esc(i.tip)}">${infoIcon}<span class="info-tip">${esc(i.tip)}</span></span>`:"";
+        return `
         <div class="why-slider">
           <label class="why-slider-top" for="why-${i.key}">
-            <span>${i.label}</span><span class="why-slider-val" id="whyv-${i.key}">${esc(i.fmt(i.value))}</span>
+            <span>${i.label}${tip}</span><span class="why-slider-val" id="whyv-${i.key}">${esc(i.fmt(i.value))}</span>
           </label>
           <input type="range" id="why-${i.key}" min="${i.min}" max="${i.max}" step="${i.step}" value="${i.value}">
           ${i.hint?`<p class="why-hint">${i.hint}</p>`:""}
-        </div>`).join("")}
+        </div>`;
+      }).join("")}
+      ${g.id==="project"?inflationPills:""}
     </div>`).join("");
 
   return `
@@ -2020,26 +2081,34 @@ function updateWhy(){
   const negligible= Math.abs(m.deltaPct)<1;
 
   /* ---- headline stats ---- */
+  const yrsLabel=v.years===0?"Build only":`${v.years}-year`;
   const stats=`
+  <div class="why-mobile-summary" id="why-mobile-summary">
+    <div class="wms-item"><span class="wms-lbl">Option 1 · Municipal only</span><span class="wms-val">${esc(whyCashShort(m.total1))}</span></div>
+    <div class="wms-item opt2"><span class="wms-lbl">Option 2 · With a non-profit</span><span class="wms-val">${esc(whyCashShort(m.total2))}</span></div>
+  </div>
   <div class="why-stats">
     <div class="why-stat">
       <p class="why-stat-lbl">Option 1 · Municipal only</p>
       <p class="why-stat-val">${esc(whyCashShort(m.total1))}</p>
-      <p class="why-stat-sub">Town's ${v.years}-year cost: ${esc(whyCash(m.mun1))} capital + ${esc(whyCash(m.opex1))} upkeep</p>
+      <p class="why-stat-sub">Town's ${yrsLabel} cost: ${esc(whyCash(m.mun1))} capital + ${esc(whyCash(m.opex1))} upkeep</p>
     </div>
     <div class="why-stat">
       <p class="why-stat-lbl">Option 2 · With a non-profit</p>
       <p class="why-stat-val">${esc(whyCashShort(m.total2))}</p>
-      <p class="why-stat-sub">Town's ${v.years}-year cost: ${esc(whyCash(m.mun2))} capital + ${esc(whyCash(m.opex2))} upkeep</p>
+      <p class="why-stat-sub">Town's ${yrsLabel} cost: ${esc(whyCash(m.mun2))} capital + ${esc(whyCash(m.opex2))} upkeep</p>
     </div>
     <div class="why-stat lead">
       <p class="why-stat-lbl">${negligible?"Difference":cheaper?"Partnership saves":"Partnership costs more"}</p>
       <p class="why-stat-val">${esc(whyCashShort(Math.abs(m.delta)))}${negligible?"":` <span class="why-pct-badge ${cheaper?"good":"caution"}">${Math.abs(m.deltaPct).toFixed(0)}%</span>`}</p>
       <p class="why-stat-sub">${negligible
         ? "Within 1% — on these assumptions the two approaches are a wash."
-        : `${cheaper?"Cheaper":"Costlier"} municipal cost over ${v.years} years`}</p>
+        : `${cheaper?"Cheaper":"Costlier"} municipal cost${v.years===0?" to build":` over ${v.years} years`}`}</p>
     </div>
-  </div>`;
+  </div>
+  ${v.years===0?`<p class="why-flag"><b>Build-only comparison</b>The comparison horizon is set to 0 years, so these
+  totals are construction only — no ongoing maintenance, coordination cost, or volunteer adoption savings are
+  included on either side. Drag the horizon slider right to see the multi-year picture.</p>`:""}`;
 
   /* ---- chart 1: who funds the capital project ----
      Both bars total the same delivered project value (construction + full
@@ -2109,7 +2178,7 @@ function updateWhy(){
     maintenance the town still carries. ${m.crossover===null
       ? "The gap widens every year the non-profit keeps its crews out there — the maintenance liability, not the construction discount, is where the money actually is."
       : `On these assumptions the partnership costs the town more from year ${m.crossover} onward: coordination overhead has outgrown the maintenance it offsets.`}
-    Constant dollars, no inflation — it would scale both lines and change nothing about the comparison.</p>
+    ${v.inflation>0?`Maintenance inflates at ${v.inflation}%/yr; all other costs are held flat.`:"Constant dollars — maintenance inflation is off."}</p>
     ${whyLegend([{label:"Option 1 · Municipal only",color:"var(--ink)"},{label:"Option 2 · With a non-profit",color:"var(--clay)"}])}
     <div class="chart-svg-wrap" id="why-wrap">
       <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative municipal cost, both options, over ${v.years} years">
@@ -2148,9 +2217,9 @@ function updateWhy(){
         ${row("Non-profit private capital","Donations, sponsorship, foundation grants",  "—",-m.privateUsed)}
         ${row("Municipal capital outlay","",m.mun1,m.mun2,"sum")}
         ${row("Annual maintenance",`${v.miles} mi × ${whyCash(v.maint)}/mi/yr${v.adopt>0?`; volunteers cover ${v.adopt}% under Option 2`:""}`,m.annualMaint1,m.annualMaint1*(1-v.adopt/100))}
-        ${row("Annual partnership coordination","Staff time, training, insurance, tools","—",v.coord)}
-        ${row(`Operating cost × ${v.years} years`,"",m.opex1,m.opex2,"sum")}
-        ${row(`Total municipal cost, ${v.years} years`,"",m.total1,m.total2,"total")}
+        ${row("Annual partnership coordination","Staff time, training, insurance, tools — not inflated","—",v.coord)}
+        ${row(`Operating cost, ${v.years===0?"build only":`${v.years} years`}`,v.inflation>0?`Includes ${v.inflation}%/yr maintenance inflation`:"No maintenance inflation",m.opex1,m.opex2,"sum")}
+        ${row(`Total municipal cost, ${v.years===0?"build only":`${v.years} years`}`,"",m.total1,m.total2,"total")}
       </tbody>
     </table>
   </div>`;
@@ -2217,6 +2286,12 @@ function whyCaveatsHTML(){
     then discounted by a productivity factor, then capped at the hand-finishing share of the build. All three steps matter.
     Pricing volunteer hours at the headline rate with no discount and no cap is the single most common way these
     comparisons get inflated, and it is why the resulting numbers rarely survive contact with a finance director.</p>
+
+    <h4>Maintenance inflation</h4>
+    <p>When enabled, compounds only the per-mile trail maintenance line, for both options, at the rate selected above —
+    construction, planning, private capital, and partnership coordination costs are all treated as fixed today's-dollar
+    figures for the length of the comparison horizon. Off by default; the six-way switch (Off/1/2/3/4/5%) sits right
+    below the maintenance slider.</p>
 
     <h4>Three things this model refuses to assume</h4>
     <ul>
