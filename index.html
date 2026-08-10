@@ -430,13 +430,20 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:24px}
 .why-stat{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:14px 15px}
 .why-stat.lead{border-color:var(--ink);border-width:2px}
-.why-stat-lbl{font:600 10px/1.35 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:8px}
+.why-stat-lbl{font:600 12.5px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:8px}
+/* Caribou only: its accent trio is the neon one (hot magenta/green/cyan), so --dirt
+   reads as "neon pink" the other two themes' --dirt (rust/burnt-orange) doesn't. */
+[data-theme="caribou"] .why-stat-lbl{color:var(--dirt)}
 .why-stat-val{font:400 27px/1 "Iowan Old Style",Georgia,serif;letter-spacing:-.01em;color:var(--ink)}
 .why-stat-sub{margin-top:6px;font-size:12px;color:var(--slate);line-height:1.4}
 .why-bar{margin-bottom:16px}
 .why-bar-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:5px}
 .why-bar-name{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
 .why-bar-total{font:600 13px ui-monospace,Menlo,monospace;color:var(--slate)}
+/* Both bars deliberately show the same total ($X delivered value) — that's the chart's
+   whole point, not a bug (a real user flagged this as one at a glance). The "delivered
+   value" suffix makes that legible on the number itself, not just in the paragraph above. */
+.why-bar-total-note{font-weight:400;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);opacity:.75}
 .why-bar-track{display:flex;height:34px;border-radius:3px;overflow:hidden;background:var(--rule)}
 .why-seg{
   display:flex;align-items:center;justify-content:center;min-width:0;
@@ -1925,7 +1932,7 @@ function whyBar(name,total,segs){
       title="${esc(s.label)}: ${esc(whyCash(s.val))} (${pct.toFixed(1)}%)">${pct>=13?esc(whyCashShort(s.val)):""}</span>`;
   }).join("");
   return `<div class="why-bar">
-    <div class="why-bar-head"><span class="why-bar-name">${esc(name)}</span><span class="why-bar-total">${esc(whyCash(total))}</span></div>
+    <div class="why-bar-head"><span class="why-bar-name">${esc(name)}</span><span class="why-bar-total" title="Delivered project value — identical for both options by design; see the paragraph above">${esc(whyCash(total))} <span class="why-bar-total-note">delivered value</span></span></div>
     <div class="why-bar-track">${cells||'<span class="why-seg" style="width:100%"></span>'}</div>
   </div>`;
 }
