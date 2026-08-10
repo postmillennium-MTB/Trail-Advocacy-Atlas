@@ -2313,6 +2313,20 @@ function init(){
     const t=window.location.hash.replace("#","").toLowerCase();
     if(TABS.some(x=>x.id===t)){switchTab(t);render()}
   });
+  // Fallback deep-link path for when this page is embedded in a cross-origin
+  // <iframe> (e.g. postmillenniumrenaissance.com/trail-advocacy-atlas/) — a
+  // hash on the OUTER page's URL never reaches this page's own
+  // window.location.hash at all, same-origin policy blocks that read
+  // entirely. If whoever owns the embedding page forwards the hash via
+  // postMessage instead of (or in addition to) appending it to the iframe's
+  // src, this picks it up. Expected message shape: {type:"pmr-hash", hash:"#why"}
+  window.addEventListener("message",e=>{
+    const okOrigins=["https://www.postmillenniumrenaissance.com","https://postmillenniumrenaissance.com"];
+    if(!okOrigins.includes(e.origin))return;
+    if(!e.data||e.data.type!=="pmr-hash"||typeof e.data.hash!=="string")return;
+    const t=e.data.hash.replace("#","").toLowerCase();
+    if(TABS.some(x=>x.id===t)){switchTab(t);render()}
+  });
 }
 /* periodic masthead title swap */
 (function(){
