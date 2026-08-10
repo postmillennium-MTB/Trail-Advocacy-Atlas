@@ -12,7 +12,8 @@
     · THEME PALETTES (CSS) ........ the 3 color themes (Moose / Elk / Caribou)
     · BASE + LAYOUT .............. body, masthead, wrap
     · CONTROLS .................. search box, tier filter, reset, theme swatches
-    · TABS + PANELS ............. the 4 tab buttons
+    · TABS + PANELS ............. the tab buttons
+    · WHY TAB styles ............ sliders, stacked bars, ledger table
     · DIRECTORY LIST styles
     · PIE CHART styles
     · MAP styles (cartogram + point maps + detail card)
@@ -32,6 +33,7 @@
     · TIER_COLORS / TIER_LABELS . tier -> color and display label
     · THEMES registry ........... THE list of color themes — add one line to add one
     · TABS registry ............. THE list of tabs — add one line to add a tab
+    · WHY_INPUTS registry ....... THE list of Why-tab sliders — add one line to add one
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
     ==== everything past "END OF DATA" is logic ====
     · runtime state ............. filters / activeTab / detailState
@@ -48,6 +50,8 @@
     · renderMap() ............... Map tab (cartogram, or point map for CA/CO/VT/OR)
     · renderPointMap() .......... inline point map
     · renderDetailMap() ......... Trailhead Map tab (big standalone point map)
+    · computeWhy() .............. Why tab — THE cost model, all of it, one function
+    · renderWhy() / updateWhy() . Why tab — shell built once, results redrawn live
     · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
     · init() .................... wires up all the buttons on page load
     · title swap ................ rotates the headline every few seconds
@@ -170,11 +174,16 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
 .theme-dots i{flex:1;display:block}
 
 /* ---- tabs ---- */
-.tabs{display:flex;gap:0;border-bottom:1.5px solid var(--rule);margin-bottom:22px}
+/* The bar scrolls sideways rather than pushing the whole page wider: on a phone
+   the tab row is wider than the viewport, and without this the entire document
+   scrolls horizontally. */
+.tabs{display:flex;gap:0;border-bottom:1.5px solid var(--rule);margin-bottom:22px;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
 .tabs button{
   font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
   padding:12px 16px;border:0;background:none;color:var(--slate);cursor:pointer;
-  border-bottom:3px solid transparent;margin-bottom:-1.5px;
+  border-bottom:3px solid transparent;margin-bottom:-1.5px;flex:0 0 auto;
 }
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--clay)}
 .panel[hidden]{display:none}
@@ -346,6 +355,98 @@ footer{margin-top:50px;padding-top:16px;border-top:1.5px solid var(--rule);
   color:var(--slate);font-size:13px;line-height:1.6}
 footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(--rule)}
 
+/* ---- why tab ---- */
+/* Tabs flagged `filters:false` in the TABS registry hide the search/filter
+   controls, which would otherwise sit there doing nothing. The [hidden]
+   attribute alone can't win against `.controls{display:flex}`, hence these. */
+.controls[hidden],.tierbar[hidden],.counts[hidden]{display:none}
+.why-lede{max-width:74ch;margin:0 0 22px;font-size:15px;color:var(--ink)}
+.why-lede b{border-bottom:2px solid var(--clay)}
+.why-layout{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:30px;align-items:start}
+.why-inputs{position:sticky;top:14px}
+.why-group{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:15px 16px 4px;margin-bottom:16px}
+.why-group h4{
+  margin:0 0 3px;font:600 11px/1 ui-monospace,Menlo,monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dirt);
+}
+.why-group .why-group-sub{margin:0 0 14px;font-size:12.5px;color:var(--slate);line-height:1.45}
+.why-slider{margin-bottom:15px}
+.why-slider-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px}
+.why-slider-val{font:600 13px ui-monospace,Menlo,monospace;color:var(--clay);white-space:nowrap}
+.why-slider input[type=range]{
+  width:100%;margin:7px 0 0;height:3px;border-radius:2px;background:var(--rule);
+  -webkit-appearance:none;appearance:none;outline:none;cursor:pointer;
+}
+.why-slider input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--clay);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
+}
+.why-slider input[type=range]::-moz-range-thumb{
+  width:15px;height:15px;border-radius:50%;background:var(--clay);
+  border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
+}
+.why-slider input[type=range]:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
+.why-hint{margin:5px 0 0;font-size:12px;line-height:1.45;color:var(--slate)}
+.why-reset{
+  font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  padding:9px 13px;border:1.5px dashed var(--clay);background:#fff;color:var(--clay);
+  border-radius:2px;cursor:pointer;width:100%;
+}
+.why-reset:hover{background:var(--clay);color:#fff}
+.why-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.why-stat{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:14px 15px}
+.why-stat.lead{border-color:var(--ink);border-width:2px}
+.why-stat-lbl{font:600 10px/1.35 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:8px}
+.why-stat-val{font:400 27px/1 "Iowan Old Style",Georgia,serif;letter-spacing:-.01em;color:var(--ink)}
+.why-stat-sub{margin-top:6px;font-size:12px;color:var(--slate);line-height:1.4}
+.why-bar{margin-bottom:16px}
+.why-bar-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:5px}
+.why-bar-name{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.why-bar-total{font:600 13px ui-monospace,Menlo,monospace;color:var(--slate)}
+.why-bar-track{display:flex;height:34px;border-radius:3px;overflow:hidden;background:var(--rule)}
+.why-seg{
+  display:flex;align-items:center;justify-content:center;min-width:0;
+  font:600 11px ui-monospace,Menlo,monospace;color:#fff;white-space:nowrap;overflow:hidden;
+}
+.why-legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin:2px 0 6px;
+  font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--slate)}
+.why-legend span{display:inline-flex;align-items:center;gap:6px}
+.why-legend i{width:11px;height:11px;border-radius:2px;display:inline-block;flex:0 0 11px}
+.why-ledger{width:100%;border-collapse:collapse;font-size:13.5px}
+.why-ledger th{
+  text-align:right;padding:7px 8px;border-bottom:1.5px solid var(--ink);
+  font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);
+}
+.why-ledger th:first-child{text-align:left}
+.why-ledger td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.why-ledger td:first-child{text-align:left}
+.why-ledger tr.sum td{font-weight:600;border-bottom:1.5px solid var(--ink);background:rgba(0,0,0,.02)}
+.why-ledger tr.total td{font-weight:600;font-size:15px;border-bottom:3px double var(--ink)}
+.why-ledger .why-cell-note{display:block;font-size:11.5px;color:var(--slate);font-weight:400;margin-top:2px}
+.why-ledger td.neg{color:var(--loam)}
+/* Time-chart dots stay invisible until the crosshair picks one out, the same way
+   the Charts tab's .chart-hover-dot works — 20+ visible dots per line is noise. */
+.why-dot{opacity:0;pointer-events:none}
+.why-axis-title{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;fill:var(--slate)}
+.why-flag{
+  border-left:3px solid var(--clay);background:#fff;padding:11px 14px;margin:14px 0 0;
+  font-size:13px;line-height:1.55;color:var(--ink);
+}
+.why-flag b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--clay);display:block;margin-bottom:3px}
+.why-caveats{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:18px 20px;margin-top:26px}
+.why-caveats h3{margin:0 0 10px;font-size:16px;letter-spacing:-.01em}
+.why-caveats h4{margin:16px 0 4px;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt)}
+.why-caveats p,.why-caveats li{font-size:13.5px;line-height:1.6;color:var(--ink);max-width:78ch}
+.why-caveats p{margin:0 0 8px}
+.why-caveats ul{margin:0 0 8px;padding-left:20px}
+.why-caveats li{margin-bottom:5px}
+.why-caveats .src{color:var(--slate);font-size:12.5px}
+
+@media(max-width:900px){
+  .why-layout{grid-template-columns:1fr}
+  .why-inputs{position:static}
+  .why-stats{grid-template-columns:1fr}
+}
 @media(max-width:760px){
   .pie-layout{grid-template-columns:1fr}
   .counts{gap:18px}
@@ -907,12 +1008,16 @@ let currentTheme=DEFAULT_THEME;
      id      unique key; the panel becomes <div id="p-{id}">
      label   the visible button text
      render  the function that fills that panel
+     filters set to false if the tab ignores the search/state/tier controls — the
+             filter bar and the counters are then hidden while it's open, instead
+             of sitting above the panel doing nothing. Defaults to true.
 
    `render` is stored as a name string, not a direct reference, because the render
    functions are declared further down the file — looking them up by name at click
    time avoids any declaration-order trap.
    ================================================================================ */
 const TABS=[
+  {id:"why",    label:"Why",           render:"renderWhy", filters:false},
   {id:"list",   label:"Directory",     render:"renderList"},
   {id:"pie",    label:"By state",      render:"renderPie"},
   {id:"map",    label:"Map",           render:"renderMap"},
@@ -922,6 +1027,65 @@ const TABS=[
   {id:"near",   label:"Near me",       render:"renderNear"},
 ];
 const DEFAULT_TAB="pie";
+
+/* ==== WHY TAB — number formatters =============================================
+   Declared above WHY_INPUTS because the registry stores direct references to
+   them (`fmt:whyCash`), which is evaluated the moment the array is built. */
+function whyCash(n){return "$"+Math.round(n).toLocaleString()}
+function whyCashShort(n){
+  const v=Math.round(n), s=v<0?"-":"", a=Math.abs(v);
+  if(a>=1e6) return s+"$"+(a/1e6).toFixed(a>=1e7?1:2)+"M";
+  if(a>=1e4) return s+"$"+Math.round(a/1e3)+"K";
+  return s+"$"+a.toLocaleString();
+}
+function whyPct(v){return v+"%"}
+function whyNum(v){return Number(v).toLocaleString()}
+
+/* ==== WHY INPUTS REGISTRY — the single source of truth for every Why slider. ===
+   TO ADD AN INPUT: add ONE line here. The slider markup, the value readout, the
+   reset button, and the object handed to computeWhy() all derive from this array.
+   If the new input feeds the math, add it to computeWhy() as well — that function
+   is the entire cost model and is meant to be read top-to-bottom.
+
+     key    property name on the value object computeWhy() receives
+     group  "project" (applies to both options) or "partner" (Option 2 only)
+     fmt    formats the number shown next to the label
+     hint   the honest caveat — every assumption a user could reasonably dispute
+            should carry one, since this tab argues a case and has to show its work.
+   ============================================================================== */
+const WHY_INPUTS=[
+  {key:"miles",     group:"project", label:"Trail length",                    min:5,     max:50,     step:1,    value:10,    fmt:v=>v+" mi"},
+  {key:"cost",      group:"project", label:"Base construction cost / mile",   min:10000, max:95000,  step:1000, value:45000, fmt:whyCash,
+   hint:"Turnkey professional singletrack, machine cut and hand finished. Contractor surveys cluster at $25K–$80K/mi; rock, bridging, and steep or wet ground push past that. The low end of this slider is realistic only for easy soil on gentle terrain."},
+  {key:"plan",      group:"project", label:"Planning, design & permitting",   min:0,     max:25,     step:1,    value:12,    fmt:whyPct,
+   hint:"As a share of construction cost. Covers alignment flagging, environmental review, and the municipal staff hours pulled off other duties. Rarely appears on the capital line, but it is real money."},
+  {key:"maint",     group:"project", label:"Maintenance / mile / year",       min:500,   max:8000,   step:250,  value:2500,  fmt:whyCash,
+   hint:"American Trails puts routine singletrack upkeep at $1,500–$5,000/mi/yr."},
+  {key:"grant",     group:"project", label:"Public grant funding",            min:0,     max:80,     step:5,    value:25,    fmt:whyPct,
+   hint:"RTP, RAISE, CMAQ and state programs. Applied to BOTH options — a town does not need a non-profit to apply for public money, and any tool that implies otherwise is selling something."},
+  {key:"years",     group:"project", label:"Comparison horizon",              min:5,     max:30,     step:1,    value:20,    fmt:v=>v+" yrs"},
+
+  {key:"volhours",  group:"partner", label:"Volunteer construction hours",    min:0,     max:15000,  step:100,  value:2500,  fmt:whyNum,
+   hint:"Total hours the non-profit mobilizes for hand finishing across the whole build, not per year."},
+  {key:"volrate",   group:"partner", label:"Value of one volunteer hour",     min:15,    max:60,     step:1,    value:35,    fmt:whyCash,
+   hint:"Independent Sector's national estimate is $34.79/hr (2024). State-level values run roughly $25–$50, so localize this if you are presenting to a council."},
+  {key:"prod",      group:"partner", label:"Volunteer productivity vs. pros", min:20,    max:100,    step:5,    value:60,    fmt:whyPct,
+   hint:"A volunteer hour does not displace a contractor hour one-for-one. This discount is the difference between an honest estimate and an advocacy number."},
+  {key:"handshare", group:"partner", label:"Hand-finishing share of build",   min:0,     max:60,     step:5,    value:35,    fmt:whyPct,
+   hint:"The ceiling on volunteer savings. Excavator time, operator wages, and machine mobilization cannot be volunteered away, so no amount of volunteer labor drives cost below the machine-only floor."},
+  {key:"private",   group:"partner", label:"Non-profit private capital",      min:0,     max:500000, step:5000, value:75000, fmt:whyCash,
+   hint:"Donations, corporate sponsorship, and outdoor-industry or foundation grants that municipalities are ineligible to apply for directly. This is the one funding pool that genuinely is partnership-only."},
+  {key:"planoffset",group:"partner", label:"Planning absorbed by non-profit", min:0,     max:100,    step:5,    value:50,    fmt:whyPct,
+   hint:"Pro-bono trail planners, volunteer-led public comment, or a planning grant the non-profit secures."},
+  {key:"adopt",     group:"partner", label:"Maintenance done by volunteers",  min:0,     max:95,     step:5,    value:70,    fmt:whyPct,
+   hint:"Capped below 100% on purpose. Storm damage, drainage failures, liability inspections and anything needing a machine stay municipal even under a signed adoption agreement."},
+  {key:"coord",     group:"partner", label:"Partnership coordination / year", min:0,     max:40000,  step:1000, value:6000,  fmt:whyCash,
+   hint:"Staff time to schedule crews, train and supervise volunteers, carry insurance and waivers, and maintain tools. Almost never budgeted — and set it high enough with few volunteer hours and the partnership stops paying for itself."},
+];
+const WHY_GROUPS=[
+  {id:"project", title:"The project", sub:"Applies to both options — the same trail, built to the same standard."},
+  {id:"partner", title:"The partnership", sub:"Option 2 only. What the non-profit actually brings, and what it costs the town to work with them."},
+];
 
 /* ================== END OF DATA — everything below is logic ================== */
 
@@ -1598,6 +1762,382 @@ function wireDetailStateButtons(){
     }));
 }
 
+/* ---------- why ---------- */
+/* ==== computeWhy() — THE ENTIRE COST MODEL. ===================================
+   Every number the Why tab displays comes out of this one function, so the whole
+   argument can be audited in one screen. Two rules it follows deliberately:
+
+   1. Both options get the same public grant rate. Municipalities apply for RTP,
+      RAISE, CMAQ and state trail money directly and win it all the time. The
+      partnership's funding advantage is the PRIVATE pool (donations, corporate
+      sponsorship, outdoor-industry grants), which is genuinely closed to them.
+
+   2. The partnership is allowed to lose. Volunteer labor is discounted for
+      productivity and capped at the hand-finishing share of the build, adoption
+      is capped below 100%, and coordination carries a real annual cost. Turn the
+      volunteer hours down and the coordination cost up and Option 2 comes out
+      behind — which happens in the real world and should happen here too.
+   ============================================================================== */
+function computeWhy(v){
+  const construction  = v.miles*v.cost;
+  const planningFull  = construction*v.plan/100;         // Option 1 carries all of it
+  const planning2     = planningFull*(1-v.planoffset/100);
+  const planningGift  = planningFull-planning2;          // what the non-profit absorbs
+
+  // Volunteer labor can only ever displace hand-finishing work, never machine time.
+  const handworkCost  = construction*v.handshare/100;
+  const volValueRaw   = v.volhours*v.volrate*(v.prod/100);
+  const volCredit     = Math.min(volValueRaw,handworkCost);
+  const volCapped     = volValueRaw>handworkCost;
+  const volWasted     = volValueRaw-volCredit;
+
+  // ---- Option 1: town buys the finished trail -------------------------------
+  const capex1        = construction+planningFull;
+  const grant1        = capex1*v.grant/100;
+  const mun1          = capex1-grant1;
+
+  // ---- Option 2: same trail, cheaper contract, more funding sources ---------
+  const capex2        = (construction-volCredit)+planning2;
+  const grant2        = capex2*v.grant/100;
+  const privateUsed   = Math.min(v.private,Math.max(0,capex2-grant2));
+  const privateSpare  = v.private-privateUsed;           // raised more than the gap
+  const mun2          = Math.max(0,capex2-grant2-privateUsed);
+
+  // A cheaper project draws a smaller percentage grant. Worth surfacing rather
+  // than hiding: some of what volunteers save is handed back to the grantor.
+  const grantForgone  = grant1-grant2;
+
+  // ---- Operating cost over the horizon --------------------------------------
+  const annualMaint1  = v.miles*v.maint;
+  const annualMaint2  = annualMaint1*(1-v.adopt/100)+v.coord;
+  const opex1         = annualMaint1*v.years;
+  const opex2         = annualMaint2*v.years;
+
+  const total1 = mun1+opex1, total2 = mun2+opex2;
+
+  // Year-by-year cumulative municipal outlay, year 0 = capital only.
+  const series=[];
+  for(let y=0;y<=v.years;y++) series.push({y, a:mun1+annualMaint1*y, b:mun2+annualMaint2*y});
+
+  // If Option 2 ever overtakes Option 1, say which year — the partnership is not
+  // automatically cheaper and the chart should be able to show that.
+  let crossover=null;
+  for(const p of series){ if(p.b>p.a){crossover=p.y;break} }
+
+  return {construction,planningFull,planning2,planningGift,handworkCost,volValueRaw,volCredit,
+          volCapped,volWasted,capex1,grant1,mun1,capex2,grant2,privateUsed,privateSpare,mun2,
+          grantForgone,annualMaint1,annualMaint2,opex1,opex2,total1,total2,series,crossover,
+          delta:total1-total2, deltaPct:total1>0?(total1-total2)/total1*100:0};
+}
+
+/* Current slider values, keyed by WHY_INPUTS[].key. */
+function whyValues(){
+  const v={};
+  WHY_INPUTS.forEach(i=>{const el=$("why-"+i.key); v[i.key]=el?parseFloat(el.value):i.value});
+  return v;
+}
+
+/* One stacked funding/cost bar. Segments narrower than 13% drop their inline
+   label rather than clipping it — the legend and the hover title still name them. */
+function whyBar(name,total,segs){
+  const shown=segs.filter(s=>s.val>0.5);
+  const cells=shown.map(s=>{
+    const pct=total>0?s.val/total*100:0;
+    return `<span class="why-seg" style="width:${pct.toFixed(2)}%;background:${s.color}"
+      title="${esc(s.label)}: ${esc(whyCash(s.val))} (${pct.toFixed(1)}%)">${pct>=13?esc(whyCashShort(s.val)):""}</span>`;
+  }).join("");
+  return `<div class="why-bar">
+    <div class="why-bar-head"><span class="why-bar-name">${esc(name)}</span><span class="why-bar-total">${esc(whyCash(total))}</span></div>
+    <div class="why-bar-track">${cells||'<span class="why-seg" style="width:100%"></span>'}</div>
+  </div>`;
+}
+const whyLegend=items=>`<div class="why-legend">${
+  items.map(i=>`<span><i style="background:${i.color}"></i>${esc(i.label)}</span>`).join("")}</div>`;
+
+/* Round a value up to a clean 1/2/2.5/5/10 × 10ⁿ for the chart's y-axis. */
+function whyNiceMax(v){
+  if(!(v>0))return 1;
+  const mag=Math.pow(10,Math.floor(Math.log10(v))), n=v/mag;
+  return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;
+}
+
+/* ==== renderWhy() — builds the panel shell once, then delegates to updateWhy().
+   The sliders must NOT be rebuilt on every input event: replacing the markup
+   mid-drag drops the pointer capture and the thumb stops following the mouse. */
+let whyBuilt=false;
+function renderWhy(){
+  if(!whyBuilt){
+    $("p-why").innerHTML=whyShellHTML();
+    WHY_INPUTS.forEach(i=>$("why-"+i.key).addEventListener("input",updateWhy));
+    $("why-reset").addEventListener("click",()=>{
+      WHY_INPUTS.forEach(i=>{$("why-"+i.key).value=i.value});
+      updateWhy();
+    });
+    whyBuilt=true;
+  }
+  updateWhy();
+}
+
+function whyShellHTML(){
+  const groups=WHY_GROUPS.map(g=>`
+    <div class="why-group">
+      <h4>${esc(g.title)}</h4>
+      <p class="why-group-sub">${esc(g.sub)}</p>
+      ${WHY_INPUTS.filter(i=>i.group===g.id).map(i=>`
+        <div class="why-slider">
+          <label class="why-slider-top" for="why-${i.key}">
+            <span>${i.label}</span><span class="why-slider-val" id="whyv-${i.key}">${esc(i.fmt(i.value))}</span>
+          </label>
+          <input type="range" id="why-${i.key}" min="${i.min}" max="${i.max}" step="${i.step}" value="${i.value}">
+          ${i.hint?`<p class="why-hint">${i.hint}</p>`:""}
+        </div>`).join("")}
+    </div>`).join("");
+
+  return `
+  <p class="why-lede">Two ways to put the same trail on the ground. In the first, the town buys a finished
+  asset from a contractor and owns it forever. In the second, a non-profit advocacy organization joins the
+  project and changes who pays for what. <b>The trail is identical either way</b> — what moves is the money,
+  the labor, and the maintenance liability. Drag anything below; every figure recalculates live.</p>
+  <div class="why-layout">
+    <div class="why-inputs">${groups}<button type="button" class="why-reset" id="why-reset">Reset to defaults</button></div>
+    <div id="why-results"></div>
+  </div>`;
+}
+
+function updateWhy(){
+  const v=whyValues();
+  WHY_INPUTS.forEach(i=>{$("whyv-"+i.key).textContent=i.fmt(v[i.key])});
+  const m=computeWhy(v);
+
+  const cheaper   = m.delta>0;
+  const negligible= Math.abs(m.deltaPct)<1;
+
+  /* ---- headline stats ---- */
+  const stats=`
+  <div class="why-stats">
+    <div class="why-stat">
+      <p class="why-stat-lbl">Option 1 · Municipal only</p>
+      <p class="why-stat-val">${esc(whyCashShort(m.total1))}</p>
+      <p class="why-stat-sub">Town's ${v.years}-year cost: ${esc(whyCash(m.mun1))} capital + ${esc(whyCash(m.opex1))} upkeep</p>
+    </div>
+    <div class="why-stat">
+      <p class="why-stat-lbl">Option 2 · With a non-profit</p>
+      <p class="why-stat-val">${esc(whyCashShort(m.total2))}</p>
+      <p class="why-stat-sub">Town's ${v.years}-year cost: ${esc(whyCash(m.mun2))} capital + ${esc(whyCash(m.opex2))} upkeep</p>
+    </div>
+    <div class="why-stat lead">
+      <p class="why-stat-lbl">${negligible?"Difference":cheaper?"Partnership saves":"Partnership costs more"}</p>
+      <p class="why-stat-val">${esc(whyCashShort(Math.abs(m.delta)))}</p>
+      <p class="why-stat-sub">${negligible
+        ? "Within 1% — on these assumptions the two approaches are a wash."
+        : `${Math.abs(m.deltaPct).toFixed(0)}% ${cheaper?"less":"more"} municipal money over ${v.years} years`}</p>
+    </div>
+  </div>`;
+
+  /* ---- chart 1: who funds the capital project ----
+     Both bars total the same delivered project value (construction + full
+     planning burden). Identical length is the point: the trail costs what it
+     costs, and the only thing that changes is whose money shows up. */
+  const deliveredValue=m.construction+m.planningFull;
+  const fundingLegend=whyLegend([
+    {label:"Municipal cash",color:"var(--ink)"},
+    {label:"Public grant",color:"var(--slate)"},
+    {label:"Private / non-profit capital",color:"var(--dirt)"},
+    {label:"Volunteer labor (in kind)",color:"var(--loam)"},
+    {label:"Donated planning",color:"var(--clay)"},
+  ]);
+  const fundingChart=`
+  <div class="chart-card">
+    <h3>Who pays to build it</h3>
+    <p class="chart-desc">Both bars are the same length because both deliver the same ${v.miles}-mile trail, valued at
+    ${esc(whyCash(deliveredValue))} including planning. The partnership does not make the trail cheaper to build —
+    it changes who covers each slice.</p>
+    ${fundingLegend}
+    ${whyBar("Option 1 · Traditional municipal",deliveredValue,[
+      {label:"Municipal cash",val:m.mun1,color:"var(--ink)"},
+      {label:"Public grant",val:m.grant1,color:"var(--slate)"},
+    ])}
+    ${whyBar("Option 2 · Leveraged partnership",deliveredValue,[
+      {label:"Municipal cash",val:m.mun2,color:"var(--ink)"},
+      {label:"Public grant",val:m.grant2,color:"var(--slate)"},
+      {label:"Private / non-profit capital",val:m.privateUsed,color:"var(--dirt)"},
+      {label:"Volunteer labor (in kind)",val:m.volCredit,color:"var(--loam)"},
+      {label:"Donated planning",val:m.planningGift,color:"var(--clay)"},
+    ])}
+    ${m.volCapped?`<p class="why-flag"><b>Volunteer hours capped</b>${esc(whyCash(m.volValueRaw))} of discounted volunteer
+      value was offered but only ${esc(whyCash(m.volCredit))} could be used — that is the entire hand-finishing budget at
+      ${v.handshare}% of construction. The remaining ${esc(whyCash(m.volWasted))} has nothing left to displace, because what
+      is left is machine work. More volunteers cannot fix that; a bigger trail could.</p>`:""}
+    ${m.privateSpare>0?`<p class="why-flag"><b>Raised more than needed</b>The non-profit's ${esc(whyCash(v.private))} exceeds
+      the remaining capital gap by ${esc(whyCash(m.privateSpare))}. Real projects would put that toward maintenance
+      endowment or the next phase; this model simply leaves it unspent.</p>`:""}
+    ${m.grantForgone>100?`<p class="why-flag"><b>The catch nobody mentions</b>Because the partnership shrinks the contract,
+      the same ${v.grant}% grant rate draws ${esc(whyCash(m.grantForgone))} less public money than Option 1 would have.
+      Volunteer labor partly substitutes for grant dollars rather than stacking on top of them. It still nets out ahead here,
+      but a town chasing a large reimbursement grant should check the arithmetic before assuming otherwise.</p>`:""}
+  </div>`;
+
+  /* ---- chart 2: cumulative municipal outlay ---- */
+  const W=880,H=280,padL=62,padR=20,padT=18,padB=44;  // padB leaves room for year labels + axis title
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const yMax=whyNiceMax(Math.max(m.total1,m.total2,1));
+  const xAt=i=>padL+(m.series.length===1?plotW/2:(i/(m.series.length-1))*plotW);
+  const yAt=val=>padT+plotH-(val/yMax)*plotH;
+  const path=k=>m.series.map((p,i)=>`${i===0?"M":"L"}${xAt(i).toFixed(1)} ${yAt(p[k]).toFixed(1)}`).join(" ");
+  const yTicks=[0,.25,.5,.75,1].map(f=>{
+    const y=yAt(yMax*f);
+    return `<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--rule)" stroke-width="1"/>
+      <text class="chart-axis-label" x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end">${esc(whyCashShort(yMax*f))}</text>`;
+  }).join("");
+  const xStep=Math.max(1,Math.ceil(v.years/10));
+  const xTicks=m.series.map((p,i)=>(i%xStep===0||i===m.series.length-1)
+    ?`<text class="chart-axis-label" x="${xAt(i).toFixed(1)}" y="${(padT+plotH+16).toFixed(1)}" text-anchor="middle">${p.y}</text>`:"").join("");
+  const dots=k=>m.series.map((p,i)=>`<circle class="why-dot why-dot-${k}" data-i="${i}" cx="${xAt(i).toFixed(1)}" cy="${yAt(p[k]).toFixed(1)}"
+      r="4" fill="${k==="a"?"var(--ink)":"var(--clay)"}" stroke="var(--paper)" stroke-width="1.5"/>`).join("");
+
+  const timeChart=`
+  <div class="chart-card">
+    <h3>What the town has spent, year by year</h3>
+    <p class="chart-desc">Cumulative municipal outlay. Year 0 is the capital cheque; the slope after that is annual
+    maintenance the town still carries. ${m.crossover===null
+      ? "The gap widens every year the non-profit keeps its crews out there — the maintenance liability, not the construction discount, is where the money actually is."
+      : `On these assumptions the partnership costs the town more from year ${m.crossover} onward: coordination overhead has outgrown the maintenance it offsets.`}
+    Constant dollars, no inflation — it would scale both lines and change nothing about the comparison.</p>
+    ${whyLegend([{label:"Option 1 · Municipal only",color:"var(--ink)"},{label:"Option 2 · With a non-profit",color:"var(--clay)"}])}
+    <div class="chart-svg-wrap" id="why-wrap">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative municipal cost, both options, over ${v.years} years">
+        <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
+        ${yTicks}${xTicks}
+        <text class="why-axis-title" x="${(padL+plotW/2).toFixed(1)}" y="${H-4}" text-anchor="middle">Years after opening</text>
+        <path d="${path("a")}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+        <path d="${path("b")}" fill="none" stroke="var(--clay)" stroke-width="2.5"/>
+        ${dots("a")}${dots("b")}
+        <line class="chart-hover-line" id="why-hoverline" x1="0" x2="0" y1="${padT}" y2="${padT+plotH}"/>
+        <rect class="chart-hoverzone" id="why-hoverzone" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}"/>
+      </svg>
+      <div class="chart-tooltip" id="why-tooltip"></div>
+    </div>
+  </div>`;
+
+  /* ---- ledger ---- */
+  const row=(label,note,a,b,cls)=>`<tr${cls?` class="${cls}"`:""}>
+    <td>${label}${note?`<span class="why-cell-note">${note}</span>`:""}</td>
+    <td${typeof a==="number"&&a<0?' class="neg"':""}>${typeof a==="number"?esc(whyCash(a)):a}</td>
+    <td${typeof b==="number"&&b<0?' class="neg"':""}>${typeof b==="number"?esc(whyCash(b)):b}</td></tr>`;
+  const ledger=`
+  <div class="chart-card">
+    <h3>The arithmetic, line by line</h3>
+    <p class="chart-desc">Every figure above, traceable. Nothing here is rounded away or held back.</p>
+    <table class="why-ledger">
+      <thead><tr><th>Line item</th><th>Option 1</th><th>Option 2</th></tr></thead>
+      <tbody>
+        ${row("Construction",`${v.miles} mi × ${whyCash(v.cost)}/mi`,m.construction,m.construction)}
+        ${row("Volunteer hand-finishing credit",
+              `${whyNum(v.volhours)} hrs × ${whyCash(v.volrate)} × ${v.prod}% productivity${m.volCapped?", capped at hand-finishing budget":""}`,
+              "—",-m.volCredit)}
+        ${row("Planning, design &amp; permitting",`${v.plan}% of construction; non-profit absorbs ${v.planoffset}% under Option 2`,m.planningFull,m.planning2)}
+        ${row("Capital project cost","",m.capex1,m.capex2,"sum")}
+        ${row("Public grant",`${v.grant}% — both options eligible`,-m.grant1,-m.grant2)}
+        ${row("Non-profit private capital","Donations, sponsorship, foundation grants",  "—",-m.privateUsed)}
+        ${row("Municipal capital outlay","",m.mun1,m.mun2,"sum")}
+        ${row("Annual maintenance",`${v.miles} mi × ${whyCash(v.maint)}/mi/yr${v.adopt>0?`; volunteers cover ${v.adopt}% under Option 2`:""}`,m.annualMaint1,m.annualMaint1*(1-v.adopt/100))}
+        ${row("Annual partnership coordination","Staff time, training, insurance, tools","—",v.coord)}
+        ${row(`Operating cost × ${v.years} years`,"",m.opex1,m.opex2,"sum")}
+        ${row(`Total municipal cost, ${v.years} years`,"",m.total1,m.total2,"total")}
+      </tbody>
+    </table>
+  </div>`;
+
+  $("why-results").innerHTML=stats+fundingChart+timeChart+ledger+whyCaveatsHTML();
+  wireWhyHover(m.series,xAt,W,H);
+}
+
+/* Crosshair + tooltip for the two-series time chart. The shared wireChartHover()
+   used by the Charts tab assumes a single series (it indexes one flat dot list),
+   so this variant tracks the matching dot on each line instead. */
+function wireWhyHover(series,xAt,svgW,svgH){
+  const wrap=$("why-wrap"); if(!wrap)return;
+  const svg=wrap.querySelector("svg");
+  const zone=$("why-hoverzone"), hoverline=$("why-hoverline"), tooltip=$("why-tooltip");
+  const dotsA=[...svg.querySelectorAll(".why-dot-a")], dotsB=[...svg.querySelectorAll(".why-dot-b")];
+  function show(evt){
+    const rect=svg.getBoundingClientRect();
+    const mouseX=(evt.clientX-rect.left)*(svgW/rect.width);
+    let best=0,bestD=Infinity;
+    series.forEach((_,i)=>{const d=Math.abs(xAt(i)-mouseX);if(d<bestD){bestD=d;best=i}});
+    const p=series[best];
+    hoverline.style.opacity=1;
+    hoverline.setAttribute("x1",xAt(best));hoverline.setAttribute("x2",xAt(best));
+    dotsA.concat(dotsB).forEach(d=>d.style.opacity=0);
+    if(dotsA[best])dotsA[best].style.opacity=1;
+    if(dotsB[best])dotsB[best].style.opacity=1;
+    tooltip.style.left=(xAt(best)/svgW*rect.width)+"px";
+    // pin the tooltip to whichever line is higher so it never covers the other
+    tooltip.style.top=(Math.min(
+      parseFloat(dotsA[best].getAttribute("cy")),parseFloat(dotsB[best].getAttribute("cy"))
+    )/svgH*rect.height)+"px";
+    tooltip.innerHTML=`Year ${p.y} · Opt 1 ${esc(whyCashShort(p.a))} · Opt 2 ${esc(whyCashShort(p.b))}`;
+    tooltip.style.opacity=1;
+  }
+  function hide(){
+    hoverline.style.opacity=0;
+    dotsA.concat(dotsB).forEach(d=>d.style.opacity=0);
+    tooltip.style.opacity=0;
+  }
+  zone.addEventListener("mousemove",show);
+  zone.addEventListener("mouseleave",hide);
+  zone.addEventListener("touchstart",e=>{show(e.touches[0]);e.preventDefault()},{passive:false});
+  zone.addEventListener("touchmove",e=>{show(e.touches[0]);e.preventDefault()},{passive:false});
+  zone.addEventListener("touchend",hide);
+}
+
+/* Static, but kept next to the model it qualifies — a comparison tool that ships
+   its assumptions without its limitations is a brochure. */
+function whyCaveatsHTML(){
+  return `
+  <div class="why-caveats">
+    <h3>Where these numbers come from, and where they stop</h3>
+
+    <h4>Cost benchmarks</h4>
+    <p>Professional contractor-built singletrack runs roughly <b>$25,000–$80,000 per mile</b>, with technical rock work,
+    bridging, boardwalk and steep or wet ground pushing above that. Terrain and soil drive far more of the spread than
+    contractor margin does — a $75,000/mi quote on rocky sidehill and a $30,000/mi quote on rolling loam can reflect the
+    same crew at the same rate. Routine maintenance runs <b>$1,500–$5,000 per mile per year</b>.
+    <span class="src">Sources: Singletracks contractor survey; American Trails cost database.</span></p>
+
+    <h4>Valuing volunteer labor</h4>
+    <p>Volunteer hours are priced at Independent Sector's national value of volunteer time (<b>$34.79/hr</b> for 2024),
+    then discounted by a productivity factor, then capped at the hand-finishing share of the build. All three steps matter.
+    Pricing volunteer hours at the headline rate with no discount and no cap is the single most common way these
+    comparisons get inflated, and it is why the resulting numbers rarely survive contact with a finance director.</p>
+
+    <h4>Three things this model refuses to assume</h4>
+    <ul>
+      <li><b>That grants are partnership-only.</b> Towns apply for RTP, RAISE, CMAQ and state trail funding directly and
+      win. The grant rate here applies to both options. What the non-profit genuinely unlocks is the private pool —
+      donations, corporate sponsorship, outdoor-industry and foundation money — which municipalities generally cannot
+      access on their own.</li>
+      <li><b>That adoption eliminates maintenance.</b> Volunteer crews absorb a large share of routine upkeep, not all of
+      it. Storm damage, drainage failures, liability inspections and machine work stay with the town under essentially
+      every adoption agreement, which is why the slider caps at 95%.</li>
+      <li><b>That partnership is free.</b> Coordinating volunteers costs staff time, training, insurance and tools. Set the
+      coordination cost high and the volunteer hours low and Option 2 loses. If a model cannot produce that result, it is
+      not a model.</li>
+    </ul>
+
+    <h4>Not modeled</h4>
+    <p>Volunteer hours often qualify as in-kind local match on public grants, so under Option 2 the same hours can both cut
+    the contract and satisfy a match requirement the town would otherwise fund in cash. That is a real second-order benefit
+    and it is <em>not</em> counted here — match rules vary too much by program to model responsibly, so the figures above are
+    conservative on this point. Also excluded: schedule risk (volunteer builds take longer), build quality variance,
+    the durability difference between machine-compacted and hand-finished tread, and every downstream economic effect —
+    visitor spending, property values, health outcomes. This tab compares what a trail <em>costs</em>, not what it returns.</p>
+
+    <p class="src">Directional planning tool for advocacy and early scoping. Validate against local contractor quotes and
+    your own maintenance history before putting any figure in front of a council.</p>
+  </div>`;
+}
+
 /* ---------- shell ---------- */
 
 /* Build the tab buttons and their (empty) panels from the registry. */
@@ -1615,6 +2155,13 @@ function switchTab(name){
   activeTab=name;
   $("tabbar").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
   TABS.forEach(t=>$("p-"+t.id).hidden=(t.id!==name));
+  // Tabs registered with filters:false don't read the search/state/tier filters
+  // or the org counters, so hide both rather than leave dead controls on screen.
+  const usesFilters=(TABS.find(t=>t.id===name)||{}).filters!==false;
+  [".counts",".controls",".tierbar"].forEach(sel=>{
+    const el=document.querySelector(sel);
+    if(el)el.hidden=!usesFilters;
+  });
 }
 function render(){
   const tab=TABS.find(t=>t.id===activeTab)||TABS.find(t=>t.id===DEFAULT_TAB);
@@ -1645,6 +2192,7 @@ function init(){
   });
   activeTab=DEFAULT_TAB;
   buildTabs();
+  switchTab(activeTab);   // also settles whether the filter bar is shown for this tab
   // restore the saved theme (falling back to the default if it's unknown/missing),
   // then let applyTheme() do the actual work so there's only one code path for it
   let saved=DEFAULT_THEME;

@@ -1,6 +1,6 @@
 # US MTB Trail Advocacy Atlas
 
-A single-file, zero-dependency directory of nonprofit mountain bike trail advocacy organizations across the United States. Searchable, filterable by tier and state, with a donut chart, a 50-state cartogram, and real geocoded trailhead maps for four states. Built to the same architecture as PMR's other tools: one HTML file, no build step, deploy anywhere.
+A single-file, zero-dependency directory of nonprofit mountain bike trail advocacy organizations across the United States. Searchable, filterable by tier and state, with a donut chart, a 50-state cartogram, real geocoded trailhead maps for four states, and a **Why** tab that models what one of these organizations is actually worth to a town in dollars. Built to the same architecture as PMR's other tools: one HTML file, no build step, deploy anywhere.
 
 **Current status:** 373 organizations across all 50 states, Washington DC, and Puerto Rico.
 
@@ -86,6 +86,25 @@ Coordinates were sourced by looking up each org's name + city via Google Places 
 
 **To extend this to a 5th state:** geocode that state's orgs the same way (org name + city → Google Places lookup), add `lat`/`lng` to each entry, add a simplified outline to `STATE_OUTLINES`, and add the state code to the `POINT_MAP_STATES` array. The rendering code (`buildProjection()`, `renderPointMap()`, `renderDetailMap()`) is already generic and will pick up any state added to that list automatically.
 
+## The "Why" tab — cost model
+
+The atlas answers *who* builds the trails. This tab answers *why it matters that they exist*, by comparing two ways of delivering the same trail:
+
+- **Option 1 — Traditional municipal.** The town hires a for-profit contractor for the whole job and owns the finished asset, and its maintenance, forever.
+- **Option 2 — Leveraged partnership.** Same contractor for the machine work, but a non-profit brings volunteer hand-finishing labor, private capital, donated planning, and an adopt-a-trail maintenance agreement.
+
+Everything is computed by a single function, **`computeWhy()`**, which is meant to be read top to bottom. Fourteen sliders defined in the **`WHY_INPUTS`** registry feed it; adding an input is one line there plus one line in the model.
+
+**The three deliberate honesty constraints** — these are the whole reason the tab is defensible, so don't quietly remove them:
+
+1. **Both options get the same public grant rate.** Municipalities apply for RTP, RAISE, CMAQ and state trail money directly and win it routinely. The partnership's real funding advantage is the *private* pool — donations, corporate sponsorship, outdoor-industry and foundation grants — which towns generally can't access. The model also surfaces the awkward corollary: because volunteer labor shrinks the contract, the same grant *percentage* draws fewer grant dollars under Option 2.
+2. **Volunteer labor is discounted and capped.** Hours are priced at Independent Sector's national value of volunteer time ($34.79/hr, 2024), multiplied by a productivity factor (volunteers move less dirt per hour than a paid crew), then capped at the hand-finishing share of construction. Machine time — excavator, operator, mobilization — can't be volunteered away, so no amount of volunteer labor drives cost below the machine-only floor.
+3. **The partnership is allowed to lose.** Adoption caps at 95% (storm damage, drainage, liability inspections and machine work stay municipal), and coordination carries a real annual cost for staff time, training, insurance and tools. Set coordination high and volunteer hours low and Option 2 comes out behind — the time chart then names the crossover year. A model that can't produce that result isn't a model.
+
+**Not modeled, deliberately:** volunteer hours often qualify as in-kind local match on public grants, which would make Option 2 look *better* than shown — match rules vary too much by program to model responsibly, so the tab is conservative there and says so. Also excluded: schedule risk, build-quality variance, and every downstream economic return (visitor spending, property values, health). This tab compares what a trail *costs*; the [ROI calculator](https://www.postmillenniumrenaissance.com/trail-roi/) compares what it returns.
+
+The "who pays to build it" bars are deliberately the same length in both options — the trail costs what it costs, and the entire argument is about who covers each slice.
+
 ## Color themes
 
 Three palettes, switchable in the UI under the tier filter, persisted via `localStorage`:
@@ -115,7 +134,10 @@ If a dark-background report ever comes back, check these three things first befo
 - **The cartogram is a grid, not real geography.** One square per state in roughly correct relative position — good for reading relative density, not for tracing actual borders.
 - **Search includes a hidden `c` field.** If a search misses an org you'd expect to find (e.g. searching a small town name), it's likely because that org's `c` field hasn't been populated yet — the city name needs to be manually added, it's not automatically extracted from anywhere.
 - **Reset button** (dashed, next to "Local" in the tier bar) clears search text, state, and tier filters back to defaults — it deliberately does *not* touch your color theme or active tab, which are treated as separate preferences.
-- **Default tab on load is "By state"** (the pie chart), not the Directory — changed deliberately partway through development.
+- **Default tab on load is "By state"** (the pie chart), not the Directory — changed deliberately partway through development. "Why" sits first in the tab bar as the thesis of the whole atlas, but isn't the landing tab.
+- **The Why tab hides the filter bar and counters.** Tabs registered with `filters:false` in the `TABS` registry don't read the search/state/tier controls, so `switchTab()` hides them rather than leaving dead controls on screen. Any future tab that ignores the filters gets the same treatment with one flag.
+- **The Why tab's sliders are built once, not re-rendered.** `renderWhy()` builds the panel shell on first open and everything after that goes through `updateWhy()`, which only replaces the results column. Rebuilding the slider markup on every `input` event would drop pointer capture mid-drag and the thumb would stop following the mouse.
+- **The tab bar scrolls sideways on narrow screens** instead of widening the page. Without `overflow-x:auto` on `.tabs`, eight tabs push the whole document into horizontal scroll on a phone.
 - **The masthead title rotates** every 6 seconds between "Who builds the trails you ride" and "How trails get built," respecting `prefers-reduced-motion` for anyone with that OS setting on.
 
 ## Working with Claude on this file
