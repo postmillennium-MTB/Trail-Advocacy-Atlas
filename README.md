@@ -109,15 +109,28 @@ The "who pays to build it" bars are deliberately the same length in both options
 
 Three palettes, switchable in the UI under the tier filter, persisted via `localStorage`:
 
-- **Moose** (default) — warm earth tones: cream paper, forest-green/rust accents, soft charcoal-gray ink (not pure black — see mobile note below on why near-black was a problem).
+- **Caribou** (default) — icy blue-teal base with a soft, abstract camo-blob background pattern (six low-opacity radial gradients, not a busy texture) and neon aurora accents: hot magenta, neon green, neon cyan.
+- **Moose** — warm earth tones: cream paper, forest-green/rust accents, soft charcoal-gray ink (not pure black — see mobile note below on why near-black was a problem).
 - **Elk** — warm gold parchment paper, mahogany-brown ink, amber/marigold accents.
-- **Caribou** — icy blue-teal base with a soft, abstract camo-blob background pattern (six low-opacity radial gradients, not a busy texture) and neon aurora accents: hot magenta, neon green, neon cyan.
 
 Each theme is defined in **two places** that must stay in sync if you add a fourth:
 1. CSS custom properties under `[data-theme="name"]{...}` — controls page chrome.
-2. The `THEME_PALETTES` object in `<script>` — controls pie chart slice colors and the map's color-mix gradient, since those are drawn in JS and can't read CSS variables automatically for computed effects like `color-mix()`.
+2. The `THEMES` registry in `<script>` — controls pie chart slice colors, the map's color-mix gradient, and the `paper` hex pushed to `<meta name="theme-color">`, since those are drawn in JS and can't read CSS variables automatically for computed effects like `color-mix()`.
 
-There's also a `THEME_PAPER` lookup (hex-only, no CSS var) used to update the mobile browser's `<meta name="theme-color">` tag when you switch themes — see the mobile section below for why that matters.
+### Changing the default theme
+
+Four edits, and skipping any one of them leaves a visible bug:
+
+1. **Move the bare `:root` selector** onto the new default's CSS block. It styles the first paint, before JS has stamped `data-theme` on `<html>`; leave it behind and every cold load flashes the old palette.
+2. **Move that block to the top of the palette list.** `:root` and `[data-theme="elk"]` have *identical* specificity (0,1,0), so the one declared last wins. A default block sitting at the bottom silently overrides every other palette — swatches still flip `data-theme` and charts still recolor, but `--paper`/`--ink` stay stuck on the default. This one is easy to miss because it looks like it works until you click another swatch.
+3. **Set `DEFAULT_THEME`** in the `THEMES` registry.
+4. **Update the `<meta name="theme-color">` tag** in `<head>` to the new default's paper hex, so the mobile address bar matches before `applyTheme()` runs.
+
+### Theme persistence
+
+`applyTheme(name, persist)` only writes to `localStorage` when `persist` is true, which is exactly the swatch-click path. Applying the default on load deliberately does *not* write.
+
+This mattered when Caribou became the default: the previous code saved on **every** load, default included, so every visitor who had ever opened the atlas carried an explicit `"moose"` they never chose — and would never have seen a new default. The storage key was retired (`mtbAtlasTheme` → `mtbAtlasTheme2`) to clear that once. A deliberate pick still survives reloads; a default no longer masquerades as one.
 
 ## Mobile dark-mode fix
 

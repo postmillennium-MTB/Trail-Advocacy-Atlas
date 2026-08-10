@@ -67,11 +67,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
-<meta name="theme-color" content="#f2efe6">
+<meta name="theme-color" content="#eef3f0"><!-- caribou paper; applyTheme() keeps it in step after load -->
 <title>US MTB Trail Advocacy Atlas</title>
 <style>
-/* ==== THEME PALETTES (CSS) — one block per theme; ids must match the JS THEMES registry ==== */
-:root, [data-theme="moose"]{
+/* ==== THEME PALETTES (CSS) — one block per theme; ids must match the JS THEMES registry ====
+   The DEFAULT theme's block goes FIRST and carries the bare `:root` selector, which styles
+   the first paint before any JS has run and stamped data-theme on <html>.
+
+   Order is load-bearing, not cosmetic. `:root` and `[data-theme="elk"]` have IDENTICAL
+   specificity (0,1,0), so whichever is declared LAST wins. Put the default's block at the
+   bottom and its `:root` silently overrides every other palette — the swatches still flip
+   data-theme and the charts still recolor, but --paper/--ink stay stuck on the default.
+   Default's block first, everything else after.
+
+   CHANGING THE DEFAULT means editing four things: move the bare `:root` onto the new
+   default's block, move that block to the top, set DEFAULT_THEME in the JS registry, and
+   update the <meta name="theme-color"> tag above. */
+:root, [data-theme="caribou"]{   /* ← default; keep this block first, see note above */
+  --ink:#29343a;
+  --paper:#eef3f0;
+  --dirt:#ff2fb0;
+  --loam:#00e6a8;
+  --clay:#00d4ff;
+  --slate:#62777c;
+  --rule:#cddad6;
+}
+[data-theme="moose"]{
   --ink:#2b2f2c;
   --paper:#f2efe6;
   --dirt:#8c5a2b;
@@ -89,15 +110,6 @@
   --slate:#8a6f3f;
   --rule:#e0cd9e;
 }
-[data-theme="caribou"]{
-  --ink:#29343a;
-  --paper:#eef3f0;
-  --dirt:#ff2fb0;
-  --loam:#00e6a8;
-  --clay:#00d4ff;
-  --slate:#62777c;
-  --rule:#cddad6;
-}
 :root{color-scheme:only light}
 :root{
   --tier-national:var(--ink);
@@ -112,6 +124,10 @@ body{
   font:16px/1.5 "Iowan Old Style",Charter,Georgia,serif;
   -webkit-font-smoothing:antialiased;
 }
+/* Caribou's blob background, matched both once JS has stamped data-theme and on the
+   first paint before it has (no attribute yet) — otherwise the default theme loads
+   flat and the gradients pop in a moment later. */
+:root:not([data-theme]) body,
 [data-theme="caribou"] body{
   background-color:var(--paper);
   background-image:
@@ -995,7 +1011,12 @@ const THEMES=[
     mapFrom:"#dbe6e2", mapTo:"#00a8c2"
   }
 ];
-const DEFAULT_THEME="moose";
+const DEFAULT_THEME="caribou";  // also carries the bare `:root` CSS block — see the note by the palettes
+/* Bumped from "mtbAtlasTheme" when Caribou became the default. The old key had been
+   written on every single load, default included, so every returning visitor carried
+   an explicit "moose" they never chose and would never have seen the new default.
+   Retiring the key clears that once; from here on only a swatch click writes. */
+const THEME_STORAGE_KEY="mtbAtlasTheme2";
 /* Lookup by id, so callers can do THEME.byId[currentTheme].pie */
 const THEME_BY_ID=Object.fromEntries(THEMES.map(t=>[t.id,t]));
 let currentTheme=DEFAULT_THEME;
@@ -1128,9 +1149,13 @@ function buildThemeSwatches(){
       <span class="theme-dots">${t.swatch.map(c=>`<i style="background:${c}"></i>`).join("")}</span>${esc(t.label)}</button>`
   ).join("");
   bar.querySelectorAll(".theme-swatch").forEach(b=>
-    b.addEventListener("click",()=>applyTheme(b.dataset.theme)));
+    b.addEventListener("click",()=>applyTheme(b.dataset.theme,true)));  // true = a real user choice, worth remembering
 }
-function applyTheme(name){
+/* persist=true only when the visitor actually clicked a swatch. Applying the
+   default on load must NOT write to storage: doing so stamps every first-time
+   visitor with an explicit preference they never expressed, and a later change
+   to DEFAULT_THEME then never reaches any of them. */
+function applyTheme(name,persist){
   const theme=THEME_BY_ID[name]||THEME_BY_ID[DEFAULT_THEME];
   currentTheme=theme.id;
   document.documentElement.setAttribute("data-theme",theme.id);
@@ -1138,7 +1163,7 @@ function applyTheme(name){
   // keep the mobile browser's address-bar tint in step with the page background
   const meta=document.querySelector('meta[name="theme-color"]');
   if(meta)meta.setAttribute("content",theme.paper);
-  try{localStorage.setItem("mtbAtlasTheme",theme.id)}catch(e){}
+  if(persist){try{localStorage.setItem(THEME_STORAGE_KEY,theme.id)}catch(e){}}
   render();
 }
 
@@ -2196,7 +2221,7 @@ function init(){
   // restore the saved theme (falling back to the default if it's unknown/missing),
   // then let applyTheme() do the actual work so there's only one code path for it
   let saved=DEFAULT_THEME;
-  try{saved=localStorage.getItem("mtbAtlasTheme")||DEFAULT_THEME}catch(e){}
+  try{saved=localStorage.getItem(THEME_STORAGE_KEY)||DEFAULT_THEME}catch(e){}
   if(!THEME_BY_ID[saved])saved=DEFAULT_THEME;
   currentTheme=saved;
   buildThemeSwatches();
