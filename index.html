@@ -101,11 +101,18 @@
   --slate:#5b6a72;
   --rule:#ccc5b4;
 }
+/* Elk originally ran all three accents through one hue (amber/brown/tan) — legible
+   individually, but a pie or map with ten states in it read as ten shades of the
+   same color. Widened to a proper autumn palette instead: --dirt moves to rust,
+   --loam moves to an actual forest olive rather than a darker brown. Every new
+   value was checked against paper AND white for text contrast (dirt/clay double as
+   label and link colors elsewhere in the CSS) before being picked — see
+   contrast/pairwise-distance notes in the README's theme section. */
 [data-theme="elk"]{
   --ink:#3d332a;
   --paper:#f6e8c4;
-  --dirt:#a8731f;
-  --loam:#6b5518;
+  --dirt:#b5541c;
+  --loam:#4f6b2f;
   --clay:#d4900f;
   --slate:#8a6f3f;
   --rule:#e0cd9e;
@@ -244,6 +251,17 @@ ul.orgs li{
 .legend .n{margin-left:auto;font:600 13px ui-monospace,Menlo,monospace;color:var(--slate)}
 .slice{cursor:pointer;transition:opacity .15s}
 .slice:hover{opacity:.75}
+.pie-map-teaser{
+  display:flex;align-items:center;gap:16px;width:100%;margin-top:22px;padding:14px 16px;
+  border:1.5px solid var(--rule);border-radius:4px;background:#fff;cursor:pointer;
+  font:inherit;color:inherit;text-align:left;transition:border-color .15s,box-shadow .15s;
+}
+.pie-map-teaser:hover,.pie-map-teaser:focus-visible{border-color:var(--clay);box-shadow:0 0 0 1px var(--clay)}
+.pie-map-teaser-inner{flex:0 0 auto;width:150px;line-height:0}
+.state-path-mini{pointer-events:none}
+.pie-map-teaser-cap{flex:1;min-width:0}
+.pie-map-teaser-title{display:block;font-weight:600;color:var(--ink)}
+.pie-map-teaser-sub{display:block;color:var(--slate);font-size:13px;margin-top:3px}
 
 /* ---- charts tab ---- */
 .chart-card{border:1.5px solid var(--rule);border-radius:4px;padding:20px 18px 14px;background:#fff;margin-bottom:26px}
@@ -466,6 +484,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 @media(max-width:760px){
   .pie-layout{grid-template-columns:1fr}
   .counts{gap:18px}
+  .pie-map-teaser{flex-direction:column;align-items:stretch;text-align:center}
+  .pie-map-teaser-inner{width:100%;max-width:220px;margin:0 auto}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -999,10 +1019,13 @@ const THEMES=[
     mapFrom:"#e6ded0", mapTo:"#3f5d3a"
   },
   {
+    // Widened from three shades of one brown to a full autumn range — amber,
+    // rust, olive, burgundy, sienna — so a 10-slice pie or a busy cartogram
+    // doesn't read as one undifferentiated tan blob. See the CSS block's note.
     id:"elk", label:"Elk",
-    swatch:["#3d332a","#6b5518","#d4900f"], paper:"#f6e8c4",
-    pie:["#d4900f","#6b5518","#a8731f","#8a5a1f","#e0a83a","#4a3a10","#c9a45c","#8f6b2e","#b87a12","#5e4816"],
-    mapFrom:"#f0ddb0", mapTo:"#a8731f"
+    swatch:["#3d332a","#4f6b2f","#d4900f"], paper:"#f6e8c4",
+    pie:["#d4900f","#b5541c","#4f6b2f","#7a2e2e","#8a6f3f","#3f5a52","#c9a45c","#8f4a24","#5e4816","#6b7f4e"],
+    mapFrom:"#f0ddb0", mapTo:"#b5541c"
   },
   {
     id:"caribou", label:"Caribou",
@@ -1458,6 +1481,9 @@ function renderPie(){
   const legend=entries.map(([st,n],i)=>`
     <li data-state="${st}" title="${POINT_MAP_STATES.includes(st)?"Opens the trailhead map for "+esc(STATE_NAMES[st]):"Opens "+esc(STATE_NAMES[st]||st)+" in the Directory"}"><span class="swatch" style="background:${palette[i%palette.length]}"></span>
     ${esc(STATE_NAMES[st]||st)}${POINT_MAP_STATES.includes(st)?'<span class="has-map" title="Has a trailhead map">&#9679;</span>':""}<span class="n">${n} · ${Math.round(n/total*100)}%</span></li>`).join("");
+  // Mini cartogram teaser, built from the SAME counts as the pie above so it
+  // always reflects whatever filters are active — not a static decoration.
+  const{svg:miniSvg}=buildCartogramSVG(counts,{cell:13,gap:1.5,mini:true});
   $("p-pie").innerHTML=`<div class="pie-layout">
     <div><svg viewBox="0 0 300 300" width="100%" style="max-width:340px" role="img" aria-label="Organizations by state">
       <rect x="0" y="0" width="300" height="300" fill="var(--paper)"/>
@@ -1465,7 +1491,14 @@ function renderPie(){
       <text x="150" y="144" text-anchor="middle" style="font:600 34px Georgia,serif;fill:var(--ink)">${total}</text>
       <text x="150" y="164" text-anchor="middle" style="font:600 9px ui-monospace,Menlo,monospace;fill:var(--slate);letter-spacing:.16em">ORGANIZATIONS</text>
     </svg></div>
-    <ul class="legend">${legend}</ul></div>`;
+    <ul class="legend">${legend}</ul></div>
+    <button type="button" class="pie-map-teaser" id="pie-map-teaser">
+      <span class="pie-map-teaser-inner">${miniSvg}</span>
+      <span class="pie-map-teaser-cap">
+        <span class="pie-map-teaser-title">A grid cartogram — one tile per state</span>
+        <span class="pie-map-teaser-sub">Same counts, laid out by rough geography and shaded by density. Open the full map &rarr;</span>
+      </span>
+    </button>`;
   $("p-pie").querySelectorAll("[data-state]").forEach(el=>
     el.addEventListener("click",()=>{
       const st=el.dataset.state;
@@ -1477,6 +1510,7 @@ function renderPie(){
       }
       filters.state=st;$("statesel").value=st;switchTab("list");render();
     }));
+  $("pie-map-teaser").addEventListener("click",()=>{switchTab("map");render()});
 }
 
 /* ---------- structure tree ---------- */
@@ -1628,6 +1662,40 @@ function renderNear(){
 }
 
 /* ---------- map ---------- */
+/* ==== buildCartogramSVG() — shared tile-grid renderer =========================
+   Used by the full Map tab AND the small teaser on the By-state tab, so the two
+   never drift out of sync. `mini` drops the per-tile state/count labels (they'd
+   be illegible at preview size), the individual tile titles/data-state hooks,
+   and thickens nothing — it's purely a smaller, non-interactive rendering of the
+   exact same tile geometry and color ramp. The caller decides what a click does;
+   at mini size that's "go to the Map tab", not "filter by this one state". ==== */
+function buildCartogramSVG(counts,{cell=52,gap=4,mini=false}={}){
+  const max=Math.max(1,...Object.values(counts));
+  const {mapFrom,mapTo}=THEME_BY_ID[currentTheme];
+  const cols=12,rows=8;
+  let sq="";
+  Object.entries(GRID).forEach(([st,[c,r]])=>{
+    const n=counts[st]||0;
+    const t=n/max;
+    const fill=n?`color-mix(in srgb, ${mapTo} ${18+t*82}%, ${mapFrom})`:mapFrom;
+    const x=c*(cell+gap), y=r*(cell+gap);
+    const supported=POINT_MAP_STATES.includes(st);
+    if(mini){
+      sq+=`<rect class="state-path-mini" x="${x}" y="${y}" width="${cell}" height="${cell}" rx="1.5" fill="${fill}"/>`;
+    }else{
+      sq+=`<g><rect class="state-path${supported?" state-detailed":""}" data-state="${st}" x="${x}" y="${y}" width="${cell}" height="${cell}"
+          rx="3" fill="${fill}"><title>${STATE_NAMES[st]}: ${n} listed${supported?" — click for real trailhead-level locations":""}</title></rect>
+        <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2-2}">${st}</text>
+        <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2+13}" style="font-size:13px">${n||""}</text></g>`;
+    }
+  });
+  const w=cols*(cell+gap), h=rows*(cell+gap);
+  return{
+    svg:`<svg viewBox="0 0 ${w} ${h}" width="100%" ${mini?'aria-hidden="true" focusable="false"':'role="img" aria-label="Map of organizations by state"'}>
+      <rect x="0" y="0" width="${w}" height="${h}" fill="var(--paper)"/>${sq}</svg>`,
+    max, mapFrom, mapTo
+  };
+}
 /* ==== renderMap() — MAP tab: cartogram grid, or hands off to renderPointMap() for CA/CO/VT/OR ==== */
 function renderMap(){
   const list=visible();
@@ -1645,25 +1713,10 @@ function renderMap(){
     if(link)link.addEventListener("click",e=>{e.preventDefault();switchTab("list");render()});
     return;
   }
-  const max=Math.max(1,...Object.values(counts));
-  const {mapFrom,mapTo}=THEME_BY_ID[currentTheme];
-  const cell=52,gap=4;
-  const cols=12,rows=8;
-  let sq="";
-  Object.entries(GRID).forEach(([st,[c,r]])=>{
-    const n=counts[st]||0;
-    const t=n/max;
-    const fill=n?`color-mix(in srgb, ${mapTo} ${18+t*82}%, ${mapFrom})`:mapFrom;
-    const x=c*(cell+gap), y=r*(cell+gap);
-    const supported=POINT_MAP_STATES.includes(st);
-    sq+=`<g><rect class="state-path${supported?" state-detailed":""}" data-state="${st}" x="${x}" y="${y}" width="${cell}" height="${cell}"
-        rx="3" fill="${fill}"><title>${STATE_NAMES[st]}: ${n} listed${supported?" — click for real trailhead-level locations":""}</title></rect>
-      <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2-2}">${st}</text>
-      <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2+13}" style="font-size:13px">${n||""}</text></g>`;
-  });
+  const{svg,max,mapFrom,mapTo}=buildCartogramSVG(counts,{cell:52,gap:4});
   $("p-map").innerHTML=`
     <p class="map-note">A grid cartogram — one tile per state, positioned by rough geography, shaded by how many organizations are listed. Click a tile to filter the directory. <strong>California, Colorado, Vermont, and Oregon</strong> have real geocoded locations — click one of those four (bordered tiles) for a trailhead-level point map instead of the grid. Empty tiles are states not yet researched, not states without advocacy groups.</p>
-    <svg viewBox="0 0 ${cols*(cell+gap)} ${rows*(cell+gap)}" width="100%" role="img" aria-label="Map of organizations by state"><rect x="0" y="0" width="${cols*(cell+gap)}" height="${rows*(cell+gap)}" fill="var(--paper)"/>${sq}</svg>
+    ${svg}
     <div class="scalebar">None<span class="grad" style="background:linear-gradient(90deg,${mapFrom},${mapTo})"></span>${max} orgs</div>`;
   $("p-map").querySelectorAll("[data-state]").forEach(el=>
     el.addEventListener("click",()=>{
