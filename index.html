@@ -440,6 +440,15 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 [data-theme="caribou"] .why-stat-lbl{color:var(--dirt)}
 .why-stat-val{font:400 27px/1 "Iowan Old Style",Georgia,serif;letter-spacing:-.01em;color:var(--ink)}
 .why-stat-sub{margin-top:6px;font-size:12px;color:var(--slate);line-height:1.4}
+/* Percentage badge next to the dollar figure on the Partnership saves/costs
+   card — the dollar amount alone doesn't say whether that's a big or small
+   share of the total, so the % rides right along with it. --loam reads
+   green-ish in all three themes (teal in Caribou, forest/olive in Moose and
+   Elk); --dirt is used as the "costs more" counterpart even though its hue
+   varies more theme to theme, matching how the funding bars already use it. */
+.why-pct-badge{display:inline-block;font:600 14px/1 ui-monospace,Menlo,monospace;padding:3px 9px;border-radius:10px;vertical-align:middle}
+.why-pct-badge.good{background:color-mix(in srgb, var(--loam) 16%, white);color:var(--loam)}
+.why-pct-badge.caution{background:color-mix(in srgb, var(--dirt) 16%, white);color:var(--dirt)}
 .why-bar{margin-bottom:16px}
 .why-bar-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:5px}
 .why-bar-name{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
@@ -1993,10 +2002,9 @@ function whyShellHTML(){
     </div>`).join("");
 
   return `
-  <p class="why-lede">Two ways to put the same trail on the ground. In the first, the town buys a finished
-  asset from a contractor and owns it forever. In the second, a non-profit advocacy organization joins the
-  project and changes who pays for what. <b>The trail is identical either way</b> — what moves is the money,
-  the labor, and the maintenance liability. Drag anything below; every figure recalculates live.</p>
+  <p class="why-lede">Same trail, two ways to pay for it — the town alone, or with a non-profit partner.
+  <b>The trail is identical either way</b>; what changes is the money, the labor, and who carries the
+  maintenance afterward.</p>
   <div class="why-layout">
     <div class="why-inputs">${groups}<button type="button" class="why-reset" id="why-reset">Reset to defaults</button></div>
     <div id="why-results"></div>
@@ -2026,10 +2034,10 @@ function updateWhy(){
     </div>
     <div class="why-stat lead">
       <p class="why-stat-lbl">${negligible?"Difference":cheaper?"Partnership saves":"Partnership costs more"}</p>
-      <p class="why-stat-val">${esc(whyCashShort(Math.abs(m.delta)))}</p>
+      <p class="why-stat-val">${esc(whyCashShort(Math.abs(m.delta)))}${negligible?"":` <span class="why-pct-badge ${cheaper?"good":"caution"}">${Math.abs(m.deltaPct).toFixed(0)}%</span>`}</p>
       <p class="why-stat-sub">${negligible
         ? "Within 1% — on these assumptions the two approaches are a wash."
-        : `${Math.abs(m.deltaPct).toFixed(0)}% ${cheaper?"less":"more"} municipal money over ${v.years} years`}</p>
+        : `${cheaper?"Cheaper":"Costlier"} municipal cost over ${v.years} years`}</p>
     </div>
   </div>`;
 
@@ -2233,7 +2241,7 @@ function whyCaveatsHTML(){
     visitor spending, property values, health outcomes. This tab compares what a trail <em>costs</em>, not what it returns.</p>
 
     <p class="src">Directional planning tool for advocacy and early scoping. Validate against local contractor quotes and
-    your own maintenance history before putting any figure in front of a council.</p>
+    your own maintenance history.</p>
   </div>`;
 }
 
