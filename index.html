@@ -2289,7 +2289,13 @@ function init(){
     document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===""));
     render();
   });
-  activeTab=DEFAULT_TAB;
+  // Deep link: a URL ending in #why (or any other valid tab id) lands
+  // directly on that tab instead of the usual DEFAULT_TAB — e.g. a link
+  // elsewhere on the site can point straight at the cost-comparison model
+  // via trail-advocacy-atlas/#why. Falls back to DEFAULT_TAB for an empty,
+  // unrecognized, or missing hash.
+  const hashTab=window.location.hash.replace("#","").toLowerCase();
+  activeTab=TABS.some(t=>t.id===hashTab)?hashTab:DEFAULT_TAB;
   buildTabs();
   switchTab(activeTab);   // also settles whether the filter bar is shown for this tab
   // restore the saved theme (falling back to the default if it's unknown/missing),
@@ -2301,6 +2307,12 @@ function init(){
   buildThemeSwatches();
   applyTheme(saved);   // sets data-theme, meta tag, pressed state, and calls render()
   renderCounts();
+  // React to a hash change after load too (e.g. a same-page anchor click),
+  // not just the one the page was opened with.
+  window.addEventListener("hashchange",()=>{
+    const t=window.location.hash.replace("#","").toLowerCase();
+    if(TABS.some(x=>x.id===t)){switchTab(t);render()}
+  });
 }
 /* periodic masthead title swap */
 (function(){
