@@ -247,7 +247,11 @@ ul.orgs li{
   color:var(--slate);border:1px dashed var(--slate);padding:2px 6px;border-radius:2px;white-space:nowrap}
 
 /* ---- pie ---- */
-.pie-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+/* The donut's own SVG caps at max-width:340px, so giving it an equal 1fr
+   share on wide screens just left dead space between the chart and the
+   list — the chart column is now sized to actually hug its content
+   (with a little breathing room), and the list gets the rest. */
+.pie-layout{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,1fr);gap:32px;align-items:start}
 .legend{list-style:none;margin:0;padding:0;font-size:14px}
 .legend li{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--rule);cursor:pointer}
 .legend li:hover{background:#fff}
@@ -1068,7 +1072,12 @@ const THEMES=[
   {
     id:"moose", label:"Moose",
     swatch:["#2b2f2c","#3f5d3a","#c1603a"], paper:"#f2efe6",
-    pie:["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57"],
+    // 18 colors, not 10 — with 52 states+territories on the By State pie,
+    // a 10-color cycle repeats 5 times, so adjacent-in-the-list states can
+    // land on the same slice color with nothing but the numbers to tell
+    // them apart. 18 stretches that to ~3 repeats.
+    pie:["#3f5d3a","#8c5a2b","#c1603a","#5b6a72","#7a8c4e","#a8733f","#4a6b7c","#96604f","#6b7f5c","#b08d57",
+         "#2e4a2a","#6b4423","#9c7a56","#547a68","#7d5a4a","#8a9478","#4f3f2e","#6f8299"],
     mapFrom:"#e6ded0", mapTo:"#3f5d3a"
   },
   {
@@ -1077,13 +1086,19 @@ const THEMES=[
     // doesn't read as one undifferentiated tan blob. See the CSS block's note.
     id:"elk", label:"Elk",
     swatch:["#3d332a","#4f6b2f","#d4900f"], paper:"#f6e8c4",
-    pie:["#d4900f","#b5541c","#4f6b2f","#7a2e2e","#8a6f3f","#3f5a52","#c9a45c","#8f4a24","#5e4816","#6b7f4e"],
+    // Same 10->18 expansion as Moose/Caribou, more autumn shades layered in.
+    pie:["#d4900f","#b5541c","#4f6b2f","#7a2e2e","#8a6f3f","#3f5a52","#c9a45c","#8f4a24","#5e4816","#6b7f4e",
+         "#e8b23a","#a13a1f","#6b4a1f","#9c2f2f","#c47a3f","#4a3018","#7d8a3f","#b08040"],
     mapFrom:"#f0ddb0", mapTo:"#b5541c"
   },
   {
     id:"caribou", label:"Caribou",
     swatch:["#29343a","#00e6a8","#00d4ff"], paper:"#eef3f0",
-    pie:["#00d4ff","#ff2fb0","#00e6a8","#2f5560","#7c9a85","#456f78","#8fb0ba","#5490a0","#3f6b52","#1f4650"],
+    // Same 10->18 expansion, extending the aurora accent trio (magenta/
+    // green/cyan) with violet, coral, and rose rather than just adding
+    // more muted slate — keeps the neon identity instead of diluting it.
+    pie:["#00d4ff","#ff2fb0","#00e6a8","#2f5560","#7c9a85","#456f78","#8fb0ba","#5490a0","#3f6b52","#1f4650",
+         "#7a3ff0","#ff6f3f","#2fd4c8","#a83f9e","#4f8ac9","#0e8f7a","#c2547a","#5a3f8a"],
     mapFrom:"#dbe6e2", mapTo:"#00a8c2"
   }
 ];
