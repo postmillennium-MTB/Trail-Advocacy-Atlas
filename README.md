@@ -142,6 +142,15 @@ Earlier versions of this file rendered correctly on desktop but showed a dark, h
 
 If a dark-background report ever comes back, check these three things first before assuming it's a new CSS bug.
 
+## URL-hash deep links
+
+Two kinds of hash land you somewhere specific instead of the default "By state" tab:
+
+- **A tab id** — `trail-advocacy-atlas/#why` opens the Why tab directly. Works for any `TABS` id (`why`, `list`, `pie`, `map`, `detail`, `charts`, `tree`, `near`).
+- **A state** — `trail-advocacy-atlas/#utah` opens the Directory pre-filtered to Utah, the same place clicking that state's pie slice or cartogram tile lands. The full name, the two-letter code, and dashed/spaced/no-space variants all work (`#utah`, `#ut`, `#UT`, `#new-hampshire`, `#newhampshire` are all the same link) — see `STATE_SLUGS` and `resolveHashRoute()`.
+
+Both are handled three ways so the link works whether the atlas is opened directly or iframed on the PMR site: on initial page load, on a live `hashchange` (a same-page anchor click), and via a `postMessage({type:"pmr-hash", hash:"#..."})` fallback for when a cross-origin iframe can't read the outer page's own hash. `resolveHashRoute()` is the single place that interprets a hash string; all three call it so they can't drift out of sync.
+
 ## Known structural quirks
 
 - **The cartogram is a grid, not real geography.** One square per state in roughly correct relative position — good for reading relative density, not for tracing actual borders.

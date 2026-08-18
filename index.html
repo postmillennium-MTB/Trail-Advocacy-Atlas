@@ -36,6 +36,8 @@
     · WHY_INPUTS registry ....... THE list of Why-tab sliders — add one line to add one
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
     ==== everything past "END OF DATA" is logic ====
+    · STATE_SLUGS ................ derived state-name/code -> code lookup, for #utah-style
+                                   URL-hash routing (resolveHashRoute(), used in init())
     · runtime state ............. filters / activeTab / detailState
     · applyTheme() .............. swaps theme + updates mobile meta tag
     · buildProjection() ......... lat/lng -> SVG coords (heavily commented; the
@@ -53,12 +55,17 @@
     · computeWhy() .............. Why tab — THE cost model, all of it, one function
     · renderWhy() / updateWhy() . Why tab — shell built once, results redrawn live
     · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
+    · resolveHashRoute() ........ #hash -> {tab} or {tab:"list",state:CODE}, shared by
+                                  init(), the hashchange listener, and the postMessage
+                                  fallback — see "Deep link" comment inside init()
     · init() .................... wires up all the buttons on page load
     · title swap ................ rotates the headline every few seconds
 
   TO ADD ORGANIZATIONS: find the right state in the ORGS array and add a line.
   TO ADD A TAB:   add ONE line to the TABS registry (and write its render function).
   TO ADD A THEME: add ONE line to the THEMES registry + one CSS [data-theme] block.
+  TO DEEP-LINK A STATE: already works for every state — trail-advocacy-atlas/#utah,
+                        /#ut, or /#new-hampshire all land on that state's Directory.
 ==================================================================================
 -->
 <html lang="en">
@@ -1216,6 +1223,18 @@ const TITLE_FADE_MS=500;          // fade duration for that swap (must match the
 const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists
 const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
 
+/* ---------- STATE_SLUGS — state-name/code lookup for URL-hash routing ----------
+   Derived from STATE_NAMES (data above), so it lives here in logic rather than in
+   the data block itself. Powers the #utah-style deep link handled in init() /
+   resolveHashRoute() below: normalizes a hash fragment or state code down to bare
+   lowercase letters+digits, so "#Utah", "#new-hampshire", "#newhampshire", and
+   "#nh" all resolve to the same state regardless of which spelling a link uses. */
+function slugifyStateHash(s){return String(s).toLowerCase().replace(/[^a-z0-9]/g,"")}
+const STATE_SLUGS={};   // slug -> state code, e.g. "utah"->"UT" and "ut"->"UT"
+Object.entries(STATE_NAMES).forEach(([code,name])=>{
+  STATE_SLUGS[slugifyStateHash(name)]=code;
+  STATE_SLUGS[slugifyStateHash(code)]=code;
+});
 
 /* ---------- runtime state (what the user has currently selected) ---------- */
 let filters={q:"",state:"",tier:""};   // search box, state dropdown, tier filter
@@ -2367,6 +2386,22 @@ function render(){
   else console.error("Tab '"+tab.id+"' points at missing render function:",tab.render);
 }
 
+/* ==== resolveHashRoute() — turns a URL-hash fragment into either a tab id or a
+   state code. Shared by the initial page load, live #hash changes, and the
+   cross-origin postMessage fallback in init() below, so all three interpret a
+   hash the exact same way. A tab hash (e.g. #why) just opens that tab. A state
+   hash (e.g. #utah, #ut, #new-hampshire — see STATE_SLUGS above) opens the
+   Directory pre-filtered to that state, same as clicking that state's pie
+   slice or cartogram tile. Returns {tab} or {tab:"list", state:CODE}, or null
+   if the fragment matches neither. ==== */
+function resolveHashRoute(hash){
+  const norm=String(hash||"").replace("#","").toLowerCase();
+  if(!norm)return null;
+  if(TABS.some(t=>t.id===norm))return{tab:norm};
+  const code=STATE_SLUGS[slugifyStateHash(norm)];
+  return code?{tab:"list",state:code}:null;
+}
+
 /* ==== init() — runs once on load: builds the state dropdown, wires up every button, restores saved theme ==== */
 function init(){
   const sts=[...new Set(ORGS.map(o=>o.s))].sort((a,b)=>
@@ -2390,10 +2425,13 @@ function init(){
   // Deep link: a URL ending in #why (or any other valid tab id) lands
   // directly on that tab instead of the usual DEFAULT_TAB — e.g. a link
   // elsewhere on the site can point straight at the cost-comparison model
-  // via trail-advocacy-atlas/#why. Falls back to DEFAULT_TAB for an empty,
-  // unrecognized, or missing hash.
-  const hashTab=window.location.hash.replace("#","").toLowerCase();
-  activeTab=TABS.some(t=>t.id===hashTab)?hashTab:DEFAULT_TAB;
+  // via trail-advocacy-atlas/#why. A URL ending in a state instead — e.g.
+  // trail-advocacy-atlas/#utah — lands on the Directory pre-filtered to that
+  // state (see resolveHashRoute() / STATE_SLUGS above). Falls back to
+  // DEFAULT_TAB for an empty, unrecognized, or missing hash.
+  const route=resolveHashRoute(window.location.hash);
+  activeTab=route?route.tab:DEFAULT_TAB;
+  if(route&&route.state){filters.state=route.state;$("statesel").value=route.state;}
   buildTabs();
   switchTab(activeTab);   // also settles whether the filter bar is shown for this tab
   // restore the saved theme (falling back to the default if it's unknown/missing),
@@ -2408,8 +2446,10 @@ function init(){
   // React to a hash change after load too (e.g. a same-page anchor click),
   // not just the one the page was opened with.
   window.addEventListener("hashchange",()=>{
-    const t=window.location.hash.replace("#","").toLowerCase();
-    if(TABS.some(x=>x.id===t)){switchTab(t);render()}
+    const route=resolveHashRoute(window.location.hash);
+    if(!route)return;
+    if(route.state){filters.state=route.state;const sel=$("statesel");if(sel)sel.value=route.state;}
+    switchTab(route.tab);render();
   });
   // Fallback deep-link path for when this page is embedded in a cross-origin
   // <iframe> (e.g. postmillenniumrenaissance.com/trail-advocacy-atlas/) — a
@@ -2418,12 +2458,16 @@ function init(){
   // entirely. If whoever owns the embedding page forwards the hash via
   // postMessage instead of (or in addition to) appending it to the iframe's
   // src, this picks it up. Expected message shape: {type:"pmr-hash", hash:"#why"}
+  // (or "#utah" for a state) — resolved the same way as any other hash, via
+  // resolveHashRoute().
   window.addEventListener("message",e=>{
     const okOrigins=["https://www.postmillenniumrenaissance.com","https://postmillenniumrenaissance.com"];
     if(!okOrigins.includes(e.origin))return;
     if(!e.data||e.data.type!=="pmr-hash"||typeof e.data.hash!=="string")return;
-    const t=e.data.hash.replace("#","").toLowerCase();
-    if(TABS.some(x=>x.id===t)){switchTab(t);render()}
+    const route=resolveHashRoute(e.data.hash);
+    if(!route)return;
+    if(route.state){filters.state=route.state;const sel=$("statesel");if(sel)sel.value=route.state;}
+    switchTab(route.tab);render();
   });
 }
 /* periodic masthead title swap */
