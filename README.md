@@ -132,6 +132,22 @@ Four edits, and skipping any one of them leaves a visible bug:
 
 This mattered when Caribou became the default: the previous code saved on **every** load, default included, so every visitor who had ever opened the atlas carried an explicit `"moose"` they never chose — and would never have seen a new default. The storage key was retired (`mtbAtlasTheme` → `mtbAtlasTheme2`) to clear that once. A deliberate pick still survives reloads; a default no longer masquerades as one.
 
+## Printing / Save as PDF
+
+Everything for paper lives in one `@media print` block at the **end** of the `<style>` (search `PRINT / SAVE-AS-PDF`), plus a `beforeprint` hook near the bottom of the script. The screen layout is untouched. Open the tab you want, set filters if you want a subset, then Ctrl/Cmd+P → *Save as PDF* (leave "Background graphics" on or off — the print CSS forces data fills to print either way).
+
+- **Only the open tab prints.** Search, filters, theme swatches, the tab bar, sliders, buttons and the banner are hidden. A "Filtered to: …" line appears when a state/tier/search filter is active, since the filter bar itself isn't printed.
+- **One print palette for all three themes.** The screen accents fail on white (Caribou `--clay` 1.8:1, `--loam` 1.6:1; Elk `--clay` 2.7:1; Moose `--clay` 4.2:1 — WCAG text minimum is 4.5:1). Every theme prints with the same deep, ≥4.5:1 set, applied with `:root:root` (specificity 0,2,0) so it beats every theme block regardless of source order. Pie slices, the cartogram ramp and the per-capita tier bars still follow the chosen theme — they are data fills and every one carries a printed number or label.
+- **Tier is shape as well as color on paper.** National = solid circle, regional = ring, statewide = square, local = small dot, with a one-line key under the masthead (built from `TIER_LABELS`). The point maps keep circles and use dot size.
+- **Links print their URL** (Directory, Structure, Near me, map detail card) because paper can't be clicked.
+- **Scroll boxes expand.** `.cap-list` and `.tree-standalone` have `max-height` on screen; on paper that silently cut the per-capita chart to 31 of 52 rows and the Structure tab to 520px of 3,591px.
+- **`beforeprint` opens every closed `<details>`** (the Structure tab's top-level groups) and restores them in `afterprint`.
+- **Why tab prints results first**, assumptions on a fresh page after. Only the chosen inflation pill prints.
+- **Cartogram label contrast** is chosen from each tile's actual blended luminance (`labelIsDark()`), not a fixed density threshold — this one change also applies on screen.
+- **SVG text sizes are in chart units**, which scale with the chart; the print sizes for `.chart-axis-label` / `.why-axis-title` / `.maplabel` were measured to land at ~8pt+ printed. Re-measure if a chart's `viewBox` width changes.
+
+**Known print limits:** on a black-and-white printer the stacked bars on the Why tab rely on their printed `$` labels and the legend order (two segments land on similar greys; narrow segments under 13% carry no inline label), the 52-slice pie relies on its legend, and the point maps distinguish national/regional/statewide by color only. Embedded in an iframe, the browser's Print command prints the *outer* page's frame box, not this file's full content — open the tool in its own tab to print.
+
 ## Mobile dark-mode fix
 
 Earlier versions of this file rendered correctly on desktop but showed a dark, hard-to-read background on some mobile browsers. This wasn't a bug in the page's own CSS — it was mobile browsers' **forced dark mode** (Android Chrome, Samsung Internet, some iOS dark-mode heuristics) auto-darkening a page that hadn't explicitly opted out. The fix has three parts, all now in place:

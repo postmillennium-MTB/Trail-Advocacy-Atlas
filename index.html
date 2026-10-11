@@ -17,6 +17,8 @@
     · DIRECTORY LIST styles
     · PIE CHART styles
     · MAP styles (cartogram + point maps + detail card)
+    · PRINT / SAVE-AS-PDF ..... ONE @media print block at the END of the stylesheet:
+                                  print palette, hidden chrome, page-break rules, URL printing
 
   <body> ......................... the page markup (mostly empty shells that
                                    JavaScript fills in — masthead, controls,
@@ -55,6 +57,8 @@
     · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
     · init() .................... wires up all the buttons on page load
     · title swap ................ rotates the headline every few seconds
+    · PRINT HOOKS ............... beforeprint/afterprint: opens closed <details>, fills the tier
+                                  key, "Filtered to" line and print date (right above init())
 
   TO ADD ORGANIZATIONS: find the right state in the ORGS array and add a line.
   TO ADD A TAB:   add ONE line to the TABS registry (and write its render function).
@@ -386,7 +390,7 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .state-path:hover{stroke:var(--ink);stroke-width:2}
 .maplabel{font:600 10px ui-monospace,Menlo,monospace;fill:#fff;pointer-events:none;text-anchor:middle}
-.maplabel.dark{fill:var(--slate)}
+.maplabel.dark{fill:var(--ink)}   /* ink, not slate: slate on a mid-tone tile was ~1.9:1 */
 .scalebar{display:flex;align-items:center;gap:8px;margin-top:14px;
   font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .scalebar .grad{height:11px;flex:1;max-width:230px}
@@ -536,6 +540,185 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   .pie-map-teaser-inner{width:100%;max-width:220px;margin:0 auto}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ==== PRINT / SAVE-AS-PDF ===========================================================
+   Everything for paper lives in this one block, at the END of the stylesheet so it wins
+   ties against the screen rules above it. Nothing here touches the screen layout.
+
+   WHAT PRINTS: only the tab that is open (the other panels are empty and hidden), so
+   "print the Directory" and "print the Why model" both just work. All the interactive
+   chrome (search, filters, theme swatches, tab bar, sliders, buttons) is hidden.
+
+   WHY ONE PRINT PALETTE INSTEAD OF THE THREE SCREEN THEMES: paper has no backlight, so
+   the screen accents fail on white. Measured on #fff — Caribou's --clay 1.8:1, --loam
+   1.6:1, --dirt 3.3:1; Elk's --clay 2.7:1; Moose's --clay 4.2:1 (WCAG wants 4.5:1 for
+   text). Rather than keep three print palettes in step with three screen palettes, every
+   theme prints with the same deep, high-contrast set below. Each value is >= 4.5:1 on
+   white, so they are safe as text colors AND as white-text-on-fill backgrounds. The
+   `:root:root` selector (specificity 0,2,0) beats every theme block regardless of source
+   order, so it sidesteps the :root-vs-[data-theme] ordering trap noted at the top.
+
+   WHAT STILL FOLLOWS THE THEME: the By State pie slices, the cartogram ramp, and the
+   per-capita tier bars, which are data fills set by JavaScript. They stay colored (with
+   print-color-adjust:exact so browsers don't drop them), and every one of them has a
+   number or label printed beside it, so nothing is readable by color alone.
+
+   TO CHANGE THE PAPER SIZE / MARGINS: edit the @page line only. Page size is left to the
+   print dialog (Letter in the US, A4 elsewhere); the layout is fluid and fits either. */
+.print-only{display:none}
+@page{margin:.55in}
+@media print{
+  :root:root{
+    --ink:#111111;        /* 18.9:1 on white */
+    --paper:#ffffff;
+    --slate:#454d51;      /*  8.6:1  secondary text */
+    --rule:#8a9296;       /*  3.2:1  hairlines and borders must survive a laser printer */
+    --clay:#00657f;       /*  6.6:1  links, key numbers, regional tier */
+    --dirt:#a1175d;       /*  7.0:1  kickers, abbreviations, statewide tier */
+    --loam:#17663a;       /*  6.8:1  "savings" green, local tier */
+    --tier-national:#111111;
+    --tier-regional:#00657f;
+    --tier-state:#a1175d;
+    --tier-local:#17663a;
+  }
+  /* Ink-saving reset: white page, no blob gradients (they print as grey smudges and the
+     fixed attachment repeats them on every page), and force data fills to print — browsers
+     skip CSS backgrounds by default unless the user ticks "Background graphics". */
+  *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact;
+    animation:none!important;transition:none!important;box-shadow:none!important}
+  html,body,[data-theme] body,:root:not([data-theme]) body{
+    background:#fff!important;background-image:none!important;color:var(--ink)!important}
+  body{font-size:11pt;line-height:1.4}
+  .wrap{max-width:none;padding:0}
+
+  /* ---- hide everything that only makes sense on a screen ---- */
+  .top-banner,.controls,.tierbar,.themebar,.tabs,.counts[hidden],
+  #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
+  .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
+  .detail-card-close,.pie-map-teaser,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
+  .chart-hover-dot,.why-dot,.geo-hit{display:none!important}
+  /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
+  h1.fading{opacity:1!important}
+  h1{font-size:26pt}
+  .mast-link{color:var(--ink)}
+  header.mast{margin-bottom:12px}
+  .why-inputs{position:static}
+
+  /* ---- Why tab reading order: on screen the sliders sit beside the results; on paper
+     the results come FIRST and the assumptions behind them follow ("the answer, then
+     show your work"). Otherwise two pages of slider text precede the first number. ---- */
+  .why-layout{display:flex;flex-direction:column;gap:6px}
+  .why-inputs{order:2;margin-top:14px;padding-top:10px;border-top:1.5px solid var(--ink);break-before:page;page-break-before:always}
+  .why-inputs::before{content:"Assumptions behind these numbers";display:block;margin-bottom:10px;
+    font:600 9pt ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+  /* The inflation pills are buttons on screen; on paper print only the chosen one so the
+     setting still reads ("Off", "3%", ...). */
+  .why-pill:not(.active){display:none}
+  .why-pill.active{border-color:var(--ink)}
+
+  /* ---- By State: stack the donut above a multi-column legend. Side by side, 52 legend
+     rows ran past the chart and left half of page 2 blank. ---- */
+  .pie-layout{grid-template-columns:1fr;gap:14px}
+  .pie-layout svg{max-width:300px;margin:0 auto;display:block}
+  .legend{columns:3;column-gap:22px;font-size:10pt}
+  .legend li{break-inside:avoid;page-break-inside:avoid}
+
+  /* ---- scroll boxes become full-length: overflow clips on paper, it does not scroll.
+     Without this the per-capita chart lost 12 of 52 rows and the Structure tab kept
+     520px of 3,591px. ---- */
+  .cap-list,.tree-standalone{max-height:none!important;overflow:visible!important}
+
+  /* ---- keep things together across page breaks ---- */
+  .stategroup h2,.tree-h,.chart-card h3,.why-group h4,.why-caveats h4{break-after:avoid;page-break-after:avoid}
+  ul.orgs li,ul.near-list li,.tree-leaf,.legend li,.cap-row,.why-ledger tr,.why-stat,.why-bar,
+  .why-flag,.why-group,.chart-card,.detail-card,.scalebar,svg{break-inside:avoid;page-break-inside:avoid}
+  .why-ledger thead{display:table-header-group}
+  p,li{orphans:3;widows:3}
+  .panel{break-before:auto}
+
+  /* ---- Why tab: phone breakpoint (<=900px) also matches a Letter page, so restore
+     the three-up stat row rather than printing a tall single column ---- */
+  .why-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .why-slider{margin-bottom:9px}
+
+  /* ---- minimum legible size on paper (~8pt). Screen uses 9-11px mono labels. ---- */
+  .parent,.draft-flag,.status-flag,.tree-state,.tree-count,.tree-span,.detail-card-tier,.detail-card-parent,
+  .scalebar,.wms-lbl,.why-bar-total-note,.why-axis-title,.stategroup h2 span,.cap-legend,.why-legend,
+  .why-pct-badge,.abbr,.tree-abbr{font-size:8.5pt}
+  /* SVG text is sized in the chart's own units, then scaled with the chart (a 12-unit label in
+     a chart drawn 1.3x wider than the page prints at ~9px). Sizes below are in those units,
+     chosen so the PRINTED result is ~8pt+. Re-measure if a chart's viewBox width changes. */
+  .chart-axis-label{font-size:15px}
+  .why-axis-title{font-size:14px}
+  .maplabel{font-size:12px}
+  .why-flag b,.why-ledger th,.near-dist small{font-size:8.5pt}
+  .has-map{font-size:10pt}
+
+  /* ---- surfaces: borders instead of tints, so a mono printer still shows the card edge ---- */
+  input[type=search],select,.chart-card,.why-group,.why-stat,.why-caveats,.detail-card,.why-flag{background:#fff}
+  .why-stat.lead{border-color:#000}
+  .cap-track{background:#e4e7e9}
+  .why-bar-track{background:#e4e7e9}
+  .why-ledger tr.sum td{background:#f0f2f3}
+  .why-pct-badge.good{background:#e3f1e8}
+  .why-pct-badge.caution{background:#f7e3ec}
+  [data-theme="caribou"] .why-stat-lbl{color:var(--dirt)}
+  .why-stat-lbl,.why-seg{letter-spacing:.04em}
+  /* On a B&W printer the slate / magenta / green segments land on similar greys; a white
+     seam keeps adjacent segments separable, and each wide segment carries its own $ label. */
+  .why-seg+.why-seg{border-left:2px solid #fff}
+
+  /* ---- links: paper can't be clicked, so print where each one goes ---- */
+  a{color:var(--ink)!important;text-decoration:none!important}
+  .org-name a,.tree-name a,.near-name a{border-bottom:0!important}
+  .org-name a[href^="http"]::after,.tree-name a[href^="http"]::after,
+  .near-name a[href^="http"]::after,.detail-card-link[href^="http"]::after{
+    content:" " attr(href);font:400 8pt ui-monospace,Menlo,monospace;color:var(--clay);
+    overflow-wrap:anywhere;word-break:break-all}
+  .org-name,.near-name{flex-wrap:wrap}
+  /* Structure rows: a long printed URL made the name wrap below its tier dot, stranding the
+     dot on a line of its own. Keep dot + name on one line and let the NAME wrap internally. */
+  .tree-leaf,.tree-root summary{flex-wrap:nowrap;align-items:baseline}
+  .tree-name{flex:1 1 auto;min-width:0}
+  .tree-state,.tree-count,.tree-span{flex:0 0 auto}
+
+  /* ---- tier is color-only on screen. On paper (esp. a B&W printer, where Caribou's
+     regional and local both land on the same light grey) it also gets a SHAPE:
+     national = solid circle, regional = ring, statewide = square, local = small circle.
+     Scoped to the list-style views; the SVG point maps keep circles (and size). ---- */
+  .tier-dot{background:var(--ink);border:2px solid var(--ink)}
+  ul.orgs .tier-dot.tier-regional,ul.near-list .tier-dot.tier-regional,.tree-root .tier-dot.tier-regional,.print-tierkey .tier-dot.tier-regional{background:#fff}
+  ul.orgs .tier-dot.tier-state,ul.near-list .tier-dot.tier-state,.tree-root .tier-dot.tier-state,.print-tierkey .tier-dot.tier-state{border-radius:0}
+  ul.orgs .tier-dot.tier-local,ul.near-list .tier-dot.tier-local,.tree-root .tier-dot.tier-local,.print-tierkey .tier-dot.tier-local{transform:scale(.62)}
+  .tier-dot.tier-national{border-color:var(--tier-national);background:var(--tier-national)}
+  .tier-dot.tier-regional{border-color:var(--tier-regional)}
+  .tier-dot.tier-state{border-color:var(--tier-state);background:var(--tier-state)}
+  .tier-dot.tier-local{border-color:var(--tier-local);background:var(--tier-local)}
+  /* The same four-dot key, printed once under the masthead (built from TIER_LABELS) */
+  .print-only{display:block}
+  .print-tierkey{display:flex!important;flex-wrap:wrap;gap:4px 18px;align-items:center;margin:0 0 14px;
+    font:600 8.5pt ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+  .print-tierkey span{display:inline-flex;align-items:center;gap:6px}
+  .print-tierkey .tier-dot{margin:0;flex:0 0 9px}
+  .print-tierkey[hidden]{display:none!important}
+  .print-filters{margin:0 0 12px;font:600 9pt ui-monospace,Menlo,monospace;letter-spacing:.04em;color:var(--ink)}
+  .print-filters[hidden]{display:none!important}
+  .print-footer{margin-top:14px;padding-top:8px;border-top:1.5px solid var(--ink);
+    font:400 8.5pt ui-monospace,Menlo,monospace;color:var(--slate)}
+
+  /* ---- Time-chart: option 2 gets a dashed stroke so the two lines differ without color ---- */
+  .why-line-b{stroke-dasharray:9 5}
+
+  /* ---- maps ---- */
+  /* Tall states (CA) scale to full page width and push the footer onto an extra page;
+     cap the height — the viewBox keeps the aspect ratio, so the map just centers. */
+  #p-detail svg{max-height:6.4in}
+  .state-path{stroke:#fff}
+  .state-path.state-detailed{stroke:#000}
+  .scalebar .grad{border:1px solid var(--rule)}
+  footer{margin-top:20px;border-top-color:var(--ink);font-size:9pt;color:var(--ink)}
+  footer code{border-color:var(--rule)}
+}
 </style>
 </head>
 <body>
@@ -561,6 +744,12 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   </a>
   <p class="sub">A working directory of nonprofit mountain bike trail advocacy organizations in the United States, grouped by state and tiered from national umbrella down to local chapter.</p>
 </header>
+
+<!-- print-only: tier key (built from TIER_LABELS in init) -->
+<div class="print-only print-tierkey" id="print-tierkey" hidden aria-hidden="true"></div>
+
+<!-- print-only: which search/state/tier filters produced this printout (filled in beforeprint) -->
+<div class="print-only print-filters" id="print-filters" hidden aria-hidden="true"></div>
 
 <div class="counts">
   <div><b id="c-orgs">0</b>Organizations</div>
@@ -599,6 +788,11 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body spanning the whole country (IMBA, NICA); <b>regional</b> = umbrella spanning multiple states or a broad multi-community footprint (NEMBA, SORBA, MORE); <b>statewide</b> = coalition of local orgs within one state; <b>local</b> = town, county, or regional chapter. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
   Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here. Some entries link to Facebook, Trailforks, or MTB Project pages where no dedicated organization website could be found.
 </footer>
+<!-- print-only: where this page came from, and when it was printed (date set in beforeprint) -->
+<div class="print-only print-footer" aria-hidden="true">
+  US MTB Trail Advocacy Atlas &middot; Post Millennium Renaissance &middot; postmillenniumrenaissance.com/trail-advocacy-atlas
+  &middot; Printed <span id="print-date"></span>. Data changes — check the live page for the current directory.
+</div>
 
 </div>
 
@@ -1215,6 +1409,8 @@ const TITLE_ROTATE_MS=6000;       // how long each masthead headline shows befor
 const TITLE_FADE_MS=500;          // fade duration for that swap (must match the CSS transition)
 const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists
 const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
+const CARTOGRAM_INK="#111111";    // dark-label color assumed when picking light vs dark cartogram text; keep
+                                  // near-black so it matches .maplabel.dark (--ink) in every theme
 
 
 /* ---------- runtime state (what the user has currently selected) ---------- */
@@ -1740,6 +1936,26 @@ function renderNear(){
    and thickens nothing — it's purely a smaller, non-interactive rendering of the
    exact same tile geometry and color ramp. The caller decides what a click does;
    at mini size that's "go to the Map tab", not "filter by this one state". ==== */
+/* Cartogram label contrast. The tile fill is a CSS color-mix() of the theme's mapFrom/mapTo,
+   so the label color has to be chosen from the tile's REAL luminance. The old rule (white
+   above 45% density, slate below) left mid-density tiles at ~2:1 on every theme — fine
+   for a glance on a backlit screen, unreadable on paper. This mirrors color-mix(in srgb)
+   (straight per-channel blend) and picks whichever of white / ink contrasts more, which
+   guarantees roughly 4.5:1 or better for any fill. */
+function hexLuminance(hex){
+  const lin=c=>{c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)};
+  const [r,g,b]=[1,3,5].map(i=>lin(parseInt(hex.slice(i,i+2),16)));
+  return .2126*r+.7152*g+.0722*b;
+}
+function mixHex(a,b,pctOfA){   // pctOfA is 0..100, same meaning as color-mix(in srgb, a N%, b)
+  const w=pctOfA/100;
+  return "#"+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*w+parseInt(b.slice(i,i+2),16)*(1-w))
+    .toString(16).padStart(2,"0")).join("");
+}
+function labelIsDark(fillHex,inkHex){   // true => use the dark label, false => white
+  const lf=hexLuminance(fillHex), contrast=l=>(Math.max(lf,l)+.05)/(Math.min(lf,l)+.05);
+  return contrast(hexLuminance(inkHex))>=contrast(1);
+}
 function buildCartogramSVG(counts,{cell=52,gap=4,mini=false}={}){
   const max=Math.max(1,...Object.values(counts));
   const {mapFrom,mapTo}=THEME_BY_ID[currentTheme];
@@ -1749,6 +1965,7 @@ function buildCartogramSVG(counts,{cell=52,gap=4,mini=false}={}){
     const n=counts[st]||0;
     const t=n/max;
     const fill=n?`color-mix(in srgb, ${mapTo} ${18+t*82}%, ${mapFrom})`:mapFrom;
+    const darkLabel=labelIsDark(n?mixHex(mapTo,mapFrom,18+t*82):mapFrom,CARTOGRAM_INK);
     const x=c*(cell+gap), y=r*(cell+gap);
     const supported=POINT_MAP_STATES.includes(st);
     if(mini){
@@ -1756,8 +1973,8 @@ function buildCartogramSVG(counts,{cell=52,gap=4,mini=false}={}){
     }else{
       sq+=`<g><rect class="state-path${supported?" state-detailed":""}" data-state="${st}" x="${x}" y="${y}" width="${cell}" height="${cell}"
           rx="3" fill="${fill}"><title>${STATE_NAMES[st]}: ${n} listed${supported?" — click for real trailhead-level locations":""}</title></rect>
-        <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2-2}">${st}</text>
-        <text class="maplabel${t<.45?" dark":""}" x="${x+cell/2}" y="${y+cell/2+13}" style="font-size:13px">${n||""}</text></g>`;
+        <text class="maplabel${darkLabel?" dark":""}" x="${x+cell/2}" y="${y+cell/2-2}">${st}</text>
+        <text class="maplabel${darkLabel?" dark":""}" x="${x+cell/2}" y="${y+cell/2+13}" style="font-size:13px">${n||""}</text></g>`;
     }
   });
   const w=cols*(cell+gap), h=rows*(cell+gap);
@@ -2201,7 +2418,7 @@ function updateWhy(){
         ${yTicks}${xTicks}
         <text class="why-axis-title" x="${(padL+plotW/2).toFixed(1)}" y="${H-4}" text-anchor="middle">Years after opening</text>
         <path d="${path("a")}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
-        <path d="${path("b")}" fill="none" stroke="var(--clay)" stroke-width="2.5"/>
+        <path class="why-line-b" d="${path("b")}" fill="none" stroke="var(--clay)" stroke-width="2.5"/>
         ${dots("a")}${dots("b")}
         <line class="chart-hover-line" id="why-hoverline" x1="0" x2="0" y1="${padT}" y2="${padT+plotH}"/>
         <rect class="chart-hoverzone" id="why-hoverzone" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}"/>
@@ -2439,6 +2656,40 @@ function init(){
     setTimeout(()=>{ el.textContent=titles[i]; el.classList.remove("fading"); },TITLE_FADE_MS);
   },TITLE_ROTATE_MS);
 })();
+
+/* ==== PRINT HOOKS — paper can't expand, hover, or scroll, so prep the DOM first. =====
+   beforeprint/afterprint fire for Ctrl+P, File > Print, and window.print() alike (and
+   inside an iframe, for that frame's own content).
+   · Closed <details> hide their children when printed — the Structure tab's top-level
+     groups start closed on screen — so open every one, remembering which were closed.
+   · Fill the print-only tier key (from TIER_LABELS, so it can't drift) and the date.
+   Everything is restored afterwards so the screen state is exactly as the user left it. */
+let printReopen=[];
+window.addEventListener("beforeprint",()=>{
+  printReopen=[...document.querySelectorAll("details:not([open])")];
+  printReopen.forEach(d=>d.open=true);
+  const key=$("print-tierkey");
+  if(key){
+    key.innerHTML=Object.keys(TIER_LABELS).map(t=>`<span><i class="tier-dot tier-${t}"></i>${esc(TIER_LABELS[t])}</span>`).join("");
+    // The key explains the dot shapes in the list-style tabs only; the point maps have their own legend.
+    key.hidden=!["list","near","tree"].includes(activeTab);
+  }
+  // The filter bar is hidden on paper, so say what the printout is filtered by — otherwise a
+  // 12-page "Colorado" printout looks like the whole country with pages missing.
+  const pf=$("print-filters");
+  if(pf){
+    const usesFilters=(TABS.find(t=>t.id===activeTab)||{}).filters!==false;
+    const bits=[];
+    if(filters.state)bits.push(STATE_NAMES[filters.state]||filters.state);
+    if(filters.tier)bits.push(TIER_LABELS[filters.tier]||filters.tier);
+    if(filters.q)bits.push("matching \u201C"+filters.q+"\u201D");
+    pf.textContent=bits.length?"Filtered to: "+bits.join(" \u00B7 "):"";
+    pf.hidden=!(usesFilters&&bits.length);
+  }
+  const d=$("print-date");
+  if(d)d.textContent=new Date().toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+});
+window.addEventListener("afterprint",()=>{printReopen.forEach(d=>d.open=false);printReopen=[]});
 
 init();
 </script>
