@@ -57,6 +57,8 @@
     · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
     · init() .................... wires up all the buttons on page load
     · title swap ................ rotates the headline every few seconds
+    · PRINT BUTTON .............. printView() / printViewURL() / applyPrintParams(): prints directly,
+                                  or from inside an iframe opens a new tab that restores the view
     · PRINT HOOKS ............... beforeprint/afterprint: opens closed <details>, fills the tier
                                   key, "Filtered to" line and print date (right above init())
 
@@ -217,6 +219,20 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
   border-bottom:3px solid transparent;margin-bottom:-1.5px;flex:0 0 auto;
 }
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--clay)}
+/* Tab bar + print button share one row. The tab bar keeps its own bottom rule and sideways
+   scroll; the button sits at the right end with a matching rule so the line stays unbroken. */
+.tabrow{display:flex;align-items:stretch;margin-bottom:22px}
+.tabrow .tabs{flex:1 1 auto;min-width:0;margin-bottom:0}
+.print-btn{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;padding:12px 14px;
+  font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
+  border:0;border-bottom:1.5px solid var(--rule);background:none;color:var(--slate);cursor:pointer;
+}
+.print-btn:hover{color:var(--ink)}
+.print-btn:focus-visible{outline:2px solid var(--clay);outline-offset:-2px}
+.print-btn svg{width:16px;height:16px;flex:0 0 16px}
+.print-btn span{display:none}
+@media(min-width:561px){.print-btn span{display:inline}}
 .panel[hidden]{display:none}
 
 /* ---- org list ---- */
@@ -592,7 +608,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   .wrap{max-width:none;padding:0}
 
   /* ---- hide everything that only makes sense on a screen ---- */
-  .top-banner,.controls,.tierbar,.themebar,.tabs,.counts[hidden],
+  .top-banner,.controls,.tierbar,.themebar,.tabrow,.tabs,.print-btn,.counts[hidden],
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
@@ -781,7 +797,15 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 <!-- Tabs and panels are BUILT FROM THE `TABS` REGISTRY in the script below.
      Don't add markup here — add one entry to TABS and both the button and its
      panel appear automatically. -->
-<div class="tabs" role="tablist" id="tabbar"></div>
+<div class="tabrow">
+  <div class="tabs" role="tablist" id="tabbar"></div>
+  <!-- Print button: deliberately a sibling of the tablist, not a child (ARIA: a tablist may only
+       contain tabs). Icon is Lucide "printer"; the label hides on phones, aria-label stays. -->
+  <button type="button" class="print-btn" id="print-btn" aria-label="Print or save as PDF" title="Print or save as PDF">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+    <span>Print / PDF</span>
+  </button>
+</div>
 <div id="panels"></div>
 
 <footer>
@@ -1409,6 +1433,10 @@ const TITLE_ROTATE_MS=6000;       // how long each masthead headline shows befor
 const TITLE_FADE_MS=500;          // fade duration for that swap (must match the CSS transition)
 const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists
 const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
+const PRINT_PARAM="print";        // URL flag (?print=1) that makes a freshly opened tab restore the view and auto-open print
+const PRINT_AUTO_DELAY_MS=500;    // wait after restoring the view before opening the print dialog, so the
+                                  // render (charts, fonts) has settled; too short prints a half-drawn page
+const PRINT_QUERY_MAX=100;        // longest search text accepted back from the URL
 const CARTOGRAM_INK="#111111";    // dark-label color assumed when picking light vs dark cartogram text; keep
                                   // near-black so it matches .maplabel.dark (--ink) in every theme
 
@@ -2622,6 +2650,7 @@ function init(){
   buildThemeSwatches();
   applyTheme(saved);   // sets data-theme, meta tag, pressed state, and calls render()
   renderCounts();
+  $("print-btn").addEventListener("click",printView);
   // React to a hash change after load too (e.g. a same-page anchor click),
   // not just the one the page was opened with.
   window.addEventListener("hashchange",()=>{
@@ -2656,6 +2685,72 @@ function init(){
     setTimeout(()=>{ el.textContent=titles[i]; el.classList.remove("fading"); },TITLE_FADE_MS);
   },TITLE_ROTATE_MS);
 })();
+
+/* ==== PRINT BUTTON ===================================================================
+   Not in a frame (tool opened on its own): just window.print(). The beforeprint hook and the
+   @media print block below do the rest.
+
+   In a frame (the PMR embed / a Pinkbike iframe): the browser's print command prints the frame
+   as a fixed-size BOX, clipped to whatever is visible — not this page's full content. So the
+   button instead opens the tool in a new top-level tab with the current view encoded in the
+   URL, and THAT tab restores the view and opens the print dialog itself (applyPrintParams).
+
+   What travels in the URL: open tab, search/state/tier filters, theme, and — on the Why tab —
+   every slider value that differs from its default plus the inflation pill. The theme rides
+   along because a cross-origin iframe may have partitioned localStorage, so the new tab can't
+   assume it can read the choice. NOT carried: the Near me tab's location search (that tab
+   opens empty; run the search there and press Print again — it prints directly from a tab). */
+function inFrame(){try{return window.self!==window.top}catch(e){return true}}
+
+function printViewURL(){
+  const u=new URL(window.location.href);
+  u.search="";u.hash="#"+activeTab;
+  u.searchParams.set(PRINT_PARAM,"1");
+  u.searchParams.set("theme",currentTheme);
+  if(filters.q)u.searchParams.set("q",filters.q);
+  if(filters.state)u.searchParams.set("state",filters.state);
+  if(filters.tier)u.searchParams.set("tier",filters.tier);
+  if(activeTab==="why"&&whyBuilt){
+    const v=whyValues();
+    WHY_INPUTS.forEach(i=>{if(v[i.key]!==i.value)u.searchParams.set("w_"+i.key,v[i.key])});
+    if(curWhyInfl)u.searchParams.set("w_infl",curWhyInfl);
+  }
+  return u.toString();
+}
+
+function printView(){
+  if(!inFrame()){window.print();return}
+  window.open(printViewURL(),"_blank","noopener");
+}
+
+/* Runs at the end of init(). Every value read back from the URL is validated against what the
+   page actually offers (known theme, a state in the dropdown, a real tier, slider min/max, a
+   real inflation pill) — a hand-edited URL can't push anything the UI itself couldn't. Search
+   text only ever goes through .value / textContent paths, never innerHTML. */
+function applyPrintParams(){
+  const p=new URLSearchParams(window.location.search);
+  if(!p.has(PRINT_PARAM))return;
+  // hasOwnProperty, not THEME_BY_ID[x]: a lookup of "__proto__" returns Object.prototype, which is truthy.
+  if(Object.prototype.hasOwnProperty.call(THEME_BY_ID,p.get("theme")))applyTheme(p.get("theme"));   // no persist: one-off print view
+  const st=p.get("state")||"", tier=p.get("tier")||"";
+  filters.q=(p.get("q")||"").slice(0,PRINT_QUERY_MAX);
+  filters.state=[...$("statesel").options].some(o=>o.value===st)?st:"";
+  filters.tier=Object.prototype.hasOwnProperty.call(TIER_LABELS,tier)?tier:"";
+  $("q").value=filters.q;$("statesel").value=filters.state;
+  document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===filters.tier));
+  if(activeTab==="why"&&whyBuilt){
+    WHY_INPUTS.forEach(i=>{
+      const n=parseFloat(p.get("w_"+i.key));
+      if(Number.isFinite(n))$("why-"+i.key).value=Math.min(i.max,Math.max(i.min,n));
+    });
+    const r=parseFloat(p.get("w_infl"));
+    if([...document.querySelectorAll("#why-inflation-pills .why-pill")].some(b=>+b.dataset.rate===r))setWhyInflation(r);
+  }
+  render();
+  // Drop the flag so a reload (or a shared copy of this tab's URL) doesn't reopen the dialog.
+  try{history.replaceState(null,"",window.location.pathname+window.location.hash)}catch(e){}
+  setTimeout(()=>window.print(),PRINT_AUTO_DELAY_MS);
+}
 
 /* ==== PRINT HOOKS — paper can't expand, hover, or scroll, so prep the DOM first. =====
    beforeprint/afterprint fire for Ctrl+P, File > Print, and window.print() alike (and
@@ -2692,6 +2787,7 @@ window.addEventListener("beforeprint",()=>{
 window.addEventListener("afterprint",()=>{printReopen.forEach(d=>d.open=false);printReopen=[]});
 
 init();
+applyPrintParams();   // after init() so the dropdowns, tabs and (on #why) the sliders all exist
 </script>
 </body>
 </html>
