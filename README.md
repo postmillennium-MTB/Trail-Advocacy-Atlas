@@ -2,7 +2,7 @@
 
 A single-file, zero-dependency directory of nonprofit mountain bike trail advocacy organizations across the United States. Searchable, filterable by tier and state, with a donut chart, a 50-state cartogram, real geocoded trailhead maps for four states, and a **Why** tab that models what one of these organizations is actually worth to a town in dollars. Built to the same architecture as PMR's other tools: one HTML file, no build step, deploy anywhere.
 
-**Current status:** 373 organizations across all 50 states, Washington DC, and Puerto Rico.
+**Current status:** 379 organizations across all 50 states, Washington DC, and Puerto Rico.
 
 ---
 
@@ -36,7 +36,7 @@ Everything lives in one JavaScript array near the top of the `<script>` block, c
 - `national` — umbrella bodies spanning the whole country (IMBA, NICA). Dark dot.
 - `regional` — umbrella bodies or single orgs spanning multiple states or a broad multi-community footprint within one state (NEMBA, SORBA, MORE, Oregon Timber Trail Alliance). Neon/accent-colored dot.
 - `state` — a statewide coalition of local orgs, or a single org that's the de facto statewide voice (JORBA in NJ, KYMBA in KY, CAMTB in CA). Brown/gold dot.
-- `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 348 of 373. Green dot.
+- `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 354 of 379. Green dot.
 
 To add a new organization, find the right state section and insert a line following the same pattern. If in doubt, hand the file to Claude with "add these orgs to the atlas" — that's how this whole thing was built, incrementally, one state or one pasted list at a time.
 
@@ -62,8 +62,9 @@ Every other state was assembled org-by-org from web search — real, but not nec
 - Youth interscholastic racing leagues (NICA state chapters, high school cycling leagues) — not trail-*building* orgs. NICA itself stays at the national tier as a labeled exception (`r` field says so directly), everything downstream of it was left out.
 - Motorized OHV/dirt-bike clubs (e.g. Reno Area Dirt Riders) — this atlas is pedal-powered MTB only.
 - Trips for Kids — youth cycling programming, not trail advocacy; removed after initial inclusion.
+- All Bikes Welcome (AR) — 501(c)(3) outdoor/cycling access programming in Northwest Arkansas, not trail advocacy; same reasoning as Trips for Kids.
 
-**A few orgs mentioned in source material but never added**, because no live site, social page, or third-party confirmation could be found: Susanville Area Bicycle Association (CA), Exchequer Riders Club (CA), South Orange County Trail Coalition (CA), LA Bike Park Collective (CA), SWIN (IN), Brainerd/Northfield Area MBA (MN), Central Mississippi Trail Alliance (MS). Better to leave a gap than invent a URL.
+**A few orgs mentioned in source material but never added**, because no live site, social page, or third-party confirmation could be found: Susanville Area Bicycle Association (CA), Exchequer Riders Club (CA), South Orange County Trail Coalition (CA), LA Bike Park Collective (CA), SWIN (IN), Brainerd/Northfield Area MBA (MN), Central Mississippi Trail Alliance (MS), Hike NWA (AR; hiker education, no stable site confirmed), Women of Oz (AR; 501(c)(3) status unconfirmed). Better to leave a gap than invent a URL.
 
 **Renamed / merged orgs**, noted inline in `r` rather than as separate entries: Ride NoCo (formerly White Mountains NEMBA, went independent 2020 — though NEMBA has since re-chartered a separate active White Mountains chapter, so both now exist), OCMTBA (merged with SHARE Mountain Bike Club, 2022), Marin Trail Stewards (formerly Access4Bikes), Bike Shasta (formerly Mount Shasta MBA).
 
