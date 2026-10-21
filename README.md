@@ -2,7 +2,7 @@
 
 A single-file, zero-dependency directory of nonprofit mountain bike trail advocacy organizations across the United States. Searchable, filterable by tier and state, with a donut chart, a 50-state cartogram, real geocoded trailhead maps for four states, and a **Why** tab that models what one of these organizations is actually worth to a town in dollars. Built to the same architecture as PMR's other tools: one HTML file, no build step, deploy anywhere.
 
-**Current status:** 409 organizations across all 50 states, Washington DC, and Puerto Rico.
+**Current status:** 449 organizations across all 50 states, Washington DC, and Puerto Rico.
 
 ---
 
@@ -36,7 +36,7 @@ Everything lives in one JavaScript array near the top of the `<script>` block, c
 - `national` — umbrella bodies spanning the whole country (IMBA, NICA). Dark dot.
 - `regional` — umbrella bodies or single orgs spanning multiple states or a broad multi-community footprint within one state (NEMBA, SORBA, MORE, Oregon Timber Trail Alliance). Neon/accent-colored dot.
 - `state` — a statewide coalition of local orgs, or a single org that's the de facto statewide voice (JORBA in NJ, KYMBA in KY, CAMTB in CA). Brown/gold dot.
-- `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 382 of 409. Green dot.
+- `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 422 of 449. Green dot.
 
 To add a new organization, find the right state section and insert a line following the same pattern. If in doubt, hand the file to Claude with "add these orgs to the atlas" — that's how this whole thing was built, incrementally, one state or one pasted list at a time.
 
@@ -68,10 +68,13 @@ Every other state was assembled org-by-org from web search — real, but not nec
 - Velomont Trail Collective (VT) removed in the T-Z re-check: it is a joint project of Vermont Huts & Trails and VMBA, not a separate organization.
 - Wasatch Area Freeride Trails Association and Salt Lake Valley Trails Society (UT) removed after owner review: websites and email domain dead, last Facebook activity 2015 and 2021. Vermont Bikepackers (VT) excluded: route and event organization, not a trail builder or steward.
 - All Bikes Welcome (AR) — 501(c)(3) outdoor/cycling access programming in Northwest Arkansas, not trail advocacy; same reasoning as Trips for Kids.
+- Removed in the 2026-10 full state review: Ozark Highlands Trail Association (AR; hiking and backpacking only, no bike access documented), Arkansas Parks and Recreation Foundation (AR; parks funder, not a trail builder), Bicycle Advocacy of Central Arkansas (AR; general bicycle advocacy, and the link was a city page), Waco Bicycle Club (TX; road-cycling club with no trail work shown).
 
 **A few orgs mentioned in source material but never added**, because no live site, social page, or third-party confirmation could be found: Susanville Area Bicycle Association (CA), Exchequer Riders Club (CA), South Orange County Trail Coalition (CA), LA Bike Park Collective (CA), SWIN (IN), Brainerd/Northfield Area MBA (MN), Central Mississippi Trail Alliance (MS), Hike NWA (AR; hiker education, no stable site confirmed), Women of Oz (AR; 501(c)(3) status unconfirmed). Better to leave a gap than invent a URL.
 
-**Renamed / merged orgs**, noted inline in `r` rather than as separate entries: Ride NoCo (formerly White Mountains NEMBA, went independent 2020 — though NEMBA has since re-chartered a separate active White Mountains chapter, so both now exist), OCMTBA (merged with SHARE Mountain Bike Club, 2022), Marin Trail Stewards (formerly Access4Bikes), Bike Shasta (formerly Mount Shasta MBA).
+**Renamed / merged orgs**, noted inline in `r` rather than as separate entries: Ride NoCo (an independent nonprofit founded 2020, separate from White Mountains NEMBA, which is a long-running NEMBA chapter), OCMTBA (merged with SHARE Mountain Bike Club, 2022), Marin Trail Stewards (formerly Access4Bikes), Bike Shasta (formerly Mount Shasta MBA), Mad River Trails Alliance (merger of Mad River Riders and Mad River Path Association, effective Oct 1, 2026), Western Mass NEMBA (formerly Pioneer Valley NEMBA, 2023), Grand Valley Trails (formerly Grand Valley Canyons, per COPMOBA's chapter list), Oklahoma Mountain Bike Association (formerly Oklahoma Earthbike Fellowship), Kansas Trails Inc. (filed as Kansas Association of Trail Stewards).
+
+**Entries kept but flagged "not confirmed active"** after the 2026-10 review, because the group is real but no 2025-26 activity could be found: Hawaii Mountain Bike Association, San Miguel Bike Alliance (CO), Cuchara Mountain Trails Alliance (CO), Lake Mountain Bicycle Club (UT).
 
 **Abbreviation collisions** across unrelated orgs in different states are resolved with a state suffix on the `a` field only (e.g. `CIMBA-IL` vs. Idaho's `CIMBA`, `SMBA-NY` vs. Colorado's `SMBA`, `OMBA-OK` vs. Oregon/Colorado's `OMBA`) — the real org names are untouched, this only disambiguates the abbreviation column.
 
