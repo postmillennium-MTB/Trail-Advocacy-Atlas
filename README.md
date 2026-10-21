@@ -180,3 +180,11 @@ If a dark-background report ever comes back, check these three things first befo
 ## Working with Claude on this file
 
 The fastest way to extend this: paste a list of orgs (with state, city/region if known) into a new chat message along with the current `.html` file, and ask Claude to verify and add them. Claude will web-search each one, confirm it's a real active organization with a live site (or note honestly when it can't verify), and append correctly-formatted entries — following the same sourcing discipline as everything already in the file. That's exactly how this atlas grew from a 38-organization Colorado list to 369 entries covering the entire country.
+
+## License
+
+Copyright (c) 2026 Post Millennium Renaissance (https://www.postmillenniumrenaissance.com).
+
+Released under the [PolyForm Noncommercial License 1.0.0](LICENSE). In short: free to use, copy, modify and share for any noncommercial purpose, including personal use, research, education, and use by charities, environmental-protection organizations and government institutions. Commercial use needs a separate license; ask through postmillenniumrenaissance.com. Copies must keep the `Required Notice:` line in `LICENSE`. The license text controls over this summary.
+
+Facts, figures and quotations taken from third-party studies and sources remain the property of their authors. This license covers only this project's own code, selection and arrangement of material, and original text. Third-party components keep their own licenses.
