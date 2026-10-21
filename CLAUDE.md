@@ -51,3 +51,7 @@ For every organization, record an **email and/or mailing address (and phone if p
 - Work on the branch Jon names. Open a pull request only when asked. Merging to `main` publishes the live atlas, so only do it when Jon says to go live.
 - `research_notes/` and `reports/` hold working files and stay out of git.
 - When researching in batches, run state groups in parallel and have each researcher propose edits in a table rather than editing `index.html`. Review the proposals, then apply them in one pass.
+
+## License and notice (do not remove)
+
+This repo is licensed under PolyForm Noncommercial 1.0.0 (`LICENSE`). Every edit and rebuild must keep: the `Required Notice:` line at the top of `LICENSE`; the (c) / SPDX comment right after the doctype of each HTML page; and the visible `.pmr-license` footer on each page. Do not remove, reword or hide them. New pages get the same footer. Third-party material keeps its own license: never relicense it, and keep its notices. Jon holds the copyright and decides any license change.
