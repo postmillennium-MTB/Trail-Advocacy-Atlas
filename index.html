@@ -2576,10 +2576,10 @@ function updateWhy(){
     ${m.privateSpare>0?`<p class="why-flag"><b>Raised more than needed</b>The non-profit's ${esc(whyCash(v.private))} exceeds
       the remaining capital gap by ${esc(whyCash(m.privateSpare))}. Real projects would put that toward maintenance
       endowment or the next phase; this model simply leaves it unspent.</p>`:""}
-    ${m.grantForgone>100?`<p class="why-flag"><b>The catch nobody mentions</b>Because the partnership shrinks the contract,
-      the same ${v.grant}% grant rate draws ${esc(whyCash(m.grantForgone))} less public money than Option 1 would have.
-      Volunteer labor partly substitutes for grant dollars rather than stacking on top of them. It still nets out ahead here,
-      but a town chasing a large reimbursement grant should check the arithmetic before assuming otherwise.</p>`:""}
+    ${m.grantForgone>100?`<p class="why-flag"><b>Smaller contract, smaller grant</b>The partnership shrinks the contract, so the same ${v.grant}% grant
+      draws ${esc(whyCash(m.grantForgone))} less public money than Option 1. Volunteer labor replaces some grant dollars
+      instead of adding to them. ${m.delta>0?"Option 2 still comes out ahead here. ":""}If the town is counting on a large
+      reimbursement grant, run the numbers first.</p>`:""}
   </div>`;
 
   /* ---- chart 2: cumulative municipal outlay ---- */
@@ -2722,7 +2722,7 @@ function whyCaveatsHTML(){
     figures for the length of the comparison horizon. Off by default; the six-way switch (Off/1/2/3/4/5%) sits right
     below the maintenance slider.</p>
 
-    <h4>Three things this model refuses to assume</h4>
+    <h4>Three things this model does not assume</h4>
     <ul>
       <li><b>That grants are partnership-only.</b> Towns apply for RTP, RAISE, CMAQ and state trail funding directly and
       win. The grant rate here applies to both options. What the non-profit genuinely unlocks is the private pool —
@@ -2732,8 +2732,7 @@ function whyCaveatsHTML(){
       it. Storm damage, drainage failures, liability inspections and machine work stay with the town under essentially
       every adoption agreement, which is why the slider caps at 95%.</li>
       <li><b>That partnership is free.</b> Coordinating volunteers costs staff time, training, insurance and tools. Set the
-      coordination cost high and the volunteer hours low and Option 2 loses. If a model cannot produce that result, it is
-      not a model.</li>
+      coordination cost high and the volunteer hours low and Option 2 costs more.</li>
     </ul>
 
     <h4>Not modeled</h4>
