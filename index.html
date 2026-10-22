@@ -741,9 +741,95 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .pmr-license{box-sizing:border-box;clear:both;width:100%;margin:24px 0 0;padding:10px 16px 14px;border-top:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font-family:inherit;font-size:12px;line-height:20px;text-align:center;letter-spacing:normal;text-transform:none}
 .pmr-license p{margin:0 auto;padding:0;max-width:none;font:inherit;color:inherit}
 .pmr-license a{position:relative;display:inline;color:inherit;text-decoration:underline}
-.pmr-license a::after{content:"";position:absolute;left:-6px;right:-6px;top:-10px;bottom:-10px}</style>
+.pmr-license a::after{content:"";position:absolute;left:-6px;right:-6px;top:-10px;bottom:-10px}/* ══ PMR BACKGROUND TEXTURES — one texture per color theme ══
+   Textures are masks loaded from postmillenniumrenaissance.com/textures/masks/ (served with CORS open), tinted with --tex-ink.
+   The declarations are the generator's, unchanged; they are only scoped per theme so each theme gets its own texture.
+   TO ADD A THEME'S TEXTURE: copy one of the blocks below, change the theme selector, --tex-ink and the mask files, and add its
+   credit line to .tex-credit in the footer. Keep opacity low: this sits behind body text. Hidden in print. */
+body{position:relative;isolation:isolate}   /* isolation makes the body a stacking context, so the z-index:-1 texture sits above the body background and below the content */
+.texture,.texture-2{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-color:var(--tex-ink,#2D6A4F);
+}
+/* Caribou (default): texture "us-d268339 + crowe-1882-13106" */
+:root:not([data-theme]),
+:root[data-theme="caribou"]{ --tex-ink:#29343a; --tex-opacity:0.135; --tex-2-opacity:0.135; }
+:root:not([data-theme]) .texture,
+:root[data-theme="caribou"] .texture{
+  opacity:var(--tex-opacity,0.135);
+  -webkit-mask-image:linear-gradient(to bottom, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/us-d268339.webp");
+  mask-image:linear-gradient(to bottom, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/us-d268339.webp");
+  -webkit-mask-size:100% 100%, 160px auto;
+  mask-size:100% 100%, 160px auto;
+  -webkit-mask-repeat:no-repeat, repeat;
+  mask-repeat:no-repeat, repeat;
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+:root:not([data-theme]) .texture-2,
+:root[data-theme="caribou"] .texture-2{
+  opacity:var(--tex-2-opacity,0.135);
+  -webkit-mask-image:linear-gradient(to top, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/crowe-1882-13106.webp");
+  mask-image:linear-gradient(to top, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/crowe-1882-13106.webp");
+  -webkit-mask-size:100% 100%, 68px auto;
+  mask-size:100% 100%, 68px auto;
+  -webkit-mask-repeat:no-repeat, repeat;
+  mask-repeat:no-repeat, repeat;
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+/* Moose: texture "day-1927-74141 (adapted from US Design Patent 74,141)" */
+:root[data-theme="moose"]{ --tex-ink:#3f5d3a; --tex-opacity:0.055; --tex-2-opacity:0.055; }
+:root[data-theme="moose"] .texture{
+  opacity:var(--tex-opacity,0.055);
+  -webkit-mask-image:url("https://www.postmillenniumrenaissance.com/textures/masks/day-1927-74141.webp");
+  mask-image:url("https://www.postmillenniumrenaissance.com/textures/masks/day-1927-74141.webp");
+  -webkit-mask-size:900px auto;
+  mask-size:900px auto;
+  -webkit-mask-repeat:repeat;
+  mask-repeat:repeat;
+}
+:root[data-theme="moose"] .texture-2{ display:none }
+/* Elk: texture "fisher-1882-13110 + fisher-1882-13108" */
+:root[data-theme="elk"]{ --tex-ink:#8a6f3f; --tex-opacity:0.14; --tex-2-opacity:0.15; }
+:root[data-theme="elk"] .texture{
+  opacity:var(--tex-opacity,0.14);
+  -webkit-mask-image:linear-gradient(to right, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/fisher-1882-13110.webp");
+  mask-image:linear-gradient(to right, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/fisher-1882-13110.webp");
+  -webkit-mask-size:100% 100%, 400px auto;
+  mask-size:100% 100%, 400px auto;
+  -webkit-mask-repeat:no-repeat, repeat;
+  mask-repeat:no-repeat, repeat;
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+:root[data-theme="elk"] .texture-2{
+  opacity:var(--tex-2-opacity,0.15);
+  -webkit-mask-image:linear-gradient(to left, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/fisher-1882-13108.webp");
+  mask-image:linear-gradient(to left, #000 0%, rgba(0,0,0,0) 100%), url("https://www.postmillenniumrenaissance.com/textures/masks/fisher-1882-13108.webp");
+  -webkit-mask-size:100% 100%, 716px auto;
+  mask-size:100% 100%, 716px auto;
+  -webkit-mask-repeat:no-repeat, repeat;
+  mask-repeat:no-repeat, repeat;
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+.tex-credit{font-size:10px;line-height:1.5;color:var(--slate);margin:14px 0 0}
+.tex-credit span{display:none}
+.tex-credit span+span{margin-top:2px}
+:root:not([data-theme]) .tex-credit .tc-belt,
+:root[data-theme="caribou"] .tex-credit .tc-belt{ display:block }
+:root[data-theme="moose"] .tex-credit .tc-day{ display:block }
+:root[data-theme="elk"] .tex-credit .tc-fisher{ display:block }
+@media print{ .texture,.texture-2{display:none !important} }
+</style>
 </head>
 <body>
+<div class="texture" aria-hidden="true"></div>
+<div class="texture-2" aria-hidden="true"></div>
 <!-- ============ PAGE MARKUP ============
      Most of these are empty shells that JavaScript fills in at runtime.
      The 4 <div class="panel"> blocks below get populated by the render*() functions. -->
@@ -817,6 +903,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 <footer>
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body spanning the whole country (IMBA, NICA); <b>regional</b> = umbrella spanning multiple states or a broad multi-community footprint (NEMBA, SORBA, MORE); <b>statewide</b> = coalition of local orgs within one state; <b>local</b> = town, county, or regional chapter. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
   Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here. Some entries link to Facebook, Trailforks, or MTB Project pages where no dedicated organization website could be found.
+  <p class="tex-credit"><span class="tc-belt">Background pattern from US Design Patent No. 268,339 (Syoji Inae and Eiji Fukuchi, Mitsuboshi Belting Ltd., 1983); the patent has long expired.<br>Background pattern adapted from US Design Patent No. 13,106 (Eugene A. Crowe, 1882); the patent has long expired.</span><span class="tc-day">Background pattern adapted from US Design Patent No. 74,141 (Harry S. Day, 1927); the patent has long expired.</span><span class="tc-fisher">Background pattern adapted from US Design Patent No. 13,110 (John Fisher, 1882); the patent has long expired.<br>Background pattern adapted from US Design Patent No. 13,108 (Edwin Fisher, 1882); the patent has long expired.</span></p>
 </footer>
 <!-- print-only: where this page came from, and when it was printed (date set in beforeprint) -->
 <div class="print-only print-footer" aria-hidden="true">
