@@ -902,7 +902,7 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
 
 <footer>
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body spanning the whole country (IMBA, NICA); <b>regional</b> = umbrella spanning multiple states or a broad multi-community footprint (NEMBA, SORBA, MORE); <b>statewide</b> = coalition of local orgs within one state; <b>local</b> = town, county, or regional chapter. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
-  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here. Some entries link to Facebook, Trailforks, or MTB Project pages where no dedicated organization website could be found.
+  Sources: comtb.org, vmba.org, ormtbcoalition.org, evergreenmtb.org, nemba.org, sorba.org, camtb.org, imba.com, plus individual org sites. Verify before citing — 501(c)(3) status is claimed by the orgs themselves and not independently confirmed here. <b>No guarantee of accuracy or completeness:</b> entries are compiled from public web research, can be out of date or wrong, and are provided as-is; check with an organization directly before relying on a listing. Some entries link to Facebook, Trailforks, or MTB Project pages where no dedicated organization website could be found.
   <p class="tex-credit"><span class="tc-belt">Background pattern from US Design Patent No. 268,339 (Syoji Inae and Eiji Fukuchi, Mitsuboshi Belting Ltd., 1983); the patent has long expired.<br>Background pattern adapted from US Design Patent No. 13,106 (Eugene A. Crowe, 1882); the patent has long expired.</span><span class="tc-day">Background pattern adapted from US Design Patent No. 74,141 (Harry S. Day, 1927); the patent has long expired.</span><span class="tc-fisher">Background pattern adapted from US Design Patent No. 13,110 (John Fisher, 1882); the patent has long expired.<br>Background pattern adapted from US Design Patent No. 13,108 (Edwin Fisher, 1882); the patent has long expired.</span></p>
 </footer>
 <!-- print-only: where this page came from, and when it was printed (date set in beforeprint) -->
@@ -1559,7 +1559,7 @@ const WHY_INPUTS=[
   {key:"plan",      group:"project", label:"Planning, design & permitting",   min:0,     max:25,     step:1,    value:12,    fmt:whyPct,
    hint:"As a share of construction cost. Covers alignment flagging, environmental review, and the municipal staff hours pulled off other duties. Rarely appears on the capital line, but it is real money."},
   {key:"maint",     group:"project", label:"Maintenance / mile / year",       min:500,   max:8000,   step:250,  value:1500,  fmt:whyCash,
-   hint:"American Trails puts routine singletrack upkeep at $1,500–$5,000/mi/yr.",
+   hint:"Published figures run from about $1,200–$2,525 per mile per year for paved and mixed-surface trails (American Trails, citing a 2007 Milwaukee County plan) to about $3,000–$4,000 for singletrack (Singletracks: budget 5% of build cost per year).",
    tip:"Rocky, high-elevation-change, or jump-line trails generally require higher annual maintenance. Smooth, flowing singletrack often costs less to maintain."},
   {key:"grant",     group:"project", label:"Public grant funding",            min:0,     max:80,     step:5,    value:25,    fmt:whyPct,
    hint:"RTP, RAISE, CMAQ and state programs. Applied to BOTH options — a town does not need a non-profit to apply for public money, and any tool that implies otherwise is selling something."},
@@ -2707,11 +2707,11 @@ function whyCaveatsHTML(){
     <p>Professional contractor-built singletrack runs roughly <b>$60,000–$80,000 per mile</b>, with technical rock work,
     bridging, boardwalk and steep or wet ground pushing above that. Terrain and soil drive far more of the spread than
     contractor margin does — a $75,000/mi quote on rocky sidehill and a $30,000/mi quote on rolling loam can reflect the
-    same crew at the same rate. Routine maintenance runs <b>$1,500–$5,000 per mile per year</b>.
-    <span class="src">Sources: Singletracks contractor survey; American Trails cost database.</span></p>
+    same crew at the same rate. Published maintenance figures run from <b>$1,200–$2,525 per mile per year</b> for paved and mixed-surface trails to about <b>$3,000–$4,000</b> for singletrack (5% of build cost per year).
+    <span class="src">Sources: <a href="https://www.singletracks.com/mtb-trails/how-much-does-it-cost-to-build-a-mountain-bike-trail/" target="_blank" rel="noopener noreferrer">Singletracks contractor survey (April 2026)</a>; <a href="https://www.americantrails.org/resources/construction-and-maintenance-costs-for-trails" target="_blank" rel="noopener noreferrer">American Trails</a>, quoting a 2007 Milwaukee County plan. Other published singletrack construction figures run lower: <a href="https://material-civet.files.svdcdn.com/production/images/documents/Developing-Trail-Systems.pdf?dm=1620062839" target="_blank" rel="noopener noreferrer">San Luis Valley Great Outdoors toolkit, "Developing Trail Systems" (pp. 61–68)</a> gives $15,000–$40,000 per mile typical.</span></p>
 
     <h4>Valuing volunteer labor</h4>
-    <p>Volunteer hours are priced at Independent Sector's national value of volunteer time (<b>$34.79/hr</b> for 2024),
+    <p>Volunteer hours are priced at Independent Sector's national value of volunteer time (<a href="https://independentsector.org/volunteer_time" target="_blank" rel="noopener noreferrer">Independent Sector</a>: <b>$34.79/hr</b> for 2024),
     then discounted by a productivity factor, then capped at the hand-finishing share of the build. All three steps matter.
     Pricing volunteer hours at the headline rate with no discount and no cap is the single most common way these
     comparisons get inflated, and it is why the resulting numbers rarely survive contact with a finance director.</p>
@@ -2743,6 +2743,8 @@ function whyCaveatsHTML(){
     conservative on this point. Also excluded: schedule risk (volunteer builds take longer), build quality variance,
     the durability difference between machine-compacted and hand-finished tread, and every downstream economic effect —
     visitor spending, property values, health outcomes. This tab compares what a trail <em>costs</em>, not what it returns.</p>
+
+    <p class="src">Full documentation: the cost model, every input and its sources are written up in the <a href="https://github.com/postmillennium-MTB/Trail-Advocacy-Atlas#readme" target="_blank" rel="noopener noreferrer">README on GitHub</a>.</p>
 
     <p class="src">Directional planning tool for advocacy and early scoping. Validate against local contractor quotes and
     your own maintenance history.</p>
