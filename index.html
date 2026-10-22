@@ -1468,7 +1468,7 @@ function whyNum(v){return Number(v).toLocaleString()}
 const WHY_INPUTS=[
   {key:"miles",     group:"project", label:"Trail length",                    min:5,     max:50,     step:1,    value:10,    fmt:v=>v+" mi"},
   {key:"cost",      group:"project", label:"Base construction cost / mile",   min:10000, max:95000,  step:1000, value:45000, fmt:whyCash,
-   hint:"Turnkey professional singletrack, machine cut and hand finished. Contractor surveys cluster at $25K–$80K/mi; rock, bridging, and steep or wet ground push past that. The low end of this slider is realistic only for easy soil on gentle terrain."},
+   hint:"Turnkey professional singletrack, machine cut and hand finished. The Singletracks 2026 contractor survey puts it at $60K–$80K/mi; rock, bridging, and steep or wet ground push past that. The low end of this slider is realistic only for easy soil on gentle terrain."},
   {key:"plan",      group:"project", label:"Planning, design & permitting",   min:0,     max:25,     step:1,    value:12,    fmt:whyPct,
    hint:"As a share of construction cost. Covers alignment flagging, environmental review, and the municipal staff hours pulled off other duties. Rarely appears on the capital line, but it is real money."},
   {key:"maint",     group:"project", label:"Maintenance / mile / year",       min:500,   max:8000,   step:250,  value:1500,  fmt:whyCash,
@@ -2614,10 +2614,10 @@ function wireWhyHover(series,xAt,svgW,svgH){
 function whyCaveatsHTML(){
   return `
   <div class="why-caveats">
-    <h3>Where these numbers come from, and where they stop</h3>
+    <h3>Data sources &amp; methodology notes</h3>
 
     <h4>Cost benchmarks</h4>
-    <p>Professional contractor-built singletrack runs roughly <b>$25,000–$80,000 per mile</b>, with technical rock work,
+    <p>Professional contractor-built singletrack runs roughly <b>$60,000–$80,000 per mile</b>, with technical rock work,
     bridging, boardwalk and steep or wet ground pushing above that. Terrain and soil drive far more of the spread than
     contractor margin does — a $75,000/mi quote on rocky sidehill and a $30,000/mi quote on rolling loam can reflect the
     same crew at the same rate. Routine maintenance runs <b>$1,500–$5,000 per mile per year</b>.
