@@ -210,6 +210,27 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
 .tierbar button#reset-filters{margin-left:6px;border-style:dashed;color:var(--clay);border-color:var(--clay)}
 .tierbar button#reset-filters:hover{background:var(--clay);color:#fff}
 
+/* ---- phone: filters collapse behind a button ----
+   On a wide screen the search box, tier buttons and palette sit open as before. On a phone
+   they would fill the first screen before any organization appears, so they live in
+   #filter-panel, which stays closed until the Filters button is tapped. */
+.filter-toggle{display:none}
+.filter-toggle .ft-count{display:none;min-width:18px;padding:3px 5px;border-radius:9px;
+  background:var(--clay);color:#fff;font-size:10px;line-height:1;text-align:center}
+.filter-toggle.has-filters .ft-count{display:inline-block}
+@media(max-width:760px){
+  .filter-toggle{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 14px;padding:11px 12px;
+    font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+    border:1.5px solid var(--rule);background:#fff;color:var(--ink);border-radius:2px;cursor:pointer;
+    text-align:left}
+  .filter-toggle .ft-chev{margin-left:auto;transition:transform .15s}
+  .filter-toggle[aria-expanded=true] .ft-chev{transform:rotate(180deg)}
+  .filter-toggle:focus-visible{outline:2px solid var(--clay);outline-offset:1px}
+  #filter-panel{display:none}
+  #filter-panel.open{display:block}
+  #filter-panel .controls{margin-top:0}
+}
+
 /* ---- theme switcher ---- */
 .themebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 18px}
 .themebar span{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate)}
@@ -226,9 +247,17 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
 /* The bar scrolls sideways rather than pushing the whole page wider: on a phone
    the tab row is wider than the viewport, and without this the entire document
    scrolls horizontally. */
-.tabs{display:flex;gap:0;border-bottom:1.5px solid var(--rule);margin-bottom:22px;
+.tabs{position:relative;display:flex;gap:0;border-bottom:1.5px solid var(--rule);margin-bottom:22px;
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tabs::-webkit-scrollbar{display:none}
+/* Edge fade: when tabs are hidden past either edge, the bar fades out on that side so a
+   half-cut label reads as "more this way". Classes are set by updateTabFade(). */
+.tabs.more-right{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 34px),transparent);
+  mask-image:linear-gradient(to right,#000 calc(100% - 34px),transparent)}
+.tabs.more-left{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 34px),transparent);
+  mask-image:linear-gradient(to left,#000 calc(100% - 34px),transparent)}
+.tabs.more-left.more-right{-webkit-mask-image:linear-gradient(to right,transparent,#000 34px,#000 calc(100% - 34px),transparent);
+  mask-image:linear-gradient(to right,transparent,#000 34px,#000 calc(100% - 34px),transparent)}
 .tabs button{
   font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
   padding:12px 16px;border:0;background:none;color:var(--slate);cursor:pointer;
@@ -624,7 +653,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   .wrap{max-width:none;padding:0}
 
   /* ---- hide everything that only makes sense on a screen ---- */
-  .top-banner,.controls,.tierbar,.themebar,.tabrow,.tabs,.print-btn,.counts[hidden],
+  .top-banner,.filter-toggle,.controls,.tierbar,.themebar,.tabrow,.tabs,.print-btn,.counts[hidden],
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
@@ -885,6 +914,12 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
   <button type="button" class="map-jump map-jump-row" aria-label="Open the map" title="Open the map"></button>
 </div>
 
+<!-- Phone only: the Filters button opens #filter-panel (search, state, tier, palette). Hidden on wide screens. -->
+<button type="button" class="filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
+  <span>Filters &amp; palette</span><span class="ft-count" id="ft-count"></span>
+  <svg class="ft-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+</button>
+<div id="filter-panel">
 <!-- controls: search box, state dropdown, tier filter + reset, theme swatches -->
 <div class="controls">
   <input type="search" id="q" placeholder="Search name, abbreviation, region, or town…" aria-label="Search organizations">
@@ -904,6 +939,7 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
   <span>Palette</span>
   <span id="themebar-buttons" style="display:contents"></span>
 </div>
+</div><!-- /#filter-panel -->
 
 <!-- Tabs and panels are BUILT FROM THE `TABS` REGISTRY in the script below.
      Don't add markup here — add one entry to TABS and both the button and its
@@ -954,7 +990,7 @@ const ORGS = [
 {n:"National Interscholastic Cycling Association",a:"NICA",s:"US",tier:"national",r:"Youth racing league, not a trail-building org — listed as a deliberate exception",w:"https://www.nationalmtb.org/"},
 {n:"Colorado Mountain Bike Coalition",a:"COMTB",s:"CO",tier:"state",r:"Statewide coalition",lat:39.7452,lng:-104.9922,w:"https://comtb.org/"},
 {n:"Headwaters Trails Alliance",a:"HTA",s:"CO",tier:"local",p:"COMTB",r:"Winter Park, Fraser, Grand County",lat:39.8917,lng:-105.7631,w:"https://headwaterstrails.org/"},
-{n:"Meeker Area Mountain Bike Association",a:"MAMBA",s:"CO",tier:"local",p:"COMTB",c:"Meeker",r:"Meeker area",lat:40.0375,lng:-107.9131,w:"https://www.facebook.com/groups/305312900125478/"},
+{n:"Meeker Area Mountain Bike Association",a:"MAMBA-CO",s:"CO",tier:"local",p:"COMTB",c:"Meeker",r:"Meeker area",lat:40.0375,lng:-107.9131,w:"https://www.facebook.com/groups/305312900125478/"},
 {n:"MoCo Trails",a:"",s:"CO",tier:"local",p:"COMTB",c:"Craig",r:"Craig and Moffat County",lat:40.5152,lng:-107.5465,w:"https://www.facebook.com/MoCo-Trails-153561328612489/"},
 {n:"Routt County Riders",a:"RCR",s:"CO",tier:"local",p:"COMTB",c:"Steamboat Springs Yampa Oak Creek",r:"Steamboat Springs, Yampa Valley",lat:40.485,lng:-106.8317,w:"https://routtcountyriders.org/"},
 {n:"Colorado Plateau Mountain Bike Trail Association",a:"COPMOBA",s:"CO",tier:"local",p:"COMTB",c:"Grand Junction Fruita Whitewater",r:"Grand Junction, Western Colorado",lat:39.0689,lng:-108.5643,w:"https://www.copmoba.org/"},
@@ -992,10 +1028,10 @@ const ORGS = [
 {n:"Cuchara Mountain Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",c:"Cuchara",r:"Cuchara area",lat:37.3792,lng:-105.0997,status:"unconfirmed-active",w:"https://www.facebook.com/groups/cucharamountaintrailsalliance"},
 {n:"La Veta Trails",a:"",s:"CO",tier:"local",p:"COMTB",c:"La Veta",r:"La Veta area",lat:37.5058,lng:-105.0091,w:"https://lavetatrails.org/"},
 {n:"Trinidad Trails Alliance",a:"",s:"CO",tier:"local",p:"COMTB",c:"Trinidad",r:"Trinidad, Fishers Peak",lat:37.1695,lng:-104.5005,w:"https://www.facebook.com/groups/1784514731767150/"},
-{n:"The Colorado Trail Foundation",a:"CTF",s:"CO",tier:"local",r:"Colorado Trail stewardship, Denver to Durango; hiking-first long-distance trail with mountain bike sections",w:"https://coloradotrail.org"},
-{n:"Silverton Singletrack Society",a:"SSS",s:"CO",tier:"local",c:"Silverton",r:"Silverton; Baker's Park trail system, IMBA chapter",w:"https://www.silvertonsingletracksociety.org/"},
-{n:"Boulder Area Trails Coalition",a:"BATCO",s:"CO",tier:"local",c:"Boulder",r:"Boulder County; multi-use non-motorized trail advocacy coalition that includes mountain bikers; volunteer trail work",w:"https://www.bouldertrails.org/"},
-{n:"Mancos Trails Group",a:"MTG",s:"CO",tier:"local",c:"Mancos",r:"Mancos area; all-volunteer multi-use trail stewardship (Aqueduct, Chicken Creek, Mancos Spur); fiscally sponsored by Mancos Valley Resources",w:"https://www.mancostrails.org/"},
+{n:"The Colorado Trail Foundation",a:"CTF",s:"CO",tier:"local",r:"Colorado Trail stewardship, Denver to Durango; hiking-first long-distance trail with mountain bike sections",lat:38.5222,lng:-106.0764,w:"https://coloradotrail.org"},
+{n:"Silverton Singletrack Society",a:"SSS",s:"CO",tier:"local",c:"Silverton",r:"Silverton; Baker's Park trail system, IMBA chapter",lat:37.8117,lng:-107.6645,w:"https://www.silvertonsingletracksociety.org/"},
+{n:"Boulder Area Trails Coalition",a:"BATCO",s:"CO",tier:"local",c:"Boulder",r:"Boulder County; multi-use non-motorized trail advocacy coalition that includes mountain bikers; volunteer trail work",lat:40.015,lng:-105.2705,w:"https://www.bouldertrails.org/"},
+{n:"Mancos Trails Group",a:"MTG",s:"CO",tier:"local",c:"Mancos",r:"Mancos area; all-volunteer multi-use trail stewardship (Aqueduct, Chicken Creek, Mancos Spur); fiscally sponsored by Mancos Valley Resources",lat:37.3453,lng:-108.2896,w:"https://www.mancostrails.org/"},
 {n:"Vermont Mountain Bike Association",a:"VMBA",s:"VT",tier:"state",r:"Statewide; 28 chapters, shared membership platform",lat:44.2601,lng:-72.5754,w:"https://vmba.org/"},
 {n:"Addison County Bike Club",a:"AC/BC",s:"VT",tier:"local",p:"VMBA",r:"Middlebury area",lat:44.0151,lng:-73.167,w:"https://addisoncountybikeclub.org/"},
 {n:"Ascutney Trails Association",a:"",s:"VT",tier:"local",p:"VMBA",r:"Mount Ascutney",lat:43.48,lng:-72.3866,w:"https://www.ascutneytrails.com/"},
@@ -1025,9 +1061,9 @@ const ORGS = [
 {n:"Waterbury Area Trail Alliance",a:"WATA",s:"VT",tier:"local",p:"VMBA",c:"Waterbury Moretown",r:"Waterbury",lat:44.3417,lng:-72.7593,w:"https://www.waterburytrails.com/"},
 {n:"Windham County Trails Alliance",a:"WCOTA",s:"VT",tier:"local",p:"VMBA",c:"Bellows Falls",r:"Windham County; Oak Hill trails, Bellows Falls",lat:42.8509,lng:-72.5579,w:"https://www.wcota.org/"},
 {n:"Pine Hill Partnership",a:"",s:"VT",tier:"local",r:"Rutland; steward of Pine Hill Park; VMBA Trail Center add-on partner",lat:43.6106,lng:-72.9726,w:"https://pinehillpartnership.org/"},
-{n:"Memphremagog Trails",a:"",s:"VT",tier:"local",c:"Newport",r:"Northeast Kingdom; VMBA Trail Center add-on partner",w:"https://www.mstf.net/"},
-{n:"Kingdom Trail Association",a:"KTA-VT",s:"VT",tier:"local",c:"East Burke",r:"East Burke; manages and builds 100+ miles of non-motorized multi-use trails; not a VMBA chapter",w:"https://www.kingdomtrails.org/"},
-{n:"Catamount Outdoor Family Center",a:"COFC",s:"VT",tier:"local",c:"Williston",r:"Williston; 501(c)(3) manager of the Catamount Community Forest trail network (mountain biking, trail running, Nordic); VMBA Trail Center add-on partner",w:"https://catamountoutdoor.org/"},
+{n:"Memphremagog Trails",a:"",s:"VT",tier:"local",c:"Newport",r:"Northeast Kingdom; VMBA Trail Center add-on partner",lat:44.9364,lng:-72.2054,w:"https://www.mstf.net/"},
+{n:"Kingdom Trail Association",a:"KTA-VT",s:"VT",tier:"local",c:"East Burke",r:"East Burke; manages and builds 100+ miles of non-motorized multi-use trails; not a VMBA chapter",lat:44.5834,lng:-71.9373,w:"https://www.kingdomtrails.org/"},
+{n:"Catamount Outdoor Family Center",a:"COFC",s:"VT",tier:"local",c:"Williston",r:"Williston; 501(c)(3) manager of the Catamount Community Forest trail network (mountain biking, trail running, Nordic); VMBA Trail Center add-on partner",lat:44.4378,lng:-73.0668,w:"https://catamountoutdoor.org/"},
 {n:"Oregon Mountain Biking Coalition",a:"OMBC",s:"OR",tier:"state",r:"Statewide coalition of member organizations",lat:44.9385,lng:-123.0303,w:"https://www.ormtbcoalition.org/"},
 {n:"44 Trails Association",a:"44Trails",s:"OR",tier:"local",p:"OMBC",c:"Hood River",r:"Hood River, Wasco County, Columbia Gorge",lat:45.7098,lng:-121.5126,w:"https://www.44trails.org/"},
 {n:"Oakridge Trails Alliance (dba Alpine Trail Crew Association)",a:"OTA",s:"OR",tier:"local",p:"OMBC",c:"Oakridge",r:"Oakridge and Middle Fork Ranger District, Willamette National Forest",lat:44.1751,lng:-122.1639,w:"https://www.oakridgetrailsalliance.org/"},
@@ -1051,9 +1087,9 @@ const ORGS = [
 {n:"North Coast Trail Alliance",a:"NCTA",s:"OR",tier:"local",p:"NWTA",r:"Astoria, Seaside, north coast",lat:46.1896,lng:-123.8365,w:"https://www.mtbproject.com/club/7000694/north-coast-trail-alliance"},
 {n:"Tillamook Off-Road Trail Alliance",a:"TORTA",s:"OR",tier:"local",c:"Pacific City",r:"Tillamook County, Buzzard Butte / Sand Lake trails",lat:45.4562,lng:-123.844,w:"https://www.tortamtb.com/"},
 {n:"Wild Rivers Coast Mountain Bicycling Association",a:"",s:"OR",tier:"local",r:"Southern Oregon coast, Brookings, Gold Beach",lat:42.0526,lng:-124.284,w:""},
-{n:"Westside Trail Federation",a:"WTF",s:"OR",tier:"local",c:"Portland",r:"Portland metro, Tillamook State Forest",w:"https://www.westsidetrailfederation.com/"},
-{n:"Sisters Trails Alliance",a:"STA-OR",s:"OR",tier:"local",c:"Sisters",r:"Sisters; Peterson Ridge, multi-use",w:"https://sisterstrails.org/"},
-{n:"Southern Oregon Trail Alliance",a:"SOTA",s:"OR",tier:"local",c:"Grants Pass",r:"Grants Pass; mixed-use (site also mentions dirt bikes); distinct from RVMBA",w:"https://www.southernoregontrails.org/"},
+{n:"Westside Trail Federation",a:"WTF",s:"OR",tier:"local",c:"Portland",r:"Portland metro, Tillamook State Forest",lat:45.5152,lng:-122.6784,w:"https://www.westsidetrailfederation.com/"},
+{n:"Sisters Trails Alliance",a:"STA-OR",s:"OR",tier:"local",c:"Sisters",r:"Sisters; Peterson Ridge, multi-use",lat:44.291,lng:-121.5492,w:"https://sisterstrails.org/"},
+{n:"Southern Oregon Trail Alliance",a:"SOTA",s:"OR",tier:"local",c:"Grants Pass",r:"Grants Pass; mixed-use (site also mentions dirt bikes); distinct from RVMBA",lat:42.439,lng:-123.3284,w:"https://www.southernoregontrails.org/"},
 {n:"Southwest Idaho Mountain Biking Association",a:"SWIMBA",s:"ID",tier:"local",r:"Boise, Ridge to Rivers trail system",w:"https://swimba.org/"},
 {n:"Central Idaho Mountain Bike Association",a:"CIMBA",s:"ID",tier:"local",r:"McCall, Tamarack, Bear Basin",w:"https://www.cimbarides.org/"},
 {n:"Friends of the Coeur d'Alene Trails",a:"",s:"ID",tier:"local",r:"Trail of the Coeur d'Alenes, Route of the Hiawatha, Silver Valley",w:"https://friendsofcdatrails.org/"},
@@ -1073,7 +1109,7 @@ const ORGS = [
 {n:"Evergreen — West Sound Chapter",a:"",s:"WA",tier:"local",p:"EMBA",r:"Kitsap Peninsula, West Puget Sound",w:"https://www.evergreenmtb.org/chapters/westsound"},
 {n:"Whatcom Mountain Bike Coalition",a:"WMBC",s:"WA",tier:"local",c:"Bellingham",r:"Whatcom County; Galbraith Mountain; formerly WHIMPs",w:"https://www.wmbcmtb.org/"},
 {n:"Missoula Mountain Bike Coalition",a:"MMBC",s:"MT",tier:"local",c:"Missoula",r:"Missoula and surrounding area",w:"https://www.msomtbco.org/"},
-{n:"Southwest Montana Mountain Bike Association",a:"SWMMBA",s:"MT",tier:"local",r:"Bozeman, Big Sky, Gallatin Valley",w:"https://www.southwestmontanamba.org/"},
+{n:"Southwest Montana Mountain Bike Association",a:"SWMMBA-MT",s:"MT",tier:"local",r:"Bozeman, Big Sky, Gallatin Valley",w:"https://www.southwestmontanamba.org/"},
 {n:"Flathead Area Mountain Bikers",a:"FAMB",s:"MT",tier:"local",r:"Flathead Valley, Whitefish, Kalispell, Bigfork",w:"https://www.flatheadamb.org/"},
 {n:"Whitefish Legacy Partners",a:"WLP",s:"MT",tier:"local",r:"Whitefish Trail, Whitefish",w:"https://www.whitefishlegacy.org/"},
 {n:"Bitterroot Trail Preservation Alliance",a:"",s:"MT",tier:"local",c:"Hamilton Stevensville Darby",r:"Bitterroot Valley",w:""},
@@ -1082,16 +1118,16 @@ const ORGS = [
 {n:"Bike Utah",a:"",s:"UT",tier:"state",r:"Statewide active transportation and legislative advocacy; mostly road and e-bike policy, little mountain biking",w:"https://www.bikeutah.org/"},
 {n:"Lake Mountain Bicycle Club",a:"",s:"UT",tier:"local",r:"Eagle Mountain, Cedar Valley, Lake Mountain (aka Lake Mountain Flyers)",status:"unconfirmed-active",w:"https://www.lakemountainflyers.com/"},
 {n:"Trail Alliance of Southern Utah",a:"TASU",s:"UT",tier:"local",r:"St. George, Hurricane, Cedar City (formerly Dixie MTB Trails Assoc.)",w:"https://www.tasutah.org/"},
-{n:"Moab Mountain Bike Association",a:"MMBA",s:"UT",tier:"local",r:"Moab area; IMBA chapter",w:"https://www.moabmba.com/"},
+{n:"Moab Mountain Bike Association",a:"MMBA-UT",s:"UT",tier:"local",r:"Moab area; IMBA chapter",w:"https://www.moabmba.com/"},
 {n:"Wasatch Trails Foundation",a:"WTF-UT",s:"UT",tier:"local",c:"Heber City",r:"Heber City, Wasatch County; maintains about 175 miles of non-motorized trails, WOW trail and pump track",w:"https://www.wasatchtrails.org/"},
 {n:"Traverse Mountain Trails Association",a:"TMTA-UT",s:"UT",tier:"local",c:"Lehi",r:"Lehi, Traverse Mountain; volunteer-run builder of mountain bike and hiking trails with Lehi City",w:"https://www.traversemountaintrails.org/"},
 {n:"Chicago Area Mountain Bikers",a:"CAMBr",s:"IL",tier:"local",r:"Greater Chicago; 7+ trail systems, 80+ miles",w:"https://cambr.org/"},
 {n:"Rockford Area Mountain Biking Alliance",a:"RAMBA",s:"IL",tier:"local",r:"Rockford area",w:"https://www.facebook.com/RockfordAreaMountainBikers/"},
 {n:"Rock River Valley Bicycle Club",a:"RRVBC",s:"IL",tier:"local",r:"Dixon, Lee/Whiteside/Ogle Counties; also maintains Dixon MTB trails",w:"https://www.facebook.com/groups/363513414800/"},
 {n:"Peoria Area Mountain Bike Association",a:"PAMBA",s:"IL",tier:"local",r:"Peoria area; 7 trail systems",w:"https://www.pambamtb.org/"},
-{n:"Comlara Off-Road Bicycling Association",a:"CORBA",s:"IL",tier:"local",r:"Bloomington/Normal, Comlara County Park",w:"https://www.comlaramtb.com/"},
+{n:"Comlara Off-Road Bicycling Association",a:"CORBA-IL",s:"IL",tier:"local",r:"Bloomington/Normal, Comlara County Park",w:"https://www.comlaramtb.com/"},
 {n:"Central Illinois Mountain Bike Association",a:"CIMBA-IL",s:"IL",tier:"local",r:"Decatur, Shelbyville, Lake Shelbyville",w:"https://www.facebook.com/groups/113367372047708"},
-{n:"Kickapoo Mountain Bike Club",a:"KMBC",s:"IL",tier:"local",r:"Kickapoo State Recreation Area, Champaign/Danville",w:"https://kickapoo.bike/"},
+{n:"Kickapoo Mountain Bike Club",a:"KMBC-IL",s:"IL",tier:"local",r:"Kickapoo State Recreation Area, Champaign/Danville",w:"https://kickapoo.bike/"},
 {n:"Macomb Area Cycling MTB Club",a:"MAC MTBC",s:"IL",tier:"local",r:"Macomb area, Spring Lake Park",w:"http://www.macmtbc.org/"},
 {n:"Friends of Off-Road Cycling",a:"FORC",s:"IL",tier:"local",r:"Quad Cities (Rock Island IL / Davenport IA)",w:"https://www.qcforc.org/"},
 {n:"Shawnee Mountain Bike Association",a:"SMBA-IL",s:"IL",tier:"local",r:"Cobden, Carbondale, Goreville, Shawnee National Forest",w:""},
@@ -1131,7 +1167,7 @@ const ORGS = [
 {n:"Tri-County Mountain Bike Association",a:"TCMBA",s:"MS",tier:"local",p:"SORBA",r:"Jackson metro; Ridgeland, Noxubee Hills, Brandon Quarry",w:"https://www.tricountymtb.org/"},
 {n:"Ohio Mountain Bike Alliance",a:"OMBA",s:"OH",tier:"state",r:"Statewide coalition",w:"https://www.omba.bike/"},
 {n:"Central Ohio Mountain Biking Organization",a:"COMBO",s:"OH",tier:"local",p:"OMBA",r:"Columbus/Westerville; 104+ miles",w:"https://www.combomtb.com/"},
-{n:"Cleveland Area Mountain Bike Association",a:"CAMBA",s:"OH",tier:"local",p:"OMBA",c:"Cleveland Akron",r:"Northeast Ohio",w:"https://camba.us/wp/"},
+{n:"Cleveland Area Mountain Bike Association",a:"CAMBA-OH",s:"OH",tier:"local",p:"OMBA",c:"Cleveland Akron",r:"Northeast Ohio",w:"https://camba.us/wp/"},
 {n:"Cincinnati Off-Road Alliance",a:"CORA",s:"OH",tier:"local",p:"OMBA",r:"Greater Cincinnati and Northern Kentucky; 120+ miles",w:"https://coratrails.org/"},
 {n:"Mohican-Malabar Bike Club",a:"MMBC-OH",s:"OH",tier:"local",p:"OMBA",r:"Mohican State Park trails; member of the Ohio Mountain Bike Alliance",w:"https://www.ridemohican.com/"},
 {n:"Save the Maah Daah Hey",a:"",s:"ND",tier:"local",c:"Medora Watford City",r:"180-mile Maah Daah Hey Trail, western ND badlands",w:"https://savethemdh.com/"},
@@ -1198,9 +1234,9 @@ const ORGS = [
 {n:"Big Bear Cycling Association",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Big Bear; all disciplines including road; 501(c)(4); IMBA local member org, runs trail work days",lat:34.243896,lng:-116.911421,w:"https://bigbearcycling.com/"},
 {n:"Big Bear Trails / Southern California Mountains Foundation",a:"",s:"CA",tier:"local",p:"CAMTB",r:"Big Bear; non-motorized multi-use trail volunteers (Trail Hosts); program of SCMF",lat:34.246,lng:-116.914,w:"https://mountainsfoundation.org/programs/big-bear-trails/"},
 {n:"Inland Valley Mountain Bike Association",a:"IVMTB",s:"CA",tier:"local",c:"Murrieta",r:"Western Riverside County; IMBA chapter, headquartered in Murrieta",lat:33.9533,lng:-117.3962,w:"https://www.facebook.com/groups/ivmtbmembers/"},
-{n:"Truckee Trails Foundation",a:"TTF",s:"CA",tier:"local",c:"Truckee",r:"Truckee; multi-use trails and bikeways (distinct from Truckee Dirt Union)",w:"https://truckeetrails.org/"},
-{n:"Sierra Eastside Mountain Bike Association",a:"SEMBA",s:"CA",tier:"local",c:"Mammoth Lakes",r:"Mammoth Lakes and Eastern Sierra; volunteer trail work, advocacy and events; junior race team",w:"https://www.sembabike.org/"},
-{n:"Mountain Bike Tribal Trail Alliance",a:"MBTTA",s:"CA",tier:"local",c:"McKinleyville Orleans Hoopa",r:"McKinleyville; Humboldt County trail building and stewardship (Reiss Ranch, Big Hill, McKinleyville Community Forest); veteran-led, with veteran and youth rides",w:"https://www.mbttabikeclub.org/"},
+{n:"Truckee Trails Foundation",a:"TTF",s:"CA",tier:"local",c:"Truckee",r:"Truckee; multi-use trails and bikeways (distinct from Truckee Dirt Union)",lat:39.328,lng:-120.1833,w:"https://truckeetrails.org/"},
+{n:"Sierra Eastside Mountain Bike Association",a:"SEMBA",s:"CA",tier:"local",c:"Mammoth Lakes",r:"Mammoth Lakes and Eastern Sierra; volunteer trail work, advocacy and events; junior race team",lat:37.6485,lng:-118.9721,w:"https://www.sembabike.org/"},
+{n:"Mountain Bike Tribal Trail Alliance",a:"MBTTA",s:"CA",tier:"local",c:"McKinleyville Orleans Hoopa",r:"McKinleyville; Humboldt County trail building and stewardship (Reiss Ranch, Big Hill, McKinleyville Community Forest); veteran-led, with veteran and youth rides",lat:40.9465,lng:-124.1006,w:"https://www.mbttabikeclub.org/"},
 {n:"Dallas Off-Road Bicycle Association",a:"DORBA",s:"TX",tier:"local",c:"Dallas Fort Worth Plano",r:"DFW metroplex; 20+ trails, 200+ miles",w:"https://www.dorba.org/"},
 {n:"Greater Houston Off-Road Biking Association",a:"GHORBA",s:"TX",tier:"local",r:"Houston, Gulf Coast area",w:"https://ghorba.org/"},
 {n:"Austin Ridge Riders",a:"ARR",s:"TX",tier:"local",r:"Austin metro, Texas Hill Country",w:"https://www.austinridgeriders.com/"},
@@ -1231,13 +1267,13 @@ const ORGS = [
 {n:"Cyclists of Gitchee Gumee Shores",a:"COGGS",s:"MN",tier:"local",r:"Duluth; IMBA Gold-level ride center, Traverse trail system",w:"https://www.coggs.com/"},
 {n:"Cuyuna Lakes Mountain Bike Crew",a:"CLMTBC",s:"MN",tier:"local",c:"Crosby Ironton",r:"Cuyuna State Recreation Area; former iron mines",w:"https://www.cuyunalakesmtb.com/"},
 {n:"Iron Range Off-Road Cyclists",a:"IROC",s:"MN",tier:"local",r:"Chisholm, Hibbing, Giant's Ridge; mine-land reclamation trails",w:"https://mtbproject.com/club/6282753/iron-range-off-road-cyclists-iroc"},
-{n:"Red Wing Area Mountain Bike Organization",a:"RAMBO",s:"MN",tier:"local",r:"Red Wing, southeastern Minnesota",w:"https://redwingmtb.com/"},
+{n:"Red Wing Area Mountain Bike Organization",a:"RAMBO-MN",s:"MN",tier:"local",r:"Red Wing, southeastern Minnesota",w:"https://redwingmtb.com/"},
 {n:"Mankato Area Mountain Bikers",a:"MAMBC",s:"MN",tier:"local",r:"Mankato, Minnesota River Valley",w:"https://joinmamb.com/"},
 {n:"Cannon River Offroad Cycling & Trails",a:"CROCT",s:"MN",tier:"local",c:"Northfield",r:"Northfield (formerly flagged as Northfield Area MBA); latest blog post 2021",w:"https://croct.org/"},
 {n:"Colorado River Area Trail Alliance",a:"CRATA",s:"AZ",tier:"local",r:"Kingman, northwestern AZ, tri-state area",w:"https://www.facebook.com/AZCRATA/"},
 {n:"Desert Foothills Mountain Bike Association",a:"DFMBA",s:"AZ",tier:"local",c:"Phoenix Carefree Scottsdale",r:"Cave Creek, north Phoenix valley",w:"https://www.dfmba.org/"},
 {n:"Flagstaff Biking Organization",a:"FBO",s:"AZ",tier:"local",r:"Flagstaff, Northern Arizona",w:"https://flagstaffbiking.org/"},
-{n:"Hawes Trail Alliance",a:"HTA",s:"AZ",tier:"local",c:"Mesa",r:"Mesa; Hawes Trail System (bike, hike, run)",w:"https://hawestrailalliance.com/"},
+{n:"Hawes Trail Alliance",a:"HTA-AZ",s:"AZ",tier:"local",c:"Mesa",r:"Mesa; Hawes Trail System (bike, hike, run)",w:"https://hawestrailalliance.com/"},
 {n:"Prescott Mountain Bike Alliance",a:"PMBA",s:"AZ",tier:"local",c:"Prescott Prescott Valley",r:"Prescott area public lands",w:"https://prescottmtb.com/"},
 {n:"Rim Country Mountain Biking Association",a:"RCMBA-AZ",s:"AZ",tier:"local",r:"Payson; Rumsey Park",w:"https://www.facebook.com/rimcountrymountainbikingassociation/"},
 {n:"Sonoran Desert Mountain Bicyclists",a:"SDMB",s:"AZ",tier:"local",r:"Tucson, Sonoran Desert",w:"https://www.sdmb.org/"},
@@ -2789,6 +2825,14 @@ function buildTabs(){
 function switchTab(name){
   activeTab=name;
   $("tabbar").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
+  // Keep the chosen tab inside the visible part of the bar (scrolls the bar only, never the page).
+  const sel=$("tabbar").querySelector('button[aria-selected="true"]');
+  if(sel){
+    const t=$("tabbar");
+    if(sel.offsetLeft<t.scrollLeft+34)t.scrollLeft=Math.max(0,sel.offsetLeft-34);
+    else if(sel.offsetLeft+sel.offsetWidth>t.scrollLeft+t.clientWidth-34)t.scrollLeft=sel.offsetLeft+sel.offsetWidth-t.clientWidth+34;
+    updateTabFade();
+  }
   TABS.forEach(t=>$("p-"+t.id).hidden=(t.id!==name));
   // Tabs registered with filters:false don't read the search/state/tier filters
   // or the org counters, so hide both rather than leave dead controls on screen.
@@ -2798,7 +2842,23 @@ function switchTab(name){
     if(el)el.hidden=!usesFilters;
   });
 }
+/* Phone Filters button: show how many filters are active so a hidden filter is never a surprise. */
+function updateFilterBadge(){
+  const n=(filters.q.trim()?1:0)+(filters.state?1:0)+(filters.tier?1:0);
+  const b=$("filter-toggle"),c=$("ft-count");
+  if(!b||!c)return;
+  c.textContent=n+" active";
+  b.classList.toggle("has-filters",n>0);
+}
+/* Tab bar edge fade: flags which side still has hidden tabs. */
+function updateTabFade(){
+  const t=$("tabbar");
+  if(!t)return;
+  t.classList.toggle("more-right",t.scrollWidth-t.scrollLeft-t.clientWidth>4);
+  t.classList.toggle("more-left",t.scrollLeft>4);
+}
 function render(){
+  updateFilterBadge();
   const tab=TABS.find(t=>t.id===activeTab)||TABS.find(t=>t.id===DEFAULT_TAB);
   const fn=window[tab.render];
   if(typeof fn==="function")fn();
@@ -2811,6 +2871,12 @@ function init(){
     a==="US"?-1:b==="US"?1:(STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b));
   $("statesel").innerHTML='<option value="">All states</option>'+
     sts.map(s=>`<option value="${s}">${esc(STATE_NAMES[s]||s)}</option>`).join("");
+  $("filter-toggle").addEventListener("click",()=>{
+    const open=$("filter-panel").classList.toggle("open");
+    $("filter-toggle").setAttribute("aria-expanded",open);
+  });
+  $("tabbar").addEventListener("scroll",updateTabFade,{passive:true});
+  window.addEventListener("resize",updateTabFade);window.addEventListener("load",updateTabFade);
   $("q").addEventListener("input",e=>{filters.q=e.target.value;render()});
   $("statesel").addEventListener("change",e=>{filters.state=e.target.value;render()});
   document.querySelectorAll(".tierbar button[data-tier]").forEach(b=>
