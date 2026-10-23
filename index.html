@@ -44,7 +44,8 @@
     · buildProjection() ......... lat/lng -> SVG coords (heavily commented; the
                                   cos(latitude) correction is the non-obvious part)
     · matches() / visible() ..... the search + filter logic
-    · renderCounts() ............ the 4 stat numbers up top
+    · renderCounts() ............ the 2 stat numbers up top
+    · renderMapJump() ........... the small map icon (opens the Map tab)
     · renderList() .............. Directory tab
     · renderCharts() ............ Charts tab (3 charts)
     · renderPie() ............... By State tab (donut chart)
@@ -176,6 +177,20 @@ h1.fading{opacity:0}
   font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
 .counts div{color:var(--slate)}
 .counts b{display:block;font:400 30px/1 "Iowan Old Style",Georgia,serif;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px}
+/* Cartogram thumbnail that jumps to the Map tab. There are two copies of the button, filled by
+   renderMapJump() so both follow the active palette: .map-jump-mast beside the subtitle (wide
+   screens) and .map-jump-row at the right end of the counter row (phones). Only one is shown. */
+.map-jump{flex:0 0 auto;padding:5px;border:1.5px solid var(--rule);border-radius:4px;background:#fff;
+  cursor:pointer;line-height:0;transition:border-color .15s,box-shadow .15s}
+.map-jump:hover,.map-jump:focus-visible{border-color:var(--clay);box-shadow:0 0 0 1px var(--clay)}
+.map-jump svg{display:block}
+.map-jump-row{margin-left:auto;align-self:flex-end;width:76px;min-height:52px}
+.map-jump-mast{display:none;width:150px}
+.mast-sub{display:flex;align-items:center;gap:18px}
+@media(min-width:761px){
+  .map-jump-mast{display:block}
+  .map-jump-row{display:none}
+}
 
 /* ---- controls ---- */
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}
@@ -612,7 +627,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   .top-banner,.controls,.tierbar,.themebar,.tabrow,.tabs,.print-btn,.counts[hidden],
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
-  .detail-card-close,.pie-map-teaser,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
+  .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
   .chart-hover-dot,.why-dot,.geo-hit{display:none!important}
   /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
   h1.fading{opacity:1!important}
@@ -850,7 +865,12 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
     <div class="kicker">Post Millennium Renaissance &middot; Trail Advocacy Atlas</div>
     <h1 id="masthead-title">Who builds the trails you ride</h1>
   </a>
-  <p class="sub">A working directory of nonprofit mountain bike trail advocacy organizations in the United States, grouped by state and tiered from national umbrella down to local chapter.</p>
+  <!-- Map-jump icon, wide screens only (CSS); phones use the copy in the counter row below.
+       Filled by renderMapJump(). -->
+  <div class="mast-sub">
+    <button type="button" class="map-jump map-jump-mast" aria-label="Open the map" title="Open the map"></button>
+    <p class="sub">A working directory of nonprofit mountain bike trail advocacy organizations in the United States, grouped by state and tiered from national umbrella down to local chapter.</p>
+  </div>
 </header>
 
 <!-- print-only: tier key (built from TIER_LABELS in init) -->
@@ -862,8 +882,7 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
 <div class="counts">
   <div><b id="c-orgs">0</b>Organizations</div>
   <div><b id="c-states">0</b>States covered</div>
-  <div><b id="c-state-lvl">0</b>Statewide coalitions</div>
-  <div><b id="c-top">—</b>Most organizations</div>
+  <button type="button" class="map-jump map-jump-row" aria-label="Open the map" title="Open the map"></button>
 </div>
 
 <!-- controls: search box, state dropdown, tier filter + reset, theme swatches -->
@@ -1652,6 +1671,7 @@ function applyTheme(name,persist){
   if(meta)meta.setAttribute("content",theme.paper);
   if(persist){try{localStorage.setItem(THEME_STORAGE_KEY,theme.id)}catch(e){}}
   render();
+  renderMapJump();
 }
 
 
@@ -1719,14 +1739,17 @@ function stateCounts(list){
 }
 
 /* ---------- counters ---------- */
-/* ==== renderCounts() — the 4 big stat numbers at the top ==== */
+/* ==== renderCounts() — the 2 big stat numbers at the top ==== */
 function renderCounts(){
-  const c=stateCounts(ORGS);
-  const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
   $("c-orgs").textContent=ORGS.length;
-  $("c-states").textContent=Object.keys(c).length;
-  $("c-state-lvl").textContent=ORGS.filter(o=>o.tier==="state").length;
-  $("c-top").textContent=top?`${top[0]} · ${top[1]}`:"—";
+  $("c-states").textContent=Object.keys(stateCounts(ORGS)).length;
+}
+/* ==== renderMapJump() — the cartogram icon (masthead on wide screens, counter row on phones); opens the Map tab ====
+   Counts come from the full list, not the current filters, so the icon is a stable landmark.
+   Re-run from applyTheme() because the tile colors come from the active palette. */
+function renderMapJump(){
+  const svg=buildCartogramSVG(stateCounts(ORGS),{cell:13,gap:1.5,mini:true}).svg;
+  document.querySelectorAll(".map-jump").forEach(b=>b.innerHTML=svg);
 }
 
 /* ---------- directory ---------- */
@@ -2820,6 +2843,8 @@ function init(){
   buildThemeSwatches();
   applyTheme(saved);   // sets data-theme, meta tag, pressed state, and calls render()
   renderCounts();
+  document.querySelectorAll(".map-jump").forEach(b=>
+    b.addEventListener("click",()=>{switchTab("map");render()}));
   $("print-btn").addEventListener("click",printView);
   // React to a hash change after load too (e.g. a same-page anchor click),
   // not just the one the page was opened with.
