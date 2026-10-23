@@ -185,6 +185,13 @@ Earlier versions of this file rendered correctly on desktop but showed a dark, h
 
 If a dark-background report ever comes back, check these three things first before assuming it's a new CSS bug.
 
+## URL-hash deep links
+
+- **A tab id**: `trail-advocacy-atlas/#why` opens the Why tab. Works for any `TABS` id.
+- **A state**: `trail-advocacy-atlas/#utah` opens the Directory filtered to Utah. The full name, the two-letter code and dashed or run-together spellings all work (`#utah`, `#ut`, `#new-hampshire`, `#newhampshire`). Covers every state plus DC and Puerto Rico. See `STATE_SLUGS` and `resolveHashRoute()`.
+
+Both work on initial load, on a live `hashchange`, and through a `postMessage({type:"pmr-hash", hash:"#utah"})` fallback for when the atlas is iframed cross-origin on the PMR site. `resolveHashRoute()` is the single place a hash is interpreted.
+
 ## Known structural quirks
 
 - **The cartogram is a grid, not real geography.** One square per state in roughly correct relative position — good for reading relative density, not for tracing actual borders.

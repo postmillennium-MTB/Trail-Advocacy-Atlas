@@ -39,6 +39,7 @@
     · WHY_INPUTS registry ....... THE list of Why-tab sliders — add one line to add one
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
     ==== everything past "END OF DATA" is logic ====
+    · STATE_SLUGS ............... state name/code lookup for #utah-style URL-hash links
     · runtime state ............. filters / activeTab / detailState
     · applyTheme() .............. swaps theme + updates mobile meta tag
     · buildProjection() ......... lat/lng -> SVG coords (heavily commented; the
@@ -1621,6 +1622,18 @@ const TITLE_ROTATE_MS=6000;       // how long each masthead headline shows befor
 const TITLE_FADE_MS=500;          // fade duration for that swap (must match the CSS transition)
 const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists
 const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
+
+/* ---------- STATE_SLUGS — state-name/code lookup for URL-hash routing ----------
+   Derived from STATE_NAMES (data above), so it lives here in logic rather than in
+   the data block. Powers the #utah-style deep link handled by resolveHashRoute()
+   and init() below: a hash fragment is reduced to bare lowercase letters+digits,
+   so "#Utah", "#new-hampshire", "#newhampshire" and "#nh" all find the same state. */
+function slugifyStateHash(s){return String(s).toLowerCase().replace(/[^a-z0-9]/g,"")}
+const STATE_SLUGS={};   // slug -> state code, e.g. "utah"->"UT" and "ut"->"UT"
+Object.entries(STATE_NAMES).forEach(([code,name])=>{
+  STATE_SLUGS[slugifyStateHash(name)]=code;
+  STATE_SLUGS[slugifyStateHash(code)]=code;
+});
 const PRINT_PARAM="print";        // URL flag (?print=1) that makes a freshly opened tab restore the view and auto-open print
 const PRINT_AUTO_DELAY_MS=500;    // wait after restoring the view before opening the print dialog, so the
                                   // render (charts, fonts) has settled; too short prints a half-drawn page
@@ -2805,6 +2818,20 @@ function render(){
   else console.error("Tab '"+tab.id+"' points at missing render function:",tab.render);
 }
 
+/* ==== resolveHashRoute() — turns a URL-hash fragment into a tab id or a state code.
+   Shared by the initial page load, live #hash changes and the cross-origin
+   postMessage fallback in init(), so all three read a hash the same way.
+   A tab hash (#why) opens that tab. A state hash (#utah, #ut, #new-hampshire)
+   opens the Directory filtered to that state, same as clicking that state's pie
+   slice. Returns {tab} or {tab:"list",state:CODE}, or null if neither matches. ==== */
+function resolveHashRoute(hash){
+  const norm=String(hash||"").replace("#","").toLowerCase();
+  if(!norm)return null;
+  if(TABS.some(t=>t.id===norm))return{tab:norm};
+  const code=STATE_SLUGS[slugifyStateHash(norm)];
+  return code?{tab:"list",state:code}:null;
+}
+
 /* ==== init() — runs once on load: builds the state dropdown, wires up every button, restores saved theme ==== */
 function init(){
   const sts=[...new Set(ORGS.map(o=>o.s))].sort((a,b)=>
@@ -2830,8 +2857,11 @@ function init(){
   // elsewhere on the site can point straight at the cost-comparison model
   // via trail-advocacy-atlas/#why. Falls back to DEFAULT_TAB for an empty,
   // unrecognized, or missing hash.
-  const hashTab=window.location.hash.replace("#","").toLowerCase();
-  activeTab=TABS.some(t=>t.id===hashTab)?hashTab:DEFAULT_TAB;
+  // A state hash (trail-advocacy-atlas/#utah) lands on the Directory filtered to
+  // that state; see resolveHashRoute() / STATE_SLUGS.
+  const route=resolveHashRoute(window.location.hash);
+  activeTab=route?route.tab:DEFAULT_TAB;
+  if(route&&route.state){filters.state=route.state;$("statesel").value=route.state;}
   buildTabs();
   switchTab(activeTab);   // also settles whether the filter bar is shown for this tab
   // restore the saved theme (falling back to the default if it's unknown/missing),
@@ -2849,8 +2879,10 @@ function init(){
   // React to a hash change after load too (e.g. a same-page anchor click),
   // not just the one the page was opened with.
   window.addEventListener("hashchange",()=>{
-    const t=window.location.hash.replace("#","").toLowerCase();
-    if(TABS.some(x=>x.id===t)){switchTab(t);render()}
+    const route=resolveHashRoute(window.location.hash);
+    if(!route)return;
+    if(route.state){filters.state=route.state;const sel=$("statesel");if(sel)sel.value=route.state;}
+    switchTab(route.tab);render();
   });
   // Fallback deep-link path for when this page is embedded in a cross-origin
   // <iframe> (e.g. postmillenniumrenaissance.com/trail-advocacy-atlas/) — a
@@ -2863,8 +2895,10 @@ function init(){
     const okOrigins=["https://www.postmillenniumrenaissance.com","https://postmillenniumrenaissance.com"];
     if(!okOrigins.includes(e.origin))return;
     if(!e.data||e.data.type!=="pmr-hash"||typeof e.data.hash!=="string")return;
-    const t=e.data.hash.replace("#","").toLowerCase();
-    if(TABS.some(x=>x.id===t)){switchTab(t);render()}
+    const route=resolveHashRoute(e.data.hash);
+    if(!route)return;
+    if(route.state){filters.state=route.state;const sel=$("statesel");if(sel)sel.value=route.state;}
+    switchTab(route.tab);render();
   });
 }
 /* periodic masthead title swap */
