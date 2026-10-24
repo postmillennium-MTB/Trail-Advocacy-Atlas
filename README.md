@@ -8,7 +8,7 @@ A single-file, zero-dependency directory of nonprofit mountain bike trail advoca
 
 ## Opening / hosting it
 
-It's one file: `trail-advocacy-atlas.html`. Double-click it to open locally, or push it to the `postmillennium-MTB` GitHub Pages repo like your other tools and iframe it into the PMR site or a Pinkbike post. No npm, no build, no server required.
+It's one file: `index.html`. Double-click it to open locally. The live copy is served by GitHub Pages from the `main` branch of this repo (`postmillennium-mtb.github.io/Trail-Advocacy-Atlas/`), and postmillenniumrenaissance.com/trail-advocacy-atlas/ and Pinkbike embed that page in an iframe, so merging to `main` is what publishes a change. No npm, no build, no server required.
 
 ## What's in the data
 
@@ -37,6 +37,8 @@ Everything lives in one JavaScript array near the top of the `<script>` block, c
 - `regional` — umbrella bodies or single orgs spanning multiple states or a broad multi-community footprint within one state (NEMBA, SORBA, MORE, Oregon Timber Trail Alliance). Neon/accent-colored dot.
 - `state` — a statewide coalition of local orgs, or a single org that's the de facto statewide voice (JORBA in NJ, KYMBA in KY, CAMTB in CA). Brown/gold dot.
 - `local` — everything else: town, county, or regional chapters. This is the vast majority of entries — 422 of 449. Green dot.
+
+Current split: 2 national, 5 regional, 20 state, 422 local (449 total). Update this line, the total in "Current status", and the local count above whenever entries are added or removed.
 
 To add a new organization, find the right state section and insert a line following the same pattern. If in doubt, hand the file to Claude with "add these orgs to the atlas" — that's how this whole thing was built, incrementally, one state or one pasted list at a time.
 
@@ -76,7 +78,7 @@ Every other state was assembled org-by-org from web search — real, but not nec
 
 **Entries kept but flagged "not confirmed active"** after the 2026-10 review, because the group is real but no 2025-26 activity could be found: Hawaii Mountain Bike Association, San Miguel Bike Alliance (CO), Cuchara Mountain Trails Alliance (CO), Lake Mountain Bicycle Club (UT).
 
-**Abbreviation collisions** across unrelated orgs in different states are resolved with a state suffix on the `a` field only (e.g. `CIMBA-IL` vs. Idaho's `CIMBA`, `SMBA-NY` vs. Colorado's `SMBA`, `OMBA-OK` vs. Oregon/Colorado's `OMBA`; `MMBA-UT` for Moab vs. Michigan's `MMBA`, and likewise `HTA-AZ`, `MAMBA-CO`, `RAMBO-MN`, `KMBC-IL`, `SWMMBA-MT`, `CORBA-IL`, `CAMBA-OH`) — the real org names are untouched, this only disambiguates the abbreviation column.
+**Abbreviation collisions** across unrelated orgs in different states are resolved with a state suffix on the `a` field only, so every abbreviation in the file is unique (checked 2026-10-24: no duplicate abbreviations or names among the 449 entries). Examples: ( `CIMBA-IL` vs. Idaho's `CIMBA`, `SMBA-NY` vs. Colorado's `SMBA`, `OMBA-OK` vs. Oregon/Colorado's `OMBA`; `MMBA-UT` for Moab vs. Michigan's `MMBA`, and likewise `HTA-AZ`, `MAMBA-CO`, `RAMBO-MN`, `KMBC-IL`, `SWMMBA-MT`, `CORBA-IL`, `CAMBA-OH`) — the real org names are untouched, this only disambiguates the abbreviation column.
 
 ## States with no coverage yet
 
@@ -188,9 +190,13 @@ If a dark-background report ever comes back, check these three things first befo
 ## URL-hash deep links
 
 - **A tab id**: `trail-advocacy-atlas/#why` opens the Why tab. Works for any `TABS` id.
-- **A state**: `trail-advocacy-atlas/#utah` opens the Directory filtered to Utah. The full name, the two-letter code and dashed or run-together spellings all work (`#utah`, `#ut`, `#new-hampshire`, `#newhampshire`). Covers every state plus DC and Puerto Rico. See `STATE_SLUGS` and `resolveHashRoute()`.
+- **A state**: `trail-advocacy-atlas/#utah` opens the Directory filtered to Utah. The full name, the two-letter code and dashed or run-together spellings all work (`#utah`, `#ut`, `#new-hampshire`, `#newhampshire`). Covers every state plus DC (`#dc` or `#washington-dc`; the atlas spells it "Washington DC", so `#district-of-columbia` does not match), Puerto Rico and the national group (`#us`). A hash that matches nothing is ignored and the default tab opens. See `STATE_SLUGS` and `resolveHashRoute()`.
 
 Both work on initial load, on a live `hashchange`, and through a `postMessage({type:"pmr-hash", hash:"#utah"})` fallback for when the atlas is iframed cross-origin on the PMR site. `resolveHashRoute()` is the single place a hash is interpreted.
+
+## The eight tabs
+
+Why (cost model, see below), Directory (searchable list grouped by state), By state (donut chart; the default landing tab), Map (50-state cartogram, point map for CA/CO/VT/OR), Trailhead map (standalone point map), Charts (per-capita and coverage charts), Structure (parent organization and chapter hierarchy, built from the `p` field) and Near me (finds organizations by device location or a typed town). The list lives in the `TABS` registry.
 
 ## Known structural quirks
 
@@ -207,7 +213,7 @@ Both work on initial load, on a live `hashchange`, and through a `postMessage({t
 
 ## Working with Claude on this file
 
-The fastest way to extend this: paste a list of orgs (with state, city/region if known) into a new chat message along with the current `.html` file, and ask Claude to verify and add them. Claude will web-search each one, confirm it's a real active organization with a live site (or note honestly when it can't verify), and append correctly-formatted entries — following the same sourcing discipline as everything already in the file. That's exactly how this atlas grew from a 38-organization Colorado list to 369 entries covering the entire country.
+The fastest way to extend this: paste a list of orgs (with state, city/region if known) into a new chat message along with the current `.html` file, and ask Claude to verify and add them. Claude will web-search each one, confirm it's a real active organization with a live site (or note honestly when it can't verify), and append correctly-formatted entries — following the same sourcing discipline as everything already in the file. That's exactly how this atlas grew from a 38-organization Colorado list to 449 entries covering the entire country.
 
 ## License
 

@@ -19,10 +19,13 @@ Jon has no coding background and edits through GitHub's web UI. Deliver complete
 
 - `tier`: `national`, `regional` (multi-state or broad footprint), `state` (statewide coalition or de facto statewide voice), `local` (everything else).
 - `p` is the parent organization's abbreviation (for example `SORBA`, `CAMTB`) and is only set when membership is confirmed.
-- `lat`/`lng` are optional and only present for the point-map states.
+- `lat`/`lng` are optional and only present for the point-map states (CA, CO, VT, OR). A multi-state organization (for example Orogenesis Collective) has no pin on purpose.
+- `status:"unconfirmed-active"` flags a real organization with no 2025 or later activity found. `conf:"draft"` is unused today.
+- `s` is a two-letter code: `US` for national or multi-state umbrellas, `DC` (shown as "Washington DC") or `PR`.
 - Abbreviation collisions are disambiguated in `a` only, with a suffix (`CIMBA-IL`, `WAMBA-AL`, `RCMBA-AZ`). Real names stay untouched.
 - Renames and mergers are noted inside `r`, not kept as duplicate entries.
-- Update the counts in `README.md` ("Current status" and the `local` tier line) whenever entries are added or removed.
+- Update the counts in `README.md` ("Current status", the `local` count in the tier list and the "Current split" line) whenever entries are added or removed. As of 2026-10-24: 449 total (2 national, 5 regional, 20 state, 422 local), 6 entries without a website.
+- Abbreviations (`a`) and organization names must stay unique. Check this before every merge.
 
 ## Scope
 
@@ -36,6 +39,14 @@ Out (record the reason in the README exclusions list): motorized OHV clubs, NICA
 - Check tax status on ProPublica Nonprofit Explorer (EIN, ruling year, subsection: 03 = 501(c)(3), 04 = 501(c)(4); say so in `r` when it is a (c)(4)).
 - Label evidence honestly: loaded on the page, search snippet only, or unverified. Never upgrade a label.
 - Prefer a primary source (the organization, its state coalition's member list, IMBA, SORBA, NEMBA) over an aggregator. Trailforks and MTB Project pages are acceptable fallbacks only when no site exists.
+
+## Publishing
+
+The live page is the GitHub Pages copy of `main` (`postmillennium-mtb.github.io/Trail-Advocacy-Atlas/`); the PMR site and Pinkbike iframe it. Merging to `main` publishes within minutes. The README is the long-form reference (themes, printing, URL-hash links, Why model); keep it in step when behavior changes.
+
+## Checking a build before merge
+
+Load `index.html` in a headless browser at about 390px and 1280px wide and confirm: no console errors; `#utah`, `#ut`, `#dc`, `#why` and a nonsense hash all behave (nonsense falls back to By state); the phone Filters button opens the panel; the Trailhead map draws one dot per entry with `lat`/`lng` for each of CA, CO, VT, OR; every tab renders; no duplicate abbreviations or names; every `p` value matches an existing `a`.
 
 ## Contact details: collect, but do not publish
 
