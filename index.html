@@ -453,6 +453,9 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .state-path:hover{stroke:var(--ink);stroke-width:2}
 .maplabel{font:600 10px ui-monospace,Menlo,monospace;fill:#fff;pointer-events:none;text-anchor:middle}
 .maplabel.dark{fill:var(--ink)}   /* ink, not slate: slate on a mid-tone tile was ~1.9:1 */
+.unpinned{margin-top:12px;font-size:13px;color:var(--slate);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.unpinned-chip{border:1px solid var(--rule);border-radius:999px;padding:2px 10px;color:var(--ink);text-decoration:none;background:var(--paper)}
+a.unpinned-chip:hover{border-color:var(--slate)}
 .scalebar{display:flex;align-items:center;gap:8px;margin-top:14px;
   font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .scalebar .grad{height:11px;flex:1;max-width:230px}
@@ -2285,6 +2288,18 @@ function renderMap(){
     }));
 }
 
+/* ---------- groups with no single location (regional / corridor orgs that have no lat/lng) ---------- */
+/* Shown under the point maps so a group that spans several regions is still visible on the map tab without a made-up pin. */
+function unpinnedNote(list){
+  const un=list.filter(o=>(o.lat==null||o.lng==null)&&o.tier!=="local");
+  if(!un.length)return "";
+  const chips=un.map(o=>{
+    const label=esc(o.n)+(o.a?" ("+esc(o.a)+")":"");
+    return o.w?`<a class="unpinned-chip" href="${esc(o.w)}" target="_blank" rel="noopener" title="${esc(o.r||"")}">${label}</a>`:`<span class="unpinned-chip">${label}</span>`;
+  }).join(" ");
+  return `<div class="unpinned"><span class="unpinned-lbl">Not pinned — covers more than one place:</span> ${chips}</div>`;
+}
+
 /* ---------- point map (real coordinates, CA/CO/VT/OR only) ---------- */
 /* ==== renderPointMap() — inline real-coordinate point map (shown inside the Map tab) ==== */
 function renderPointMap(list){
@@ -2310,7 +2325,7 @@ function renderPointMap(list){
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that org. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
-    <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
+    <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>${unpinnedNote(list)}`;
   $("p-map").querySelectorAll(".geo-hit").forEach(el=>
     el.addEventListener("click",()=>{
       const o=pts[+el.dataset.idx];
@@ -2354,7 +2369,7 @@ function renderDetailMap(){
       <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.3" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5 4"/>${dots}
     </svg>
-    <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>`;
+    <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>${unpinnedNote(ORGS.filter(o=>o.s===detailState))}`;
   const card=document.getElementById("detail-card");
   let pinnedIdx=null;
   function paintCard(o,pinned){
