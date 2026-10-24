@@ -89,6 +89,8 @@ These four states — the ones with the most entries — have **real geocoded co
 1. **The Map tab's cartogram**: clicking CA/CO/VT/OR (bordered tiles) switches from the state-count grid to a real point map for that state.
 2. **The dedicated "Trailhead map" tab**: a bigger, standalone card with its own CA/CO/VT/OR selector at the top, independent of whatever's in the search box or state dropdown. Click a dot to pin a full org card (name, tier, region, website link) above the map; hover for a quick preview first.
 
+Both point maps list any regional, statewide or national group in that state that has no `lat`/`lng` under the dots as "Not pinned — covers more than one place" (today: Orogenesis Collective). This avoids a made-up pin for a group whose trail runs from Canada to Mexico.
+
 Coordinates were sourced by looking up each org's name + city via Google Places — most resolved to the org's actual address or a specific trailhead/shop; where nothing specific existed, a plain town-center point was used as fallback. This was a one-time lookup pass, done state by state, not an automated geocoding pipeline.
 
 **State outlines** on both maps are hand-simplified boundary polygons (a handful of vertices each, stored in `STATE_OUTLINES`) — good enough to anchor the dots visually, not survey-accurate at the county-border level. Colorado's is literally a rectangle, because Colorado actually is one.
