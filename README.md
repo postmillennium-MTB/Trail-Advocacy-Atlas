@@ -224,3 +224,30 @@ Copyright (c) 2026 Post Millennium Renaissance (https://www.postmillenniumrenais
 Released under the [PolyForm Noncommercial License 1.0.0](LICENSE). In short: free to use, copy, modify and share for any noncommercial purpose, including personal use, research, education, and use by charities, environmental-protection organizations and government institutions. Commercial use needs a separate license; ask through postmillenniumrenaissance.com. Copies must keep the `Required Notice:` line in `LICENSE`. The license text controls over this summary.
 
 Facts, figures and quotations taken from third-party studies and sources remain the property of their authors. This license covers only this project's own code, selection and arrangement of material, and original text. Third-party components keep their own licenses.
+
+
+to add later:
+"What can non-profit trail advocacy organizations actually help with?" (from perspective of municipality) 
+Planning & Data Analytics
+Usage metrics: Provide access to Strava Metro and Trailforks heatmap data to prove existing rider volume and identify highly trafficked corridors.
+Technical alignment: Utilize specialized GIS mapping software to design sustainable, terrain-specific trail alignments that minimize erosion before the town spends money on formal environmental assessments.
+Feasibility screening: Identify potential roadblocks early, such as navigating legacy conservation easements or wildlife migration corridors, saving municipal planners time.
+Coordination & Community Liaison
+Single point of contact: Act as the unified voice for the off-road cycling community, filtering out noise and saving Parks & Rec staff from fielding hundreds of individual emails.
+Cross-jurisdictional linking: Facilitate connections across fragmented land parcels by negotiating trail corridors between town open space, county land, and private HOAs.
+Conflict mediation: Proactively address multi-use trail conflicts through user-group dialogue before they become town council grievances.
+Ideation & Modernization
+Alternative perspectives: Introduce modern, bike-optimized design concepts such as directional singletrack, progressive jump lines, or purpose-built rock armoring.
+Economic ROI: Provide economic impact models showing how localized trails and specialized facilities (like pump tracks) retain local spending and boost adjacent property values.
+Maintenance & Asset Protection
+Deferred maintenance reduction: Schedule and coordinate routine drainage and erosion mitigation to directly reduce the town's Parks & Rec maintenance backlog.
+Rapid response: Deploy certified volunteer sawyers to clear downed trees after storms faster than municipal crews can be mobilized.
+Rogue trail prevention: Design and build high-quality, engaging trails that naturally eliminate the community's desire to build illegal, unsanctioned "spider trails."
+Volunteer Coordination & Labor Management
+Trained leadership: Provide certified Crew Leaders (e.g., Outdoor Stewardship Institute trained) to ensure volunteer workdays are safe, organized, and structurally sound.
+Labor mobilization: Market and schedule public dig days, managing all waivers, tool logistics, and on-site training.
+Quantifiable labor tracking: Meticulously log volunteer hours, transforming free community labor into a documented financial asset for the town.
+Grant Writing & Financial Capacity
+Expanded funding pools: Apply for private, foundation, or non-profit-specific recreation grants (e.g., IMBA Dig In, outdoor industry funds) that towns are ineligible to receive directly.
+In-kind matching: Use the organization's tracked volunteer hours as the required "in-kind match" for massive municipal or state grants (like CPW State Trails grants), allowing the town to secure hundreds of thousands of dollars with minimal actual cash outlay.
+Fiscal sponsorship: Serve as a fiscal sponsor to hold and distribute trail-specific fundraising dollars securely, bypassing municipal budgetary red tape.
