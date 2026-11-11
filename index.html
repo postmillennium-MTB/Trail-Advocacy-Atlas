@@ -37,6 +37,8 @@
     · THEMES registry ........... THE list of color themes — add one line to add one
     · TABS registry ............. THE list of tabs — add one line to add a tab
     · WHY_INPUTS registry ....... THE list of Why-tab sliders — add one line to add one
+    · WHY_TEXT .................. every Why result label and the caveat line, in one place (shared
+                                  by the result cards, pinned bar, scenario line and printout)
     · LIST_SOURCES .............. how each state's list was built (copied from the README), shown on scorecards
     · VOICE_LEVELS registry ..... the four "Who speaks for my state" map categories
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
@@ -64,6 +66,8 @@
     · renderDetailMap() ......... Trailhead Map tab (big standalone point map)
     · computeWhy() .............. Why tab — THE cost model, all of it, one function
     · renderWhy() / updateWhy() . Why tab — shell built once, results redrawn live
+    · WHY MADE PERSONAL ......... town label, state picker + partner card, pinned result bar,
+                                  Share this scenario (display only; computeWhy() untouched)
     · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
     · LINKS THAT FOLLOW THE VISITOR  resolveHashRoute() reads a link, viewHash() writes one,
                                   applyRoute() opens a view; Share button; click-throughs
@@ -701,6 +705,38 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-caveats li{margin-bottom:5px}
 .why-caveats .src{color:var(--slate);font-size:12.5px}
 
+/* ---- Why made personal: town + state row, scenario line, partner card, pinned result bar ---- */
+.why-personal{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px;border:1.5px solid var(--rule);
+  border-radius:4px;background:#fff;padding:13px 16px;margin:0 0 18px}
+.why-field{display:flex;flex-direction:column;gap:5px;flex:1 1 200px;min-width:0;font-size:13.5px;font-weight:600;color:var(--ink)}
+.why-field i{font-weight:400;font-style:normal;color:var(--slate)}
+.why-field input,.why-field select{font-size:16px;line-height:1.2;font-family:inherit;font-weight:400;padding:8px 9px;border:1.5px solid var(--rule);
+  border-radius:3px;background:#fff;color:var(--ink);min-width:0;width:100%;box-sizing:border-box}
+.why-field input:focus-visible,.why-field select:focus-visible{outline:2px solid var(--clay);outline-offset:1px}
+.why-share,.why-partner-btn{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  padding:11px 14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:2px;cursor:pointer}
+.why-share:hover,.why-partner-btn:hover{background:var(--clay);border-color:var(--clay);color:#fff}
+.why-partner-btn.alt{background:#fff;color:var(--ink)}
+.why-personal-note{flex:1 1 100%;margin:0;font-size:12px;line-height:1.45;color:var(--slate)}
+.why-scenario{margin:-10px 0 22px;font-size:13px;line-height:1.5;color:var(--ink)}
+.why-scenario p{margin:0 0 4px}
+.why-scenario-place{font-size:15px}
+.why-scenario-caveat{color:var(--slate);font-style:italic}
+.why-partners .sc-rows{margin:6px 0 10px}
+.why-partner-actions{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
+.why-pin{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:40;width:min(760px,100%);
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 14px;text-align:left;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border:0;border-radius:6px 6px 0 0;
+  background:var(--ink);color:var(--paper);box-shadow:0 -4px 18px rgba(0,0,0,.22);cursor:pointer;font:inherit}
+.why-pin[hidden]{display:none}
+.why-pin-main{font-size:14px;font-weight:600;min-width:0}
+.why-pin-val{font:400 20px/1.1 "Iowan Old Style",Georgia,serif;white-space:nowrap}
+.why-pin-inputs{order:3;flex:1 1 auto;font:11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.03em;opacity:.8}
+.why-pin-go{order:4;margin-left:auto;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.why-pin:focus-visible{outline:3px solid var(--clay);outline-offset:-3px}
+body.why-pin-on{padding-bottom:calc(var(--why-pin-h,64px) + 10px)}
+body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
+
 @media(max-width:900px){
   .why-layout{grid-template-columns:1fr}
   .why-inputs{position:static}
@@ -773,7 +809,9 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
-  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions,.map-modes,.sc-copy{display:none!important}
+  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions,.map-modes,.sc-copy,
+  .why-personal,.why-pin,.why-partner-actions,#why-pick-state{display:none!important}
+  body.why-pin-on{padding-bottom:0}
   /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
   h1.fading{opacity:1!important}
   h1{font-size:26pt}
@@ -1781,6 +1819,21 @@ const WHY_GROUPS=[
   {id:"partner", title:"The partnership", sub:"Option 2 only. What the non-profit actually brings, and what it costs the town to work with them."},
 ];
 
+/* ==== WHY_TEXT — every label a Why result carries, and the model's caveat line, in ONE place. ====
+   The result cards, the phone summary, the pinned result bar, the scenario line (printed and shared)
+   and the "Data sources & methodology notes" section all read these, so changing the dollar wording
+   is one edit here. The values are the tab's existing wording, unchanged; an open compliance question
+   (Nov 2026) may relabel them, and if it does, check the ROI Calculator's Partnerships panel too.
+   Never add "ROI", "return" or "guaranteed" here: this tab compares costs only. */
+const WHY_TEXT={
+  opt1:     "Option 1 · Municipal only",
+  opt2:     "Option 2 · With a non-profit",
+  saves:    "Partnership saves",
+  costsMore:"Partnership costs more",
+  wash:     "Difference",
+  caveat:   "Directional planning tool for advocacy and early scoping. Validate against local contractor quotes and your own maintenance history.",
+};
+
 /* ==== DATA: LIST_SOURCES — how each state's list was built. Copied from the README's "Confidence /
    sourcing discipline" table and footer, not inferred. Shown under "How this list was built" on the
    state scorecards. A state not named here falls back to LIST_SOURCE_DEFAULT.
@@ -1859,6 +1912,7 @@ const PMR_ORIGINS=["https://www.postmillenniumrenaissance.com","https://postmill
 const URL_SYNC_DELAY_MS=250;      // wait this long after the last change before rewriting the address
                                   // (keeps typing and slider drags from rewriting it on every keystroke)
 const SHARE_POP_MS=6000;          // how long the "Link copied" confirmation stays up
+const WHY_TOWN_MAX=60;            // longest town name the Why tab accepts (typed or from a link)
 const ORG_FLASH_MS=2400;          // highlight on an organization opened from a link (matches the CSS animation)
 
 /* ---------- ORG_SLUGS — one stable link key per organization, made from its NAME ----------
@@ -1894,6 +1948,7 @@ function inNetwork(o,net){
 let filters={q:"",state:"",tier:"",net:""};   // search box, state dropdown, tier filter, network (parent) filter
 let activeTab=null;                    // set from DEFAULT_TAB in init()
 let curWhyInfl=0;                      // Why tab's own maintenance-inflation rate
+let whyPlace={town:"",state:""};       // Why tab's optional town label and state picker (display only)
 let detailState="CA";                  // which state the Trailhead map tab is showing
 let detailPin=null;                    // slug of the org pinned on the Trailhead map card, or null
 let openOrg=null;                      // slug of the org whose Directory profile is open, or null
@@ -3016,6 +3071,7 @@ function renderWhy(){
       WHY_INPUTS.forEach(i=>{$("why-"+i.key).value=i.value});
       setWhyInflation(0);
     });
+    wireWhyPersonal();
     whyBuilt=true;
   }
   updateWhy();
@@ -3054,14 +3110,30 @@ function whyShellHTML(){
       ${g.id==="project"?inflationPills:""}
     </div>`).join("");
 
+  const stateOpts=[...STATE_CODES].sort((a,b)=>STATE_NAMES[a].localeCompare(STATE_NAMES[b]))
+    .map(c=>`<option value="${c}">${esc(STATE_NAMES[c])}</option>`).join("");
   return `
+  <div class="why-personal" id="why-personal">
+    <label class="why-field"><span>Your town <i>(optional)</i></span>
+      <input type="text" id="why-town" maxlength="${WHY_TOWN_MAX}" autocomplete="off" spellcheck="false" placeholder="Type a town name"></label>
+    <label class="why-field"><span>Your state <i>(optional)</i></span>
+      <select id="why-state"><option value="">Pick a state</option>${stateOpts}</select></label>
+    <button type="button" class="why-share" id="why-share">Share this scenario</button>
+    <p class="why-personal-note">The town name is only a label on your result, printout and link; nothing is looked up.
+    The state adds the groups listed there; it does not change any number.</p>
+  </div>
   <p class="why-lede">Same trail, two ways to pay for it — the town alone, or with a non-profit partner.
   <b>The trail is identical either way</b>; what changes is the money, the labor, and who carries the
   maintenance afterward.</p>
   <div class="why-layout">
     <div class="why-inputs">${groups}<button type="button" class="why-reset" id="why-reset">Reset to defaults</button></div>
-    <div id="why-results"></div>
-  </div>`;
+    <div id="why-results"><div id="why-top"></div><div id="why-rest"></div></div>
+  </div>
+  <button type="button" class="why-pin" id="why-pin" hidden aria-controls="why-top">
+    <span class="why-pin-main"><span class="why-pin-lbl" id="why-pin-lbl"></span> <b class="why-pin-val" id="why-pin-val"></b></span>
+    <span class="why-pin-inputs" id="why-pin-inputs"></span>
+    <span class="why-pin-go">See full result <span aria-hidden="true">&darr;</span></span>
+  </button>`;
 }
 
 function updateWhy(){
@@ -3069,35 +3141,37 @@ function updateWhy(){
   WHY_INPUTS.forEach(i=>{$("whyv-"+i.key).textContent=i.fmt(v[i.key])});
   const m=computeWhy(v);
 
-  const cheaper   = m.delta>0;
-  const negligible= Math.abs(m.deltaPct)<1;
+  const hl        = whyHeadline(m);
+  const cheaper   = hl.cheaper;
+  const negligible= hl.negligible;
 
   /* ---- headline stats ---- */
   const yrsLabel=v.years===0?"Build only":`${v.years}-year`;
   const stats=`
   <div class="why-mobile-summary" id="why-mobile-summary">
-    <div class="wms-item"><span class="wms-lbl">Option 1 · Municipal only</span><span class="wms-val">${esc(whyCashShort(m.total1))}</span></div>
-    <div class="wms-item opt2"><span class="wms-lbl">Option 2 · With a non-profit</span><span class="wms-val">${esc(whyCashShort(m.total2))}</span></div>
+    <div class="wms-item"><span class="wms-lbl">${esc(WHY_TEXT.opt1)}</span><span class="wms-val">${esc(whyCashShort(m.total1))}</span></div>
+    <div class="wms-item opt2"><span class="wms-lbl">${esc(WHY_TEXT.opt2)}</span><span class="wms-val">${esc(whyCashShort(m.total2))}</span></div>
   </div>
   <div class="why-stats">
     <div class="why-stat">
-      <p class="why-stat-lbl">Option 1 · Municipal only</p>
+      <p class="why-stat-lbl">${esc(WHY_TEXT.opt1)}</p>
       <p class="why-stat-val">${esc(whyCashShort(m.total1))}</p>
       <p class="why-stat-sub">Town's ${yrsLabel} cost: ${esc(whyCash(m.mun1))} capital + ${esc(whyCash(m.opex1))} upkeep</p>
     </div>
     <div class="why-stat">
-      <p class="why-stat-lbl">Option 2 · With a non-profit</p>
+      <p class="why-stat-lbl">${esc(WHY_TEXT.opt2)}</p>
       <p class="why-stat-val">${esc(whyCashShort(m.total2))}</p>
       <p class="why-stat-sub">Town's ${yrsLabel} cost: ${esc(whyCash(m.mun2))} capital + ${esc(whyCash(m.opex2))} upkeep</p>
     </div>
     <div class="why-stat lead">
-      <p class="why-stat-lbl">${negligible?"Difference":cheaper?"Partnership saves":"Partnership costs more"}</p>
-      <p class="why-stat-val">${esc(whyCashShort(Math.abs(m.delta)))}${negligible?"":` <span class="why-pct-badge ${cheaper?"good":"caution"}">${Math.abs(m.deltaPct).toFixed(0)}%</span>`}</p>
+      <p class="why-stat-lbl">${esc(hl.label)}</p>
+      <p class="why-stat-val">${esc(hl.value)}${negligible?"":` <span class="why-pct-badge ${cheaper?"good":"caution"}">${esc(hl.pct)}</span>`}</p>
       <p class="why-stat-sub">${negligible
         ? "Within 1% — on these assumptions the two approaches are a wash."
         : `${cheaper?"Cheaper":"Costlier"} municipal cost${v.years===0?" to build":` over ${v.years} years`}`}</p>
     </div>
   </div>
+  ${whyScenarioHTML(v)}
   ${v.years===0?`<p class="why-flag"><b>Build-only comparison</b>The comparison horizon is set to 0 years, so these
   totals are construction only — no ongoing maintenance, coordination cost, or volunteer adoption savings are
   included on either side. Drag the horizon slider right to see the multi-year picture.</p>`:""}`;
@@ -3171,7 +3245,7 @@ function updateWhy(){
       ? "The gap widens every year the non-profit keeps its crews out there — the maintenance liability, not the construction discount, is where the money actually is."
       : `On these assumptions the partnership costs the town more from year ${m.crossover} onward: coordination overhead has outgrown the maintenance it offsets.`}
     ${v.inflation>0?`Maintenance inflates at ${v.inflation}%/yr; all other costs are held flat.`:"Constant dollars — maintenance inflation is off."}</p>
-    ${whyLegend([{label:"Option 1 · Municipal only",color:"var(--ink)"},{label:"Option 2 · With a non-profit",color:"var(--clay)"}])}
+    ${whyLegend([{label:WHY_TEXT.opt1,color:"var(--ink)"},{label:WHY_TEXT.opt2,color:"var(--clay)"}])}
     <div class="chart-svg-wrap" id="why-wrap">
       <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative municipal cost, both options, over ${v.years} years">
         <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
@@ -3216,8 +3290,11 @@ function updateWhy(){
     </table>
   </div>`;
 
-  $("why-results").innerHTML=stats+fundingChart+timeChart+ledger+whyCaveatsHTML();
+  $("why-top").innerHTML=stats;
+  $("why-rest").innerHTML=fundingChart+timeChart+ledger+whyPartnersHTML()+whyCaveatsHTML();
   wireWhyHover(m.series,xAt,W,H);
+  updateWhyPinText(v,hl);
+  updateWhyPin();
 }
 
 /* Crosshair + tooltip for the two-series time chart. The shared wireChartHover()
@@ -3308,9 +3385,145 @@ function whyCaveatsHTML(){
 
     <p class="src">Full documentation: the cost model, every input and its sources are written up in the <a href="https://github.com/postmillennium-MTB/Trail-Advocacy-Atlas#readme" target="_blank" rel="noopener noreferrer">README on GitHub</a>.</p>
 
-    <p class="src">Directional planning tool for advocacy and early scoping. Validate against local contractor quotes and
-    your own maintenance history.</p>
+    <p class="src">${esc(WHY_TEXT.caveat)}</p>
   </div>`;
+}
+
+/* ==== WHY MADE PERSONAL — town label, state picker, partner card, pinned result bar, Share. =========
+   Display only. Nothing here reads into computeWhy() or changes a slider: the town is a label the
+   visitor types, and the state only picks which listed groups to show under the result. Every label
+   comes from WHY_TEXT. The town arrives from the address too, so it is always cleaned by cleanTown()
+   and only ever written with esc() or textContent, never as raw HTML. ==== */
+
+/* Letters (any language), digits, spaces and . , ' ’ ( ) & - only; at most WHY_TOWN_MAX characters. */
+function cleanTown(s){
+  return String(s==null?"":s).normalize("NFC").replace(/[^\p{L}\p{M}\p{N} .,'\u2019()&-]/gu,"")
+    .replace(/\s+/g," ").replace(/^ +/,"").slice(0,WHY_TOWN_MAX);
+}
+function whyPlaceLabel(){
+  const t=whyPlace.town.trim(), st=whyPlace.state?STATE_NAMES[whyPlace.state]:"";
+  return [t,st].filter(Boolean).join(", ");
+}
+/* The headline result, as the lead card shows it. One function, so the pinned bar can never disagree. */
+function whyHeadline(m){
+  const cheaper=m.delta>0, negligible=Math.abs(m.deltaPct)<1;
+  return {cheaper,negligible,
+    label:negligible?WHY_TEXT.wash:cheaper?WHY_TEXT.saves:WHY_TEXT.costsMore,
+    value:whyCashShort(Math.abs(m.delta)),
+    pct:negligible?"":Math.abs(m.deltaPct).toFixed(0)+"%"};
+}
+/* The key inputs that must sit beside the number wherever it is shown, printed or shared. */
+const WHY_KEY_INPUTS=["miles","cost","grant","volhours","private","years"];
+function whyKeyInputs(v,short){
+  if(short){   // the pinned bar has room for four
+    const yrs=WHY_INPUTS.find(x=>x.key==="years");
+    return [v.miles+" mi",whyCash(v.cost)+"/mi",v.grant+"% grant",yrs.fmt(v.years)];
+  }
+  return WHY_KEY_INPUTS.map(k=>{
+    const i=WHY_INPUTS.find(x=>x.key===k);
+    return i.label+": "+i.fmt(v[k]);
+  });
+}
+/* Under the three result cards: who the scenario is for, its key inputs, and the caveat line. */
+function whyScenarioHTML(v){
+  const place=whyPlaceLabel();
+  return `<div class="why-scenario">
+    ${place?`<p class="why-scenario-place">Scenario for <b>${esc(place)}</b></p>`:""}
+    <p class="why-scenario-inputs"><b>Key inputs:</b> ${whyKeyInputs(v).map(esc).join(" &middot; ")}${v.inflation?` &middot; Maintenance inflation ${esc(v.inflation)}%`:""}. Every input is listed with the sliders.</p>
+    <p class="why-scenario-caveat">${esc(WHY_TEXT.caveat)}</p>
+  </div>`;
+}
+/* Under the ledger: the groups listed in the picked state that could be Option 2's partner. */
+function whyPartnersHTML(){
+  const st=whyPlace.state;
+  if(!st||!STATE_NAMES[st]||!STATE_CODES.includes(st))return `<div class="chart-card why-partners">
+    <h3>Who could be the partner?</h3>
+    <p class="chart-desc">Option 2 needs a non-profit partner. Pick your state at the top of this tab to see the groups
+    this atlas lists there.</p>
+    <button type="button" class="why-partner-btn" id="why-pick-state">Pick a state</button>
+  </div>`;
+  const f=stateFacts(st), code=st.toLowerCase();
+  const sw=f.statewide.map(o=>`<button type="button" class="sc-link" data-open-org="${SLUG_OF.get(o)}" title="Open ${esc(o.n)}">${esc(o.n)}${o.a?" ("+esc(o.a)+")":""}</button>`).join(" ");
+  const nets=f.nets.slice(0,3).map(x=>`<button type="button" class="sc-link" data-route="#list?state=${code}&net=${esc(x.net)}" title="Show the ${esc(x.net)} groups listed in ${esc(f.name)}">${esc(x.net)} <i>${x.n}</i></button>`).join(" ");
+  return `<div class="chart-card why-partners">
+    <h3>Groups listed in ${esc(f.name)} that could be the partner</h3>
+    <p class="chart-desc">Option 2 needs a non-profit partner. This atlas lists <b>${f.n} group${f.n===1?"":"s"}</b> in ${esc(f.name)}.
+    Picking a state adds this list only; it does not change any number above.</p>
+    <dl class="sc-rows">
+      <dt>Statewide group</dt><dd>${sw||`<span>No statewide group listed for ${esc(f.name)} in this atlas.</span>`}</dd>
+      ${nets?`<dt>Networks with groups here</dt><dd>${nets}</dd>`:""}
+    </dl>
+    <p class="why-partner-actions">
+      <button type="button" class="why-partner-btn" data-route="${stateHash(st)}">See all ${f.n} in the Directory</button>
+      ${f.pointMap?`<button type="button" class="why-partner-btn alt" data-route="#detail?state=${code}">Trailhead map</button>`:""}
+    </p>
+    <p class="sc-note">Counts are groups listed in this atlas, not every group that exists. A group being listed is not an endorsement or a sign it is ready to partner.</p>
+  </div>`;
+}
+function wireWhyPersonal(){
+  const town=$("why-town"), sel=$("why-state");
+  // First visit from a one-state view (for example #colorado, then Why): start on that state.
+  if(!whyPlace.state&&filters.state&&STATE_CODES.includes(filters.state))whyPlace.state=filters.state;
+  town.value=whyPlace.town;sel.value=whyPlace.state;
+  town.addEventListener("input",()=>{
+    const c=cleanTown(town.value);
+    if(c!==town.value)town.value=c;
+    whyPlace.town=c;updateWhy();scheduleURLSync();
+  });
+  sel.addEventListener("change",()=>{
+    whyPlace.state=STATE_CODES.includes(sel.value)?sel.value:"";
+    updateWhy();scheduleURLSync();
+  });
+  $("why-share").addEventListener("click",()=>{syncURL();shareLink(shareURL(),"this scenario")});
+  $("why-pin").addEventListener("click",()=>{
+    const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    $("why-top").scrollIntoView({block:"start",behavior:reduce?"auto":"smooth"});
+  });
+  $("why-rest").addEventListener("click",e=>{
+    if(!e.target.closest("#why-pick-state"))return;
+    $("why-personal").scrollIntoView({block:"center"});sel.focus({preventScroll:true});
+  });
+  window.addEventListener("scroll",queueWhyPin,{passive:true});
+  window.addEventListener("resize",queueWhyPin);
+}
+/* Set the Why tab's town, state and controls together (links, printouts). */
+function setWhyPlace(town,state){
+  whyPlace.town=cleanTown(town).trim();
+  whyPlace.state=STATE_CODES.includes(state)?state:"";
+  if($("why-town")){$("why-town").value=whyPlace.town;$("why-state").value=whyPlace.state}
+}
+
+/* ---- pinned result bar ----
+   Fixed to the bottom of the screen while the result cards are off screen but the controls are on
+   it (phone: the sliders sit four screens above the result; desktop: the result scrolls away as the
+   lower sliders come up). Hidden as soon as the result cards are in view. While it shows, the body
+   gets bottom padding the bar's height, so it never covers the last slider or the page footer, and
+   the Share confirmation box moves above it. */
+function updateWhyPinText(v,hl){
+  $("why-pin-lbl").textContent=(whyPlace.town.trim()?whyPlace.town.trim()+": ":"")+hl.label;
+  $("why-pin-val").textContent=hl.value+(hl.pct?" ("+hl.pct+")":"");
+  $("why-pin-inputs").textContent=whyKeyInputs(v,true).join(" \u00B7 ");
+}
+let whyPinQueued=false;
+function queueWhyPin(){
+  if(whyPinQueued)return;
+  whyPinQueued=true;
+  requestAnimationFrame(()=>{whyPinQueued=false;updateWhyPin()});
+}
+function updateWhyPin(){
+  const pin=$("why-pin"), top=$("why-top");
+  let show=false;
+  if(pin&&top&&activeTab==="why"){
+    const vh=window.innerHeight||document.documentElement.clientHeight;
+    const onScreen=el=>{const r=el.getBoundingClientRect();return r.bottom>0&&r.top<vh&&r.height>0};
+    const card=top.querySelector(".why-stats")||top;
+    show=!onScreen(card)&&(onScreen($("why-personal"))||onScreen(document.querySelector(".why-inputs")));
+  }
+  if(pin){
+    pin.hidden=!show;
+    if(show)document.documentElement.style.setProperty("--why-pin-h",pin.offsetHeight+"px");
+  }
+  document.body.classList.toggle("why-pin-on",show);
 }
 
 /* ---------- shell ---------- */
@@ -3369,6 +3582,7 @@ function render(){
   if(typeof fn==="function")fn();
   else console.error("Tab '"+tab.id+"' points at missing render function:",tab.render);
   renderChips();
+  updateWhyPin();
   scheduleURLSync();
 }
 
@@ -3384,6 +3598,7 @@ function render(){
      #detail?state=vt&pin=<org>       Trailhead map for a state, with one group pinned
      #why?miles=12&grant=40&infl=2    Why sliders that differ from the defaults (display only;
                                       computeWhy() and WHY_INPUTS are untouched)
+     #why?town=Castle%20Rock&state=co the Why tab's town label and state picker (labels only)
 
    The address is rewritten with history.replaceState, which never adds Back-button steps and never
    fires hashchange (so the page doesn't react to its own edits). Inside an iframe the frame's own
@@ -3427,6 +3642,9 @@ function resolveHashRoute(hash){
     });
     const r=parseFloat(p.get("infl"));
     if(Number.isFinite(r))route.infl=r;   // checked against the real pills when applied
+    const town=cleanTown(p.get("town")).trim();
+    if(town)route.town=town;              // a label only: cleaned, never treated as HTML
+    if(STATE_CODES.includes(st))route.whyState=st;
   }else{
     if(st&&has(STATE_NAMES,st)&&ORGS.some(o=>o.s===st))route.state=st;
     const tier=(p.get("tier")||"").toLowerCase();
@@ -3449,6 +3667,8 @@ function viewHash(){
       const v=whyValues();
       WHY_INPUTS.forEach(i=>{if(v[i.key]!==i.value)p.set(i.key,v[i.key])});
       if(curWhyInfl)p.set("infl",curWhyInfl);
+      if(whyPlace.town.trim())p.set("town",whyPlace.town.trim());
+      if(whyPlace.state)p.set("state",whyPlace.state.toLowerCase());
     }
     return out("why");
   }
@@ -3513,6 +3733,7 @@ function applyRoute(route){
   switchTab(route.tab);
   if(route.tab==="why"){
     if(!whyBuilt)renderWhy();
+    setWhyPlace(route.town||"",route.whyState||"");
     const w=route.why||{};
     WHY_INPUTS.forEach(i=>{$("why-"+i.key).value=w[i.key]!=null?w[i.key]:i.value});
     const pills=[...document.querySelectorAll("#why-inflation-pills .why-pill")];
@@ -3766,6 +3987,8 @@ function printViewURL(){
     const v=whyValues();
     WHY_INPUTS.forEach(i=>{if(v[i.key]!==i.value)u.searchParams.set("w_"+i.key,v[i.key])});
     if(curWhyInfl)u.searchParams.set("w_infl",curWhyInfl);
+    if(whyPlace.town.trim())u.searchParams.set("w_town",whyPlace.town.trim());
+    if(whyPlace.state)u.searchParams.set("w_state",whyPlace.state);
   }
   return u.toString();
 }
@@ -3799,6 +4022,7 @@ function applyPrintParams(){
     });
     const r=parseFloat(p.get("w_infl"));
     if([...document.querySelectorAll("#why-inflation-pills .why-pill")].some(b=>+b.dataset.rate===r))setWhyInflation(r);
+    setWhyPlace(p.get("w_town")||"",(p.get("w_state")||"").toUpperCase());
   }
   render();
   // Drop the flag so a reload (or a shared copy of this tab's URL) doesn't reopen the dialog.
