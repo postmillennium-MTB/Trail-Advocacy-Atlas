@@ -29,7 +29,7 @@
     ==== ALL DATA LIVES IN ONE CONTIGUOUS BLOCK AT THE TOP ====
     · ORGS ...................... the big array — every organization is one line
     · STATE_NAMES ............... state code -> display name
-    · STATE_POPULATION .......... only used by the per-capita chart
+    · STATE_POPULATION .......... US Census Bureau Vintage 2025 estimates (per-million chart, stat strip, scorecards)
     · GRID ...................... cartogram tile positions
     · STATE_OUTLINES ............ simplified state boundary shapes for point maps
     · POINT_MAP_STATES .......... which states have real per-org coordinates
@@ -37,6 +37,8 @@
     · THEMES registry ........... THE list of color themes — add one line to add one
     · TABS registry ............. THE list of tabs — add one line to add a tab
     · WHY_INPUTS registry ....... THE list of Why-tab sliders — add one line to add one
+    · LIST_SOURCES .............. how each state's list was built (copied from the README), shown on scorecards
+    · VOICE_LEVELS registry ..... the four "Who speaks for my state" map categories
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
     ==== everything past "END OF DATA" is logic ====
     · STATE_SLUGS ............... state name/code lookup for #utah-style URL-hash links
@@ -46,14 +48,18 @@
     · buildProjection() ......... lat/lng -> SVG coords (heavily commented; the
                                   cos(latitude) correction is the non-obvious part)
     · matches() / visible() ..... the search + filter logic
-    · renderCounts() ............ the 2 stat numbers up top
+    · STATE FACTS ............... stateFacts() / voiceOf(): every number the stat strip, the state
+                                  scorecards and the "Who speaks for my state" map show
+    · renderCounts() ............ the stat strip up top (national facts, or the picked state's)
+    · scorecardHTML() ........... the state scorecard at the top of a one-state Directory
     · renderMapJump() ........... the small map icon (opens the Map tab)
     · renderList() .............. Directory tab
     · renderCharts() ............ Charts tab (3 charts)
     · renderPie() ............... By State tab (donut chart)
     · renderTree() .............. Structure tab (parent/chapter hierarchy)
     · renderNear() .............. Near me tab (geolocation / town search)
-    · renderMap() ............... Map tab (cartogram, or point map for CA/CO/VT/OR)
+    · renderMap() ............... Map tab (cartogram shaded by count or by "Who speaks for my state",
+                                  or point map for CA/CO/VT/OR)
     · renderPointMap() .......... inline point map
     · renderDetailMap() ......... Trailhead Map tab (big standalone point map)
     · computeWhy() .............. Why tab — THE cost model, all of it, one function
@@ -180,8 +186,17 @@ h1.fading{opacity:0}
 /* ---- counters ---- */
 .counts{display:flex;flex-wrap:wrap;gap:26px;margin:18px 0 24px;
   font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
-.counts div{color:var(--slate)}
-.counts b{display:block;font:400 30px/1 "Iowan Old Style",Georgia,serif;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px}
+/* Stat strip (renderCounts): 3-4 facts in a grid, then a one-line coverage note. A fact that opens a
+   view is a <button class="stat">, styled to look like the plain ones until hovered. */
+.stat-strip{flex:1 1 0;min-width:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 22px}
+.stat{display:block;text-align:left;font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--slate);
+  line-height:1.3;background:none;border:0;padding:0 0 3px;margin:0;border-bottom:1.5px solid transparent;min-width:0}
+.stat b{display:block;font:400 30px/1 "Iowan Old Style",Georgia,serif;color:var(--ink);letter-spacing:-.01em;margin-bottom:5px;text-transform:none}
+.stat span{display:block;font-size:11px}
+button.stat{cursor:pointer;border-bottom-color:var(--rule)}
+button.stat:hover,button.stat:focus-visible{border-bottom-color:var(--clay);outline:none}
+button.stat:hover b,button.stat:focus-visible b{color:var(--clay)}
+.stat-note{grid-column:1/-1;margin:0;font:400 12px/1.4 inherit;font-family:inherit;letter-spacing:0;text-transform:none;color:var(--slate)}
 /* Cartogram thumbnail that jumps to the Map tab. There are two copies of the button, filled by
    renderMapJump() so both follow the active palette: .map-jump-mast beside the subtitle (wide
    screens) and .map-jump-row at the right end of the counter row (phones). Only one is shown. */
@@ -470,6 +485,48 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 
 /* ---- map ---- */
 .map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
+/* Map tab mode switch (mapModeBar): same look as the tier buttons. */
+.map-modes{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.map-modes button{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  padding:9px 12px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
+.map-modes button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.map-modes button:focus-visible{outline:2px solid var(--clay);outline-offset:1px}
+/* Who speaks for my state: thin-coverage tiles are close to the page color, so they get a dashed edge. */
+.voice-tile{cursor:pointer}
+.state-path.voice-thin{stroke:var(--slate);stroke-dasharray:3 2;stroke-width:1.2}
+.state-path.voice-picked{stroke:var(--ink);stroke-width:3}
+.maplabel.voice-glyph{font-size:15px}
+.voice-legend{list-style:none;padding:0;margin:16px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 22px}
+.voice-legend li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink)}
+.voice-legend i{font:600 12px ui-monospace,Menlo,monospace;font-style:normal;color:var(--slate);margin-left:4px}
+.voice-legend small{color:var(--slate);font-size:12.5px;line-height:1.4}
+.voice-key{flex:0 0 26px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1}
+.voice-key.voice-thin{border:1.2px dashed var(--slate)}
+/* State scorecard (scorecardHTML), first thing in a one-state Directory. */
+.scorecard{border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;margin:0 0 26px}
+.sc-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sc-head h2{margin:0;font:400 26px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
+.sc-head h2 span{font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt);margin-left:6px}
+.sc-copy{margin-left:auto;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 10px;border:1.5px solid var(--clay);background:#fff;color:var(--ink);border-radius:2px;cursor:pointer}
+.sc-copy:hover,.sc-copy:focus-visible{background:var(--clay);color:#fff}
+.sc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px 20px;margin-bottom:14px;
+  font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
+.sc-rows{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:9px 16px;margin:0;font-size:14px;border-top:1px solid var(--rule);padding-top:12px}
+.sc-rows dt{font:600 10.5px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.sc-rows dd{margin:0;color:var(--ink);display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.sc-link,.sc-voice{font:inherit;font-size:13.5px;padding:3px 9px;border:1.5px solid var(--rule);border-radius:999px;background:var(--paper);
+  color:var(--ink);cursor:pointer;text-align:left;max-width:100%}
+.sc-link i{font:600 11px ui-monospace,Menlo,monospace;font-style:normal;color:var(--slate);margin-left:3px}
+.sc-link:hover,.sc-link:focus-visible,.sc-voice:hover,.sc-voice:focus-visible{border-color:var(--clay);outline:none}
+.sc-voice{font-weight:600}
+.sc-src{color:var(--slate);font-size:12.5px}
+.sc-note{margin:12px 0 0;font-size:12.5px;line-height:1.5;color:var(--slate);max-width:90ch}
+@media(max-width:560px){
+  .sc-rows{grid-template-columns:1fr;gap:4px}
+  .sc-rows dd{margin-bottom:8px}
+  .sc-copy{margin-left:0}
+}
 .state-path{stroke:var(--paper);stroke-width:1.2;cursor:pointer;transition:fill .15s}
 .state-path.state-detailed{stroke:var(--ink);stroke-width:2.4}
 .geo-hit{cursor:pointer}
@@ -653,6 +710,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 @media(max-width:760px){
   .pie-layout{grid-template-columns:1fr}
   .counts{gap:18px}
+  .stat-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+  .stat b{font-size:24px}
   .top-banner{height:90px}
   .pie-map-teaser{flex-direction:column;align-items:stretch;text-align:center}
   .pie-map-teaser-inner{width:100%;max-width:220px;margin:0 auto}
@@ -714,7 +773,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
-  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions{display:none!important}
+  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions,.map-modes,.sc-copy{display:none!important}
   /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
   h1.fading{opacity:1!important}
   h1{font-size:26pt}
@@ -965,9 +1024,10 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
 <!-- print-only: which search/state/tier filters produced this printout (filled in beforeprint) -->
 <div class="print-only print-filters" id="print-filters" hidden aria-hidden="true"></div>
 
+<!-- Stat strip: three or four live facts, filled by renderCounts() from the data (national facts, or the
+     picked state's facts when a state filter is on). Each fact that can open a view is a button with data-route. -->
 <div class="counts">
-  <div><b id="c-orgs">0</b>Organizations</div>
-  <div><b id="c-states">0</b>States covered</div>
+  <div class="stat-strip" id="stat-strip" aria-live="polite"></div>
   <button type="button" class="map-jump map-jump-row" aria-label="Open the map" title="Open the map"></button>
 </div>
 
@@ -1520,9 +1580,15 @@ const ORGS = [
    and far lighter than embedding TopoJSON. */
 /* ==== DATA: STATE_NAMES (labels) + GRID (cartogram tile positions) ==== */
 const STATE_NAMES={US:"National",AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"Washington DC",PR:"Puerto Rico"};
-/* 2026-projected state population estimates (Census-derived, via worldpopulationreview.com).
-   Used only for the "orgs per capita" chart in the Charts tab — not used anywhere else. */
-const STATE_POPULATION={CA:39345844,TX:32101064,FL:23659198,NY:20003435,PA:13073016,IL:12735249,OH:11940399,GA:11401288,NC:11343875,MI:10155806,NJ:9590076,VA:8940572,WA:8074082,AZ:7691212,TN:7378861,MA:7169608,IN:7011912,MO:6297538,MD:6285380,CO:6036620,WI:5988406,MN:5863405,SC:5650232,AL:5223121,KY:4629682,LA:4621500,OR:4281848,OK:4148818,CT:3702543,UT:3574825,NV:3310833,IA:3246320,AR:3133502,KS:2989188,MS:2958148,NM:2124222,ID:2058594,NE:2030421,WV:1764892,HI:1430688,NH:1422166,ME:1421310,MT:1151831,RI:1118627,DE:1069781,SD:943078,ND:805329,AK:738003,VT:642805,WY:590784,PR:3167149,DC:695980};
+/* State population: US Census Bureau, Population Division, Vintage 2025 resident population
+   estimates for July 1, 2025 ("Annual Estimates of the Resident Population for the United States,
+   Regions, States, District of Columbia, and Puerto Rico: April 1, 2020 to July 1, 2025",
+   NST-EST2025-ALLDATA, column POPESTIMATE2025), copied from the Bureau's own file:
+   https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/state/totals/NST-EST2025-ALLDATA.csv
+   Public domain (US federal data). Replaced the earlier worldpopulationreview.com projection on
+   2026-11-11. Used by the per-million chart, the stat strip and the state scorecards. */
+const POPULATION_SOURCE="US Census Bureau, Vintage 2025 estimates (July 1, 2025)";
+const STATE_POPULATION={CA:39355309,TX:31709821,FL:23462518,NY:20002427,PA:13059432,IL:12719141,OH:11900510,GA:11302748,NC:11197968,MI:10127884,NJ:9548215,VA:8880107,WA:8001020,AZ:7623818,TN:7315076,MA:7154084,IN:6973333,MO:6270541,MD:6265347,CO:6012561,WI:5972787,MN:5830405,SC:5570274,AL:5193088,KY:4606864,LA:4618189,OR:4273586,OK:4123288,CT:3688496,UT:3538904,NV:3282188,IA:3238387,AR:3114791,KS:2977220,MS:2954160,NM:2125498,ID:2029733,NE:2018006,WV:1766147,HI:1432820,NH:1415342,ME:1414874,MT:1144694,RI:1114521,DE:1059952,SD:935094,ND:799358,AK:737270,VT:644663,WY:588753,PR:3184835,DC:693645};
 
 /* grid cartogram coordinates [col,row] */
 const GRID={
@@ -1715,6 +1781,40 @@ const WHY_GROUPS=[
   {id:"partner", title:"The partnership", sub:"Option 2 only. What the non-profit actually brings, and what it costs the town to work with them."},
 ];
 
+/* ==== DATA: LIST_SOURCES — how each state's list was built. Copied from the README's "Confidence /
+   sourcing discipline" table and footer, not inferred. Shown under "How this list was built" on the
+   state scorecards. A state not named here falls back to LIST_SOURCE_DEFAULT.
+     states  the state codes the source covers
+     how     one plain sentence, shown on the card
+     src     the source as the README records it (shown as text, not a link)
+   TO ADD ONE: when a state is transcribed from a coalition roster, add a line here AND to the README table. ==== */
+const LIST_SOURCES=[
+  {states:["CO"], how:"Transcribed in full from the statewide coalition's member list.", src:"comtb.org/colorado-trail-organizations"},
+  {states:["VT"], how:"Transcribed in full from the statewide coalition's chapter list.", src:"vmba.org/chapters"},
+  {states:["OR"], how:"Transcribed in full from the statewide coalition's member list.", src:"ormtbcoalition.org/ombc-members"},
+  {states:["WA"], how:"Transcribed in full from the statewide alliance's chapter list.", src:"evergreenmtb.org/chapters"},
+  {states:["CA"], how:"Drawn largely from the California Mountain Biking Coalition's member directory, the closest thing California has to a single source.", src:"camtb.org/members"},
+  {states:["AL","FL","GA","LA","MS","NC","SC","TN"], how:"SORBA chapters taken from SORBA's chapter list; every other group here was found one by one through web research.", src:"sorba.org/chapters"},
+  {states:["ME","NH","MA","CT","RI"], how:"NEMBA chapters taken from NEMBA's chapter list; every other group here was found one by one through web research.", src:"nemba.org/chapters"},
+];
+const LIST_SOURCE_DEFAULT="Assembled group by group from web research. Every entry was checked, but this is not a full coalition roster, so groups may be missing.";
+
+/* ==== VOICE_LEVELS REGISTRY — the "Who speaks for my state" map categories, strongest first. ====
+   voiceOf() in the logic picks the FIRST level a state qualifies for. Colors are not set here: they
+   are derived from the active theme's cartogram ramp (voiceFills()), darkest for the first level, so
+   the four steps read as an order in every palette and for color-blind visitors. The glyph is
+   printed on every tile and in the legend, so no category depends on color alone.
+     id     key used by voiceOf() and the CSS
+     glyph  shown on the tile and in the legend
+     label  legend text and tile tooltip (always "listed", never "exists")
+     desc   one-line explanation in the legend */
+const VOICE_LEVELS=[
+  {id:"state",   glyph:"\u2605", label:"Statewide group listed",            desc:"A statewide coalition or statewide voice is listed in this atlas."},
+  {id:"network", glyph:"\u25C6", label:"Covered by a multi-state network",  desc:"No statewide group listed, but groups here belong to a network that spans several states."},
+  {id:"local",   glyph:"\u25CF", label:"Local groups only",                 desc:"Three or more groups listed, none statewide or part of a multi-state network."},
+  {id:"thin",    glyph:"\u25CB", label:"Thin coverage",                     desc:"One or two groups listed and no statewide group listed. More probably exist."},
+];
+
 /* ================== END OF DATA — everything below is logic ================== */
 
 /* ---------- tuning constants (named so they're findable, not buried in functions) ---------- */
@@ -1724,6 +1824,9 @@ const DOT_R_UMBRELLA=7.5;         // radius of national/regional/state dots (dra
 const DOT_HIT_PADDING=8;          // invisible click-target padding around each dot; keep >=6 so
                                   // small dots stay easy to hit with a mouse or finger
 const PER_CAPITA_HIGH=2;          // orgs-per-million above this = "top tier" on the capita chart
+const THIN_COVERAGE_MAX=2;        // a state with this many listed groups or fewer (and no statewide group or
+                                  // multi-state network) is "Thin coverage" on the Who-speaks map. VOICE_LEVELS
+                                  // says "one or two" / "three or more" in words: change both together
 const PER_CAPITA_MID=0.9;         // ...and above this = "mid tier"; below = "lower tier"
 const TITLE_ROTATE_MS=6000;       // how long each masthead headline shows before swapping
 const TITLE_FADE_MS=500;          // fade duration for that swap (must match the CSS transition)
@@ -1794,6 +1897,7 @@ let curWhyInfl=0;                      // Why tab's own maintenance-inflation ra
 let detailState="CA";                  // which state the Trailhead map tab is showing
 let detailPin=null;                    // slug of the org pinned on the Trailhead map card, or null
 let openOrg=null;                      // slug of the org whose Directory profile is open, or null
+let mapMode="count";                   // Map tab shading: "count" (groups listed) or "voice" (Who speaks for my state)
 let urlSyncReady=false;                // the address is only rewritten once the page has finished loading
 // (currentTheme lives with the THEMES registry above, since it defaults from it)
 
@@ -1900,12 +2004,147 @@ function stateCounts(list){
   return m;
 }
 
-/* ---------- counters ---------- */
-/* ==== renderCounts() — the 2 big stat numbers at the top ==== */
-function renderCounts(){
-  $("c-orgs").textContent=ORGS.length;
-  $("c-states").textContent=Object.keys(stateCounts(ORGS)).length;
+/* ==== STATE FACTS — every number on the stat strip, the state scorecards and the Who-speaks map. ====
+   All of it is computed from ORGS and STATE_POPULATION, so adding an organization updates every card.
+   Wording rule for anything shown from here: counts are "listed in this atlas", never how many exist,
+   and a missing statewide group is "no statewide group listed", never "none exists". */
+const STATE_CODES=Object.keys(STATE_NAMES).filter(c=>c!=="US"&&ORGS.some(o=>o.s===c));   // jurisdictions with a listed group
+/* Every network's footprint: the states of its own entry (unless national) and of every group below it. */
+const NETWORK_STATES={};
+NETWORKS.forEach(net=>{
+  NETWORK_STATES[net]=new Set(ORGS.filter(o=>o.s!=="US"&&inNetwork(o,net)).map(o=>o.s));
+});
+const isMultiStateNet=net=>!!NETWORK_STATES[net]&&NETWORK_STATES[net].size>1;
+/* Groups listed per million residents, and each jurisdiction's rank on it (1 = most listed per resident). */
+const PER_MILLION={}, PER_MILLION_RANK={};
+STATE_CODES.filter(c=>STATE_POPULATION[c]).forEach(c=>{
+  PER_MILLION[c]=ORGS.filter(o=>o.s===c).length/STATE_POPULATION[c]*1e6;
+});
+const PER_MILLION_RANKED=Object.keys(PER_MILLION).sort((a,b)=>PER_MILLION[b]-PER_MILLION[a]);
+PER_MILLION_RANKED.forEach((c,i)=>PER_MILLION_RANK[c]=i+1);
+const ordinal=n=>{const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+/* "colorado", "new-hampshire": the friendly state link viewHash() writes for a one-state Directory. */
+const stateHash=st=>"#"+String(STATE_NAMES[st]||st).toLowerCase().replace(/[^a-z0-9]+/g,"-");
+
+/* stateFacts(st) — everything a scorecard says about one state, from the full list (it ignores
+   the search and tier filters on purpose: the card describes the state, the list below it is filtered). */
+const STATE_FACT_CACHE={};
+function stateFacts(st){
+  if(STATE_FACT_CACHE[st])return STATE_FACT_CACHE[st];
+  const orgs=ORGS.filter(o=>o.s===st);
+  const tiers={};orgs.forEach(o=>tiers[o.tier]=(tiers[o.tier]||0)+1);
+  // Networks with at least one group here: every ancestor of every group, plus a group that is itself a network.
+  const netSet=new Set();
+  orgs.forEach(o=>{
+    const seen=new Set();
+    for(let x=o;x&&!seen.has(x);x=ORG_BY_ABBR[x.p]){seen.add(x);if(x.a&&NETWORKS.has(x.a))netSet.add(x.a)}
+  });
+  const nets=[...netSet].map(net=>({net,org:ORG_BY_ABBR[net],n:orgs.filter(o=>inNetwork(o,net)).length,multi:isMultiStateNet(net)}))
+    .sort((a,b)=>b.n-a.n||a.net.localeCompare(b.net));
+  const inNet=orgs.filter(o=>o.p&&ORG_BY_ABBR[o.p]).length;
+  const src=LIST_SOURCES.find(s=>s.states.includes(st));
+  const f={st,name:STATE_NAMES[st]||st,orgs,n:orgs.length,tiers,nets,inNet,
+    statewide:orgs.filter(o=>o.tier==="state"),
+    perM:PER_MILLION[st],rank:PER_MILLION_RANK[st],ranked:PER_MILLION_RANKED.length,
+    pointMap:POINT_MAP_STATES.includes(st),
+    mapped:orgs.filter(o=>o.lat!=null&&o.lng!=null).length,
+    source:src||null};
+  f.voice=f.statewide.length?"state":nets.some(x=>x.multi)?"network":f.n<=THIN_COVERAGE_MAX?"thin":"local";
+  return STATE_FACT_CACHE[st]=f;
 }
+const voiceOf=st=>stateFacts(st).voice;
+const VOICE_BY_ID=Object.fromEntries(VOICE_LEVELS.map(v=>[v.id,v]));
+
+/* "50 states, DC &amp; Puerto Rico": spells out exactly which places a count of STATE_CODES covers. */
+const NATIONAL_COUNT=ORGS.filter(o=>o.s==="US").length;   // national / multi-state entries, tied to no one state
+function placesLabel(){
+  const n=STATE_CODES.filter(c=>c!=="DC"&&c!=="PR").length;
+  const extra=["DC","PR"].filter(c=>STATE_CODES.includes(c)).map(c=>c==="DC"?"DC":"Puerto Rico");
+  return `places with a group listed: ${n} state${n===1?"":"s"}${extra.length?", "+extra.join(" &amp; "):""}`;
+}
+/* National facts for the stat strip. */
+function nationalFacts(){
+  const counts=Object.values(stateCounts(ORGS)).sort((a,b)=>b-a);
+  const tied=counts.reduce((s,n)=>s+n,0);
+  let cum=0,half=0;
+  for(const n of counts){cum+=n;half++;if(cum>=tied/2)break}
+  const inNet=ORGS.filter(o=>o.p&&ORG_BY_ABBR[o.p]).length;
+  return{total:ORGS.length,places:STATE_CODES.length,inNet,netPct:Math.round(inNet/ORGS.length*100),half,
+    statewide:STATE_CODES.filter(c=>voiceOf(c)==="state").length};
+}
+
+/* ---------- stat strip ---------- */
+/* ==== renderCounts() — the stat strip above the tabs. National facts, or the picked state's facts
+   when a state filter is on. Redrawn by render(), so it follows every state change. ==== */
+function statHTML(value,label,route,title){
+  const inner=`<b>${value}</b><span>${label}</span>`;
+  return route
+    ?`<button type="button" class="stat" data-route="${esc(route)}" title="${esc(title||"")}">${inner}</button>`
+    :`<div class="stat"${title?` title="${esc(title)}"`:""}>${inner}</div>`;
+}
+function renderCounts(){
+  const box=$("stat-strip");
+  if(!box)return;
+  const st=filters.state;
+  let html;
+  if(st&&st!=="US"&&STATE_NAMES[st]){
+    const f=stateFacts(st), code=st.toLowerCase();
+    const sw=f.statewide[0];
+    const top=f.nets[0];
+    html=statHTML(f.n,`group${f.n===1?"":"s"} listed in ${esc(f.name)}`,stateHash(st),`Open the ${f.name} scorecard and its full list`)+
+      (f.rank?statHTML(ordinal(f.rank),`of ${f.ranked} places for groups listed per resident (${f.perM.toFixed(1)} per million)`,"#charts","See every state per million residents on the Charts tab"):"")+
+      (sw?statHTML(esc(sw.a||sw.n),`statewide group listed${f.statewide.length>1?` (+${f.statewide.length-1} more)`:""}`,"#org/"+SLUG_OF.get(sw),`Open ${sw.n}`)
+         :statHTML("None",`statewide group listed here`,"#map?mode=voice","See who speaks for each state on the map"))+
+      (f.pointMap?statHTML(f.mapped,"on the trailhead map","#detail?state="+code,`Open the ${f.name} trailhead map`)
+         :statHTML(f.inNet,`${f.inNet===1?"belongs":"belong"} to a larger network${top?" ("+esc(top.net)+(f.nets.length>1?" and others":"")+")":""}`,top?`#list?state=${code}&net=${top.net}`:null,top?`Show the ${top.net} groups in ${f.name}`:""));
+  }else{
+    const f=nationalFacts();
+    html=statHTML(f.total,"groups listed in this atlas","#list","Open the full Directory")+
+      statHTML(f.places,placesLabel(),"#map?mode=voice","See who speaks for each state on the map")+
+      statHTML(f.netPct+"%","belong to a larger network","#tree","See how the networks fit together on the Structure tab")+
+      statHTML(f.half,"states hold half of all listed groups","#charts","See the cumulative share chart on the Charts tab");
+  }
+  box.innerHTML=html+`<p class="stat-note">Counts are groups listed in this atlas. They reflect how much research has been done in each state, not how many groups exist.</p>`;
+}
+
+/* ==== scorecardHTML() — the summary card at the top of a one-state Directory (#colorado). Every
+   number is a button that opens the matching Directory view, through the same links Share writes. ==== */
+function scorecardHTML(st){
+  const f=stateFacts(st), code=st.toLowerCase(), v=VOICE_BY_ID[f.voice];
+  if(!f.n)return "";
+  const tierOrder=["national","regional","state","local"].filter(t=>f.tiers[t]);
+  const btn=(route,text,title)=>`<button type="button" class="sc-link" data-route="${esc(route)}"${title?` title="${esc(title)}"`:""}>${text}</button>`;
+  const swHTML=f.statewide.length
+    ?f.statewide.map(o=>`<button type="button" class="sc-link" data-open-org="${SLUG_OF.get(o)}" title="Open ${esc(o.n)}">${esc(o.n)}${o.a?" ("+esc(o.a)+")":""}</button>`).join(" ")
+    :`<span>No statewide group listed in this atlas.</span>`;
+  const netHTML=f.nets.length
+    ?f.nets.map(x=>btn(`#list?state=${code}&net=${x.net}`,`${esc(x.net)} <i>${x.n}</i>`,`${x.org?x.org.n:x.net}: ${x.n} listed in ${f.name}${x.multi?", part of a network spanning "+NETWORK_STATES[x.net].size+" states":""}`)).join(" ")
+    :`<span>None listed. Every group listed here is independent.</span>`;
+  const tierHTML=tierOrder.map(t=>btn(`#list?state=${code}&tier=${t}`,`${esc(TIER_LABELS[t])} <i>${f.tiers[t]}</i>`,`Show only ${TIER_LABELS[t].toLowerCase()} groups in ${f.name}`)).join(" ");
+  const src=f.source;
+  return `<section class="scorecard" aria-label="${esc(f.name)} scorecard">
+    <div class="sc-head">
+      <h2>${esc(f.name)} <span>in this atlas</span></h2>
+      <button type="button" class="sc-copy" data-copy-hash="${stateHash(st)}" data-copy-what="${esc(f.name)}">Copy link to this state</button>
+    </div>
+    <div class="sc-stats">
+      ${statHTML(f.n,f.n===1?"group listed":"groups listed",stateHash(st),`Show every listed group in ${f.name}`)}
+      ${f.rank?statHTML(ordinal(f.rank),`of ${f.ranked} places (${placesLabel().replace(/^places with a group listed: /,"")}) for groups listed per resident`,"#charts","See every state on the Charts tab"):""}
+      ${f.perM!=null?statHTML(f.perM.toFixed(1),"groups listed per million residents","",`${f.n} groups listed / ${STATE_POPULATION[st].toLocaleString()} residents (${POPULATION_SOURCE})`):""}
+      ${f.pointMap?statHTML(f.mapped,"on the trailhead map","#detail?state="+code,`Open the ${f.name} trailhead map`)
+        :statHTML(f.inNet,"belong to a larger network","","")}
+    </div>
+    <dl class="sc-rows">
+      <dt>Who speaks for the state</dt>
+      <dd><button type="button" class="sc-voice sc-voice-${f.voice}" data-route="#map?mode=voice" title="See every state on the Who speaks for my state map"><span aria-hidden="true">${v.glyph}</span> ${esc(v.label)}</button> ${swHTML}</dd>
+      <dt>Networks with groups here</dt><dd>${netHTML}</dd>
+      <dt>Listed by tier</dt><dd>${tierHTML}</dd>
+      <dt>How this list was built</dt><dd>${esc(src?src.how:LIST_SOURCE_DEFAULT)}${src?` <span class="sc-src">Source: ${esc(src.src)}</span>`:""}</dd>
+    </dl>
+    <p class="sc-note">Counts are groups listed in this atlas. They reflect how much research has been done in each state, not how many groups exist, so a low count or rank says more about coverage than about the riding community. Rank covers the ${PER_MILLION_RANKED.length} places with a listed group (${placesLabel().replace(/^places with a group listed: /,"")}); the ${NATIONAL_COUNT} national or multi-state umbrella groups are not counted toward any state. Population: ${esc(POPULATION_SOURCE)}.</p>
+  </section>`;
+}
+
 /* ==== renderMapJump() — the cartogram icon (masthead on wide screens, counter row on phones); opens the Map tab ====
    Counts come from the full list, not the current filters, so the icon is a stable landmark.
    Re-run from applyTheme() because the tile colors come from the active palette. */
@@ -1919,12 +2158,14 @@ function renderMapJump(){
 function renderList(){
   const list=visible();
   if(openOrg&&!list.includes(ORG_BY_SLUG[openOrg]))openOrg=null;   // its profile can't stay open once filtered out
-  if(!list.length){$("p-list").innerHTML='<p class="empty">No organizations match those filters. Try a broader search.</p>';return}
+  // A one-state Directory (#colorado, a picked state) opens with that state's scorecard.
+  const card=filters.state&&filters.state!=="US"?scorecardHTML(filters.state):"";
+  if(!list.length){$("p-list").innerHTML=card+'<p class="empty">No organizations match those filters. Try a broader search.</p>';return}
   const byState={};
   list.forEach(o=>(byState[o.s]=byState[o.s]||[]).push(o));
   const order=Object.keys(byState).sort((a,b)=>
     a==="US"?-1:b==="US"?1:(STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b));
-  $("p-list").innerHTML=order.map(st=>{
+  $("p-list").innerHTML=card+order.map(st=>{
     const rows=byState[st].sort((a,b)=>{
       const rank={national:0,regional:0,state:0,local:1};
       return (rank[a.tier]-rank[b.tier])||a.n.localeCompare(b.n);
@@ -2091,7 +2332,7 @@ function renderCharts(){
   $("p-charts").innerHTML+=`
     <div class="chart-card">
       <h3>Organizations per million residents</h3>
-      <p class="chart-desc">Same org counts, now weighted by each state's population (2026-projected Census estimates) — orgs per 1,000,000 residents, highest to lowest. <strong>Read this as research-coverage, not advocacy density:</strong> Vermont, Colorado, and Oregon rank highest partly because they're the states the atlas has most thoroughly sourced from a single coalition list, not necessarily because they have proportionally more trail advocacy than everywhere else.</p>
+      <p class="chart-desc">Same org counts, now weighted by each state's population (US Census Bureau, Vintage 2025 estimates for July 1, 2025) — orgs per 1,000,000 residents, highest to lowest. <strong>Read this as research-coverage, not advocacy density:</strong> Vermont, Colorado, and Oregon rank highest partly because they're the states the atlas has most thoroughly sourced from a single coalition list, not necessarily because they have proportionally more trail advocacy than everywhere else.</p>
       <div class="cap-legend">
         <span><i class="tier-top"></i>Top tier (&gt;2/million)</span>
         <span><i class="tier-mid"></i>Mid tier (0.9&ndash;2/million)</span>
@@ -2439,8 +2680,56 @@ function buildCartogramSVG(counts,{cell=52,gap=4,mini=false}={}){
   };
 }
 /* ==== renderMap() — MAP tab: cartogram grid, or hands off to renderPointMap() for CA/CO/VT/OR ==== */
+/* The two Map tab modes, as pressed buttons above the map (data-map-mode, see onClickThrough). */
+function mapModeBar(){
+  return `<div class="map-modes" role="group" aria-label="Shade the map by">
+    <button type="button" data-map-mode="count" aria-pressed="${mapMode==="count"}">Groups listed</button>
+    <button type="button" data-map-mode="voice" aria-pressed="${mapMode==="voice"}">Who speaks for my state</button>
+  </div>`;
+}
+/* One fill per VOICE_LEVELS step, from the active theme's cartogram ramp: the darkest end pushed toward
+   near-black for the first level, the theme's dark end, a mid mix, and the light end for the last.
+   Checked in all three themes: neighbouring steps differ by at least 1.45:1 in luminance contrast, and
+   each tile's label picks dark or white for the better contrast (labelIsDark). */
+function voiceFills(){
+  const {mapFrom,mapTo}=THEME_BY_ID[currentTheme];
+  const steps=[mixHex(mapTo,CARTOGRAM_INK,55),mapTo,mixHex(mapTo,mapFrom,45),mapFrom];
+  return Object.fromEntries(VOICE_LEVELS.map((v,i)=>[v.id,steps[i]||mapFrom]));
+}
+/* The cartogram shaded by who speaks for each state. Uses the full list (it describes states, not the
+   current search), and every tile opens that state's scorecard. */
+function buildVoiceSVG(cell=52,gap=4){
+  const fills=voiceFills();
+  let sq="";
+  Object.entries(GRID).forEach(([st,[c,r]])=>{
+    const f=stateFacts(st), lvl=f.n?f.voice:"thin", v=VOICE_BY_ID[lvl], fill=fills[lvl];
+    const dark=labelIsDark(fill,CARTOGRAM_INK), x=c*(cell+gap), y=r*(cell+gap);
+    const who=f.statewide.length?" ("+f.statewide.map(o=>o.a||o.n).join(", ")+")"
+      :f.voice==="network"?" ("+f.nets.filter(n=>n.multi).map(n=>n.net).join(", ")+")":"";
+    const tip=`${f.name}: ${v.label}${who}. ${f.n} group${f.n===1?"":"s"} listed. Click for the ${f.name} scorecard.`;
+    sq+=`<g class="voice-tile" data-route="${stateHash(st)}"><rect class="state-path voice-${lvl}${st===filters.state?" voice-picked":""}" x="${x}" y="${y}" width="${cell}" height="${cell}"
+        rx="3" fill="${fill}"><title>${esc(tip)}</title></rect>
+      <text class="maplabel${dark?" dark":""}" x="${x+cell/2}" y="${y+cell/2-2}">${st}</text>
+      <text class="maplabel voice-glyph${dark?" dark":""}" x="${x+cell/2}" y="${y+cell/2+14}">${v.glyph}</text></g>`;
+  });
+  const w=12*(cell+gap), hgt=8*(cell+gap);
+  return `<svg viewBox="0 0 ${w} ${hgt}" width="100%" role="img" aria-label="Map: who speaks for each state, as listed in this atlas">
+    <rect x="0" y="0" width="${w}" height="${hgt}" fill="var(--paper)"/>${sq}</svg>`;
+}
+function renderVoiceMap(){
+  const fills=voiceFills();
+  const tally={};STATE_CODES.forEach(c=>{const l=voiceOf(c);tally[l]=(tally[l]||0)+1});
+  const legend=VOICE_LEVELS.map(v=>`<li><span class="voice-key voice-${v.id}" style="background:${fills[v.id]};color:${labelIsDark(fills[v.id],CARTOGRAM_INK)?"var(--ink)":"#fff"}" aria-hidden="true">${v.glyph}</span>
+      <span><b>${esc(v.label)}</b> <i>${tally[v.id]||0}</i><br><small>${esc(v.desc)}</small></span></li>`).join("");
+  const filtered=filters.q.trim()||filters.tier||filters.net;
+  $("p-map").innerHTML=`${mapModeBar()}
+    <p class="map-note">Who speaks for each state, as listed in this atlas. Of the ${STATE_CODES.length} ${placesLabel().replace(/^places with a group listed: /,"places (")}) with a listed group, <strong>${tally.state||0} have a statewide group listed</strong>; the rest have no statewide group listed. Click a state for its scorecard. A state's color shows what this atlas has found so far, not what exists there. The ${NATIONAL_COUNT} national or multi-state umbrella groups (${esc(ORGS.filter(o=>o.s==="US").map(o=>o.a||o.n).join(", "))}) are tied to no one state, so they are not counted here; their chapters are${filtered?". This map ignores the search, tier and network filters":""}.</p>
+    ${buildVoiceSVG()}
+    <ul class="voice-legend">${legend}</ul>`;
+}
 function renderMap(){
   const list=visible();
+  if(mapMode==="voice"){renderVoiceMap();return}
   if(filters.state && POINT_MAP_STATES.includes(filters.state)){
     renderPointMap(list);
     return;
@@ -2448,15 +2737,15 @@ function renderMap(){
   const counts=stateCounts(list);
   const scoped=Object.keys(counts).length>0;
   if(!scoped){
-    $("p-map").innerHTML=list.length
+    $("p-map").innerHTML=mapModeBar()+(list.length
       ?'<p class="empty">These are national/regional organizations that aren\'t tied to a single state, so there\'s nothing to map here. <a href="#" id="map-goto-list">See them in the Directory</a> instead.</p>'
-      :'<p class="empty">No organizations match those filters. Try a broader search.</p>';
+      :'<p class="empty">No organizations match those filters. Try a broader search.</p>');
     const link=document.getElementById("map-goto-list");
     if(link)link.addEventListener("click",e=>{e.preventDefault();switchTab("list");render()});
     return;
   }
   const{svg,max,mapFrom,mapTo}=buildCartogramSVG(counts,{cell:52,gap:4});
-  $("p-map").innerHTML=`
+  $("p-map").innerHTML=`${mapModeBar()}
     <p class="map-note">A grid cartogram — one tile per state, positioned by rough geography, shaded by how many organizations are listed. Click a tile to filter the directory. <strong>California, Colorado, Vermont, and Oregon</strong> have real geocoded locations — click one of those four (bordered tiles) for a trailhead-level point map instead of the grid. Empty tiles are states not yet researched, not states without advocacy groups.</p>
     ${svg}
     <div class="scalebar">None<span class="grad" style="background:linear-gradient(90deg,${mapFrom},${mapTo})"></span>${max} orgs</div>`;
@@ -2487,7 +2776,7 @@ function unpinnedNote(list){
 function renderPointMap(list){
   const pts=list.filter(o=>o.lat!=null&&o.lng!=null);
   if(!pts.length){
-    $("p-map").innerHTML='<p class="empty">No geocoded organizations match those filters in this state. <a href="#" id="map-goto-all">Back to the full US map</a>.</p>';
+    $("p-map").innerHTML=mapModeBar()+'<p class="empty">No geocoded organizations match those filters in this state. <a href="#" id="map-goto-all">Back to the full US map</a>.</p>';
     const link=document.getElementById("map-goto-all");
     if(link)link.addEventListener("click",e=>{e.preventDefault();filters.state="";$("statesel").value="";render()});
     return;
@@ -2503,7 +2792,7 @@ function renderPointMap(list){
     dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+DOT_HIT_PADDING}" fill="transparent"><title>${esc(o.n)}${o.r?" — "+esc(o.r):""}</title></circle>
       <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${TIER_COLORS[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.3"/></g>`;
   });
-  $("p-map").innerHTML=`
+  $("p-map").innerHTML=`${mapModeBar()}
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that group's profile in the Directory. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
@@ -3074,6 +3363,7 @@ function updateTabFade(){
 }
 function render(){
   updateFilterBadge();
+  renderCounts();
   const tab=TABS.find(t=>t.id===activeTab)||TABS.find(t=>t.id===DEFAULT_TAB);
   const fn=window[tab.render];
   if(typeof fn==="function")fn();
@@ -3089,6 +3379,7 @@ function render(){
      #utah  #ut  #new-hampshire       a state: Directory filtered to it (the original links, unchanged)
      #why  #map  #charts ...          a tab
      #map?state=co&tier=local         a tab plus filters: state, tier, net (a network such as SORBA), q (search)
+     #map?mode=voice                  the Map tab's "Who speaks for my state" shading
      #org/headwaters-trails-alliance  one organization: Directory, its state, its profile open
      #detail?state=vt&pin=<org>       Trailhead map for a state, with one group pinned
      #why?miles=12&grant=40&infl=2    Why sliders that differ from the defaults (display only;
@@ -3143,6 +3434,7 @@ function resolveHashRoute(hash){
     const net=(p.get("net")||"").toUpperCase();
     if(NETWORKS.has(net))route.net=net;
     if(p.get("q"))route.q=p.get("q").slice(0,PRINT_QUERY_MAX);
+    if(route.tab==="map"&&(p.get("mode")||"").toLowerCase()==="voice")route.mode="voice";
   }
   return route;
 }
@@ -3174,6 +3466,7 @@ function viewHash(){
   if(filters.tier)p.set("tier",filters.tier);
   if(filters.net)p.set("net",filters.net);
   if(q)p.set("q",q);
+  if(activeTab==="map"&&mapMode==="voice")p.set("mode","voice");
   if(activeTab===DEFAULT_TAB&&!p.toString())return "";
   return out(activeTab);
 }
@@ -3211,6 +3504,7 @@ function applyRoute(route){
   filters.q=route.q||"";filters.state=route.state||"";filters.tier=route.tier||"";filters.net=route.net||"";
   openOrg=null;
   if(route.org){openOrg=route.org;filters.state=ORG_BY_SLUG[route.org].s}
+  if(route.tab==="map")mapMode=route.mode==="voice"?"voice":"count";
   if(route.tab==="detail"){
     if(route.detail)detailState=route.detail;
     detailPin=route.pin&&ORG_BY_SLUG[route.pin].s===detailState?route.pin:null;
@@ -3321,13 +3615,19 @@ async function shareLink(url,what){
      data-goto-state="CO"   Directory for that state        data-net="SORBA"  that network
      data-open-org=<slug>   that group's profile            data-toggle-org   open / close a profile
      data-pin-org=<slug>    that group on the Trailhead map data-copy-org     copy that group's link
-     data-clear="net"       remove one filter chip */
+     data-clear="net"       remove one filter chip
+     data-route="#colorado" any link this page writes (stat strip, scorecards, Who-speaks map tiles)
+     data-copy-hash="#utah" copy a link to that view (data-copy-what names it in the confirmation)
+     data-map-mode="voice"  switch the Map tab's shading */
 function onClickThrough(e){
-  const el=e.target.closest("[data-goto-state],[data-net],[data-open-org],[data-toggle-org],[data-pin-org],[data-copy-org],[data-clear]");
+  const el=e.target.closest("[data-goto-state],[data-net],[data-open-org],[data-toggle-org],[data-pin-org],[data-copy-org],[data-clear],[data-route],[data-copy-hash],[data-map-mode]");
   if(!el)return;
   e.preventDefault();e.stopPropagation();   // inside a Structure <summary>, stops the row toggling too
   const d=el.dataset;
-  if(d.gotoState)gotoState(d.gotoState);
+  if(d.route){const r=resolveHashRoute(d.route);if(r){applyRoute(r);scrollToPanels()}}
+  else if(d.copyHash)shareLink(shareURL(d.copyHash),d.copyWhat||"this view");
+  else if(d.mapMode){mapMode=d.mapMode==="voice"?"voice":"count";render()}
+  else if(d.gotoState)gotoState(d.gotoState);
   else if(d.net)gotoNetwork(d.net);
   else if(d.openOrg&&ORG_BY_SLUG[d.openOrg])openOrgProfile(ORG_BY_SLUG[d.openOrg]);
   else if(d.toggleOrg){toggleOrgProfile(d.toggleOrg);scheduleURLSync()}
@@ -3461,6 +3761,7 @@ function printViewURL(){
   if(filters.state)u.searchParams.set("state",filters.state);
   if(filters.tier)u.searchParams.set("tier",filters.tier);
   if(filters.net)u.searchParams.set("net",filters.net);
+  if(activeTab==="map"&&mapMode==="voice")u.searchParams.set("mode","voice");
   if(activeTab==="why"&&whyBuilt){
     const v=whyValues();
     WHY_INPUTS.forEach(i=>{if(v[i.key]!==i.value)u.searchParams.set("w_"+i.key,v[i.key])});
@@ -3490,6 +3791,7 @@ function applyPrintParams(){
   filters.net=NETWORKS.has((p.get("net")||"").toUpperCase())?p.get("net").toUpperCase():"";
   $("q").value=filters.q;$("statesel").value=filters.state;
   document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===filters.tier));
+  if(activeTab==="map")mapMode=p.get("mode")==="voice"?"voice":"count";
   if(activeTab==="why"&&whyBuilt){
     WHY_INPUTS.forEach(i=>{
       const n=parseFloat(p.get("w_"+i.key));
