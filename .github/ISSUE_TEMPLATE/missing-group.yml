@@ -1,0 +1,57 @@
+name: Know a group we're missing?
+description: Suggest a mountain bike or multi-use trail advocacy nonprofit that is not in the atlas yet.
+title: "Missing group: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! The atlas lists non-profit groups that advocate for, build or look after pedal-powered mountain bike or multi-use trails in the United States. It leaves out motorized (OHV) clubs, high-school racing leagues, youth cycling programs, road or commuter advocacy, and bike shops or other businesses.
+
+        Every suggestion is checked against the group's own website before it is listed. **This page is public.** Please don't post personal email addresses or phone numbers.
+  - type: input
+    id: group
+    attributes:
+      label: Group name
+    validations:
+      required: true
+  - type: input
+    id: state
+    attributes:
+      label: State
+    validations:
+      required: true
+  - type: input
+    id: towns
+    attributes:
+      label: Town(s) or area it works in
+    validations:
+      required: false
+  - type: input
+    id: website
+    attributes:
+      label: Website or main social media page
+      description: The group's own site is best. A Facebook or Instagram page is fine if that is all it has.
+      placeholder: https://
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else we should know?
+      description: For example the trails it builds or maintains, its parent network (IMBA chapter, SORBA, a state coalition), or its nonprofit status.
+    validations:
+      required: false
+  - type: input
+    id: search
+    attributes:
+      label: What you searched for in the atlas
+      description: Filled in automatically when you come from the atlas. Leave as is.
+    validations:
+      required: false
+  - type: input
+    id: link
+    attributes:
+      label: Atlas link
+      description: Filled in automatically when you come from the atlas. Leave as is.
+    validations:
+      required: false

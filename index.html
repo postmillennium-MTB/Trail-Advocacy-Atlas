@@ -364,6 +364,7 @@ button.parent:hover,button.parent:focus-visible{color:#fff;background:var(--clay
 .org-more[aria-expanded=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .org-profile{flex:1 0 calc(100% - 21px);margin:4px 0 4px 21px;padding:12px 14px;border-left:3px solid var(--clay);background:#fff;font-size:14px}
 .org-profile p{margin:0 0 8px}
+.org-profile .op-note{margin:6px 0 0;font-size:12px;color:var(--slate)}
 .org-profile .op-meta{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .org-profile .op-chain button,.op-link{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;
   text-decoration:none;border-bottom:1.5px solid var(--clay)}
@@ -378,6 +379,12 @@ ul.orgs li.org-flash{animation:orgflash 2.4s ease-out}
 .pie-note button{border:0;background:none;padding:0;font:inherit;color:var(--clay);font-weight:600;cursor:pointer;border-bottom:1.5px solid var(--clay)}
 button.cap-row{width:100%;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
 button.cap-row:hover,button.cap-row:focus-visible{background:#fff}
+/* Touch screens: the small badge buttons (Details, network badges, Structure counts, per-million rows)
+   grow to a finger-sized target. Desktop keeps the compact look. */
+@media (pointer:coarse){
+  .org-more,button.parent,button.tree-count,button.tree-span{min-height:34px;min-width:44px;padding:6px 10px}
+  button.cap-row{min-height:34px}
+}
 button.tree-count,button.tree-span{background:none;cursor:pointer}
 button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,button.tree-span:focus-visible{color:#fff;background:var(--clay);border-color:var(--clay)}
 .detail-card-foot button{font:600 14px inherit;color:var(--clay);background:none;border:0;padding:0;cursor:pointer;border-bottom:1.5px solid var(--clay)}
@@ -430,7 +437,11 @@ button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,b
 .cap-legend i.tier-top{background:var(--clay)}
 .cap-legend i.tier-mid{background:var(--dirt)}
 .cap-legend i.tier-low{background:var(--loam)}
-.cap-list{max-height:640px;overflow-y:auto}
+/* Long lists show their first SHOW_ALL_FIRST rows, then a "Show all" button (no scroll-inside-a-box). */
+.is-clipped>.cap-row:nth-child(n+16),.is-clipped>li:nth-child(n+16){display:none}
+.show-all{display:block;margin:10px auto 0;font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+  padding:11px 18px;border:1.5px solid var(--ink);background:none;color:var(--ink);border-radius:2px;cursor:pointer;min-height:44px}
+.show-all:hover,.show-all:focus-visible{background:var(--ink);color:var(--paper)}
 .cap-row{display:grid;grid-template-columns:44px 1fr 120px;align-items:center;gap:10px;padding:3px 0}
 .cap-code{font:600 12px ui-monospace,Menlo,monospace;color:var(--ink);text-align:right}
 .cap-track{position:relative;height:13px;background:var(--paper);border-radius:2px;overflow:hidden}
@@ -459,7 +470,6 @@ ul.tree-children{margin-left:16px;padding-left:14px;border-left:1.5px solid var(
 .tree-count,.tree-span{margin-left:auto;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;
   text-transform:uppercase;color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
 .tree-span{margin-left:8px}
-.tree-standalone{max-height:520px;overflow-y:auto}
 .has-map{color:var(--clay);font-size:9px;margin-left:6px;vertical-align:2px}
 
 /* ---- near me ---- */
@@ -486,6 +496,23 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .near-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
 .near-name a:hover{background:var(--clay);color:#fff}
 .near-meta{display:block;color:var(--slate);font-size:13px;margin-top:2px}
+.near-answer{margin:6px 0 18px}
+.near-answer h3{font-size:17px;margin:0 0 4px}
+.near-answer .near-why{color:var(--slate);font-size:14px;margin:0 0 8px;max-width:64ch}
+.near-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 0}
+.near-pick{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 0}
+.near-pick select{font:15px inherit;padding:9px 10px;border:1.5px solid var(--rule);background:#fff;color:var(--ink);border-radius:2px;min-height:44px}
+.near-name button{border:0;background:none;padding:0;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;
+  border-bottom:1.5px solid var(--clay)}
+.near-name button:hover,.near-name button:focus-visible{background:var(--clay);color:#fff}
+.near-tag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+  border:1px solid var(--rule);padding:1px 6px;border-radius:2px;white-space:nowrap}
+/* "Know a group we're missing?" and "Suggest a correction" (see FEEDBACK in the logic) */
+.feedback-prompt{font-size:14px;color:var(--slate);margin:16px 0 0;padding:12px 14px;border:1.5px dashed var(--rule);border-radius:2px;text-align:left}
+.empty .feedback-prompt{max-width:60ch;margin:16px auto 0}
+.feedback-prompt a{color:var(--clay);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.feedback-prompt a:hover,.feedback-prompt a:focus-visible{background:var(--clay);color:#fff}
+.feedback-prompt small{display:block;margin-top:4px;font-size:12px}
 
 /* ---- map ---- */
 .map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
@@ -611,6 +638,11 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
 }
 .why-slider input[type=range]:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
+@media (pointer:coarse){   /* finger-sized slider thumbs on touch screens */
+  .why-slider input[type=range]{height:6px;margin-top:14px}
+  .why-slider input[type=range]::-webkit-slider-thumb{width:26px;height:26px}
+  .why-slider input[type=range]::-moz-range-thumb{width:26px;height:26px}
+}
 .why-hint{margin:5px 0 0;font-size:12px;line-height:1.45;color:var(--slate)}
 /* Inline hover/focus info icon, e.g. next to "Maintenance / mile / year" */
 .info-ico{position:relative;display:inline-flex;vertical-align:-3px;margin-left:4px;color:var(--slate);cursor:help}
@@ -815,7 +847,7 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
-  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions,.map-modes,.sc-copy,
+  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions,.op-note,.map-modes,.sc-copy,
   .why-personal,.why-pin,.why-live,.why-partner-actions,#why-pick-state{display:none!important}
   body.why-pin-on{padding-bottom:0}
   /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
@@ -844,10 +876,12 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .legend{columns:3;column-gap:22px;font-size:10pt}
   .legend li{break-inside:avoid;page-break-inside:avoid}
 
-  /* ---- scroll boxes become full-length: overflow clips on paper, it does not scroll.
-     Without this the per-capita chart lost 12 of 52 rows and the Structure tab kept
-     520px of 3,591px. ---- */
-  .cap-list,.tree-standalone{max-height:none!important;overflow:visible!important}
+  /* ---- "Show all" lists print in full: paper gets every row whether or not the
+     button was pressed (the per-capita chart has 52 rows, Structure's independents 200+). ---- */
+  .is-clipped>.cap-row,.is-clipped>li{display:revert!important}
+  .is-clipped>.cap-row{display:grid!important}
+  .is-clipped>li.tree-leaf{display:flex!important}
+  .show-all,.feedback-prompt,.near-pick,.near-actions{display:none!important}
 
   /* ---- keep things together across page breaks ---- */
   .stategroup h2,.tree-h,.chart-card h3,.why-group h4,.why-caveats h4{break-after:avoid;page-break-after:avoid}
@@ -1876,6 +1910,27 @@ const VOICE_LEVELS=[
 
 /* ================== END OF DATA — everything below is logic ================== */
 
+/* ==== FEEDBACK — where "Suggest a correction" and "Know a group we're missing?" send visitors ====
+   Today every such link opens a NEW GITHUB ISSUE on the atlas repo, pre-filled with the group (or
+   the search and state) through the two forms in .github/ISSUE_TEMPLATE/ (correction.yml and
+   missing-group.yml). The sender needs a free GitHub account. Nothing is sent by this page itself.
+
+   TO SWITCH TO A GOOGLE FORM (or any other form):
+     1. Set kind to "form" and url to the form's public link, e.g.
+        "https://docs.google.com/forms/d/e/XXXXXXXX/viewform".
+     2. Change note to match, e.g. "Opens a short Google Form. No account needed."
+     3. Optional pre-fill: in Google Forms, "Get pre-filled link", type a word in each question,
+        copy the link, and copy each "entry.123456789" number into formFields below. A field left
+        "" is simply not pre-filled. Questions worth having: kind (correction or missing group),
+        group, state, what was searched, atlas link.
+   NEVER put an email address here (or anywhere in this page): the page is public. ==== */
+const FEEDBACK={
+  kind:"github",
+  url:"https://github.com/postmillennium-MTB/Trail-Advocacy-Atlas/issues/new",
+  note:"Opens a pre-filled form on GitHub (free account needed). Every suggestion is checked against the group's own site before it is listed.",
+  formFields:{kind:"",group:"",state:"",search:"",link:""}
+};
+
 /* ---------- tuning constants (named so they're findable, not buried in functions) ---------- */
 const MIN_PROJECTION_SPAN=0.02;   // floor on lat/lng span, prevents divide-by-zero on a single point
 const DOT_R_LOCAL=5;              // radius of a "local" tier dot on the point maps
@@ -1889,7 +1944,10 @@ const THIN_COVERAGE_MAX=2;        // a state with this many listed groups or few
 const PER_CAPITA_MID=0.9;         // ...and above this = "mid tier"; below = "lower tier"
 const TITLE_ROTATE_MS=6000;       // how long each masthead headline shows before swapping
 const TITLE_FADE_MS=500;          // fade duration for that swap (must match the CSS transition)
-const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists
+const NEAR_ME_RESULTS=12;         // how many nearest orgs the "Near me" tab lists (also the cap on a state's list there)
+const NEAR_TOWN_MIN=3;            // shortest typed text Near me will look for as a town name
+const SHOW_ALL_FIRST=15;          // long lists (per-million chart, Structure's independents) show this many,
+                                  // then a "Show all" button; the CSS rule .is-clipped ...:nth-child(n+16) must match
 const EARTH_RADIUS_MILES=3958.8;  // used by the haversine distance formula
 
 /* ---------- STATE_SLUGS — state-name/code lookup for URL-hash routing ----------
@@ -2221,7 +2279,7 @@ function renderList(){
   if(openOrg&&!list.includes(ORG_BY_SLUG[openOrg]))openOrg=null;   // its profile can't stay open once filtered out
   // A one-state Directory (#colorado, a picked state) opens with that state's scorecard.
   const card=filters.state&&filters.state!=="US"?scorecardHTML(filters.state):"";
-  if(!list.length){$("p-list").innerHTML=card+'<p class="empty">No organizations match those filters. Try a broader search.</p>';return}
+  if(!list.length){$("p-list").innerHTML=card+noMatchHTML();return}
   const byState={};
   list.forEach(o=>(byState[o.s]=byState[o.s]||[]).push(o));
   const order=Object.keys(byState).sort((a,b)=>
@@ -2246,7 +2304,7 @@ function renderList(){
     return `<section class="stategroup">
       <h2>${esc(STATE_NAMES[st]||st)}<span>${byState[st].length} listed</span></h2>
       <ul class="orgs">${rows}</ul></section>`;
-  }).join("");
+  }).join("")+missingPromptHTML(filters.q.trim(),filters.state,true);
 }
 
 /* ==== orgProfileHTML() — the short profile a Directory row opens into. Uses only fields already
@@ -2268,9 +2326,53 @@ function orgProfileHTML(o){
       ${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">Visit ${esc(host)} &rarr;</a>`:'<span class="noweb">No website on file</span>'}
       ${mapped?`<button type="button" data-pin-org="${slug}">See on the trailhead map</button>`:""}
       <button type="button" data-copy-org="${slug}">Copy link to this group</button>
+      ${feedbackLink({kind:"correction",group:o.n,state:o.s,link:shareURL("#org/"+slug)},"Suggest a correction")}
     </div>
+    <p class="op-note">Suggest a correction: ${esc(FEEDBACK.note)}</p>
   </div>`;
 }
+/* ==== FEEDBACK LINKS — "Suggest a correction" and "Know a group we're missing?" ====
+   feedbackURL() builds the link from the FEEDBACK setting at the top of the logic, so moving from
+   GitHub issues to a form is a change there only. info = {kind:"correction"|"missing", group, state
+   (a code), search, link (the atlas link to what the visitor was looking at)}. */
+function feedbackURL(info){
+  const p=new URLSearchParams();
+  const st=info.state&&info.state!=="US"?info.state:"";
+  const stName=st?(STATE_NAMES[st]||st):"";
+  if(FEEDBACK.kind==="github"){
+    // GitHub fills an issue form's fields from ?<field id>=..., using the ids in .github/ISSUE_TEMPLATE/
+    if(info.kind==="correction"){
+      p.set("template","correction.yml");
+      p.set("title","Correction: "+info.group+(stName?" ("+stName+")":""));
+      p.set("group",info.group||"");
+    }else{
+      p.set("template","missing-group.yml");
+      p.set("title","Missing group"+(stName?" in "+stName:"")+(info.search?": "+info.search:""));
+      if(info.search)p.set("search",info.search);
+    }
+    if(stName)p.set("state",stName);
+    if(info.link)p.set("link",info.link);
+  }else{
+    const f=FEEDBACK.formFields||{};
+    const put=(k,v)=>{if(f[k]&&v)p.set(f[k],v)};
+    put("kind",info.kind==="correction"?"Correction":"Missing group");
+    put("group",info.group);put("state",stName);put("search",info.search);put("link",info.link);
+    if(p.toString())p.set("usp","pp_url");   // Google Forms' own flag for a pre-filled link
+  }
+  const qs=p.toString();
+  return FEEDBACK.url+(qs?(FEEDBACK.url.includes("?")?"&":"?")+qs:"");
+}
+const feedbackLink=(info,text)=>`<a class="fb-link" href="${esc(feedbackURL(info))}" target="_blank" rel="noopener">${text}</a>`;
+/* The prompt under an empty result, a Near me miss, and the foot of the Directory (foot=true). */
+function missingPromptHTML(search,state,foot){
+  const st=state&&state!=="US"?state:"";
+  const where=st?" in "+esc(STATE_NAMES[st]):"";
+  const link=feedbackLink({kind:"missing",state:st,search,link:shareURL()},"Tell us about it");
+  return `<p class="feedback-prompt">Know a group we're missing${where}? ${link}.${foot?" Spotted a mistake in a listing? Open its Details and choose Suggest a correction.":""}<small>${esc(FEEDBACK.note)}</small></p>`;
+}
+/* The empty result every filtered tab shows when nothing matches. */
+const noMatchHTML=()=>`<div class="empty"><p>No organizations match those filters. Try a broader search.</p>${missingPromptHTML(filters.q.trim(),filters.state)}</div>`;
+
 /* Open or close one Directory profile in place (one open at a time), without redrawing the list. */
 function toggleOrgProfile(slug){
   const prev=openOrg;
@@ -2297,6 +2399,28 @@ function revealOrg(slug){
   setTimeout(()=>li.classList.remove("org-flash"),ORG_FLASH_MS);
 }
 
+/* ==== "Show all" — the per-million chart and Structure's independents list show their first
+   SHOW_ALL_FIRST rows, then a button that reveals the rest in place (no scroll box to trap a swipe).
+   Once opened a list stays open until the page is reloaded. ==== */
+const showAll={cap:false,tree:false};
+const clipClass=(key,total)=>!showAll[key]&&total>SHOW_ALL_FIRST?" is-clipped":"";
+function showAllHTML(key,total,what){
+  if(showAll[key]||total<=SHOW_ALL_FIRST)return "";
+  return `<button type="button" class="show-all" data-show-all="${key}">Show all ${total} ${what}</button>`;
+}
+function revealAll(btn){
+  const key=btn.dataset.showAll, list=btn.previousElementSibling;
+  showAll[key]=true;
+  if(list){
+    list.classList.remove("is-clipped");
+    // keyboard users land on the first newly shown row instead of losing focus with the button
+    const next=list.children[SHOW_ALL_FIRST];
+    const target=next&&(next.matches("button,a")?next:next.querySelector("a,button,summary"));
+    if(target)target.focus({preventScroll:true});
+  }
+  btn.remove();
+}
+
 /* ---------- charts tab ---------- */
 /* ==== renderCharts() — CHARTS tab: orange area chart + line chart, both built from stateCounts() ==== */
 function renderCharts(){
@@ -2304,7 +2428,7 @@ function renderCharts(){
   const counts=stateCounts(list);
   const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([s,n])=>({s,n,name:STATE_NAMES[s]||s}));
   if(!rows.length){
-    $("p-charts").innerHTML='<p class="empty">No organizations match those filters.</p>';
+    $("p-charts").innerHTML=noMatchHTML();
     return;
   }
   const total=rows.reduce((s,r)=>s+r.n,0);
@@ -2399,7 +2523,7 @@ function renderCharts(){
         <span><i class="tier-mid"></i>Mid tier (0.9&ndash;2/million)</span>
         <span><i class="tier-low"></i>Lower tier (&lt;0.9/million)</span>
       </div>
-      <div class="cap-list">${capBars}</div>
+      <div class="cap-list${clipClass("cap",capRows.length)}">${capBars}</div>${showAllHTML("cap",capRows.length,"states")}
     </div>`;
   wireChartHover("area", rows, i=>`${rows[i].name}: ${rows[i].n} org${rows[i].n===1?"":"s"}`, xAt, W, H, i=>gotoState(rows[i].s));
   wireChartHover("line", cumRows, i=>`Top ${i+1} states: ${cumRows[i].cumPct.toFixed(1)}% of orgs (through ${cumRows[i].name})`, xAt, W, H, i=>gotoState(cumRows[i].s));
@@ -2475,7 +2599,7 @@ function renderPie(){
   if(!entries.length){
     $("p-pie").innerHTML=list.length
       ?'<p class="empty">These are national/regional organizations that aren\'t tied to a single state, so there\'s nothing to chart here. <a href="#" id="pie-goto-list">See them in the Directory</a> instead.</p>'
-      :'<p class="empty">No organizations match those filters. Try a broader search.</p>';
+      :noMatchHTML();
     const link=document.getElementById("pie-goto-list");
     if(link)link.addEventListener("click",e=>{e.preventDefault();switchTab("list");render()});
     return;
@@ -2535,7 +2659,7 @@ function renderPie(){
 /* ==== renderTree() — STRUCTURE tab: recursive parent/chapter hierarchy from the `p` field ==== */
 function renderTree(){
   const list=visible();
-  if(!list.length){$("p-tree").innerHTML='<p class="empty">No organizations match those filters.</p>';return}
+  if(!list.length){$("p-tree").innerHTML=noMatchHTML();return}
   // index children by parent abbreviation
   /* Resolve each child to a SPECIFIC parent object, not just an abbreviation string.
      Abbreviations collide across states (MMBA = Moab UT and Michigan MI), so prefer a
@@ -2616,72 +2740,224 @@ function renderTree(){
         :`<span class="tree-span">${span}</span></summary>`);
     }).join("")}</ul>
     <h3 class="tree-h">Independent organizations <span class="tree-h-note">(${standalone.length} with no parent body listed)</span></h3>
-    <ul class="tree-root tree-standalone">${standalone.map(o=>nodeHTML(o,0)).join("")}</ul>`;
+    <ul class="tree-root tree-standalone${clipClass("tree",standalone.length)}">${standalone.map(o=>nodeHTML(o,0)).join("")}</ul>${showAllHTML("tree",standalone.length,"independent organizations")}`;
 }
 
 /* ---------- near me ---------- */
-/* ==== renderNear() — NEAR ME tab: geolocation or town search against the geocoded orgs ==== */
-let nearAnchor=null; // {lat,lng,label}
+/* ==== NEAR ME tab =====================================================================
+   Two kinds of answer, and the page always says which one it is giving:
+   · DISTANCE, in the four pinned states (POINT_MAP_STATES): from the browser's location, or from
+     the map pin of a group whose listing names the typed town, the pinned groups ranked by miles.
+   · STATE-LEVEL, everywhere else: the groups whose name, towns (c) or description (r) name the
+     typed town, then the groups listed in the typed or picked state, with that state's scorecard
+     one tap away. Only words already in the data are matched; no town is given coordinates and
+     nothing is looked up from an outside service. Town-level pins outside the four states are a
+     research job for later (see README).
+   The typed text and a picked state go into the link (#near?q=austin, #near?state=tx). The
+   browser's location never does. ==== */
+let nearAnchor=null;            // distance answer from the browser's location: {lat,lng,label}
+let nearGeoOutside=null;        // the browser's location when it is outside the four pinned states
+let nearQuery={q:"",state:""};  // typed text, or a state picked from the list
 function haversineMiles(lat1,lng1,lat2,lng2){
   const R=EARTH_RADIUS_MILES, toRad=d=>d*Math.PI/180;
   const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
   const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-function renderNear(){
-  const geo=ORGS.filter(o=>o.lat!=null&&o.lng!=null);
-  const covered=POINT_MAP_STATES.map(s=>STATE_NAMES[s]).join(", ");
-  let resultHTML="";
-  if(nearAnchor){
-    const ranked=geo.map(o=>({...o,dist:haversineMiles(nearAnchor.lat,nearAnchor.lng,o.lat,o.lng)}))
-      .sort((a,b)=>a.dist-b.dist).slice(0,NEAR_ME_RESULTS);
-      resultHTML=`
-      <div class="near-anchor">Measuring from <strong>${esc(nearAnchor.label)}</strong>
-        <button type="button" id="near-clear" class="near-clear">clear</button></div>
-      <ul class="near-list">${ranked.map(o=>`
+/* Is a point inside one of the hand-simplified STATE_OUTLINES? (ray casting). The outlines are
+   rough, so a location within a few miles of a border may be read as outside; the visitor is then
+   asked for the state and can still rank the mapped groups by distance. */
+function pointInOutline(lat,lng,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const [yi,xi]=poly[i],[yj,xj]=poly[j];
+    if((yi>lat)!==(yj>lat)&&lng<(xj-xi)*(lat-yi)/(yj-yi)+xi)inside=!inside;
+  }
+  return inside;
+}
+const pinnedStateAt=(lat,lng)=>POINT_MAP_STATES.find(st=>STATE_OUTLINES[st]&&pointInOutline(lat,lng,STATE_OUTLINES[st]))||"";
+/* Words that name a state: "texas", "tx", "new hampshire", "washington dc". */
+const nearNorm=t=>String(t||"").toLowerCase().replace(/[.]/g,"").replace(/\s+/g," ").trim();
+const NEAR_STATE_WORDS={};
+Object.keys(STATE_NAMES).filter(c=>c!=="US").forEach(c=>{NEAR_STATE_WORDS[c.toLowerCase()]=c;NEAR_STATE_WORDS[nearNorm(STATE_NAMES[c])]=c});
+if(STATE_NAMES.DC)NEAR_STATE_WORDS["district of columbia"]="DC";
+const NEAR_STATE_KEYS=Object.keys(NEAR_STATE_WORDS).sort((a,b)=>b.length-a.length);   // longest first
+/* "Austin, TX" / "Austin Texas" / "Austin" / "Texas" -> {town, state} */
+function nearParse(raw){
+  const t=nearNorm(raw);
+  if(NEAR_STATE_WORDS[t])return {town:"",state:NEAR_STATE_WORDS[t]};
+  for(const k of NEAR_STATE_KEYS){
+    if(t.length>k.length+1&&(t.endsWith(" "+k)||t.endsWith(","+k))){
+      const town=t.slice(0,t.length-k.length).replace(/[,\s]+$/,"");
+      if(town)return {town,state:NEAR_STATE_WORDS[k]};
+    }
+  }
+  return {town:t,state:""};
+}
+/* Listings whose name, towns or description name the town as a whole word or phrase. */
+function nearTownHits(town,state){
+  if(town.length<NEAR_TOWN_MIN)return [];
+  const re=new RegExp("(^|[^a-z0-9])"+town.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|[^a-z0-9])","i");
+  return ORGS.filter(o=>(!state||o.s===state)&&re.test((o.c||"")+" | "+(o.r||"")+" | "+o.n));
+}
+function nearLookup(raw){
+  const whole=nearNorm(raw);
+  let {town,state}=nearParse(raw);
+  if(!town)return {town,state,hits:[]};
+  let hits=nearTownHits(town,state);
+  // "Mount Washington" is a town, not "Mount" in Washington state: retry the whole text as a town
+  if(!hits.length&&state){const h=nearTownHits(whole,"");if(h.length){town=whole;state="";hits=h}}
+  return {town,state,hits};
+}
+const titleCase=t=>t.replace(/(^|[\s-])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+const tierRank=o=>({national:0,regional:1,state:2,local:3})[o.tier]??4;
+/* One result row. dist (miles) only on a distance answer. */
+function nearRowHTML(o,dist){
+  const slug=SLUG_OF.get(o);
+  return `
         <li>
-          <span class="near-dist">${o.dist<1?"&lt;1":Math.round(o.dist)}<small>mi</small></span>
+          ${dist!=null?`<span class="near-dist">${dist<1?"&lt;1":Math.round(dist)}<small>mi</small></span>`:""}
           <span class="near-main">
             <span class="near-name"><span class="tier-dot tier-${o.tier}"></span>${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">${esc(o.n)}</a>`:esc(o.n)}</span>
             <span class="near-meta">${esc(STATE_NAMES[o.s]||o.s)} &middot; ${TIER_LABELS[o.tier]||o.tier}${o.r?" &middot; "+esc(o.r):""}</span>
           </span>
-        </li>`).join("")}</ul>`;
+          <button type="button" class="org-more" data-open-org="${slug}" title="Open ${esc(o.n)} in the Directory">Details</button>
+        </li>`;
+}
+const nearRouteBtn=(route,text)=>`<button type="button" class="near-btn near-btn-alt" data-route="${esc(route)}">${text}</button>`;
+/* The pick-your-state list (every place with a listed group, with its count). */
+function nearPickerHTML(label){
+  const counts=stateCounts(ORGS);
+  const opts=STATE_CODES.slice().sort((a,b)=>STATE_NAMES[a].localeCompare(STATE_NAMES[b]))
+    .map(c=>`<option value="${c}"${c===nearQuery.state?" selected":""}>${esc(STATE_NAMES[c])} (${counts[c]||0})</option>`).join("");
+  return `<div class="near-pick"><label for="near-state">${label}</label>
+    <select id="near-state"><option value="">Pick a state</option>${opts}</select></div>`;
+}
+const PINNED_LIST=()=>POINT_MAP_STATES.map(s=>STATE_NAMES[s]).join(", ").replace(/, ([^,]*)$/," and $1");
+/* Distance ranking of the pinned groups from a point. */
+function nearDistanceHTML(lat,lng,label,sub){
+  const geo=ORGS.filter(o=>o.lat!=null&&o.lng!=null);
+  const ranked=geo.map(o=>({o,d:haversineMiles(lat,lng,o.lat,o.lng)})).sort((a,b)=>a.d-b.d).slice(0,NEAR_ME_RESULTS);
+  return `
+      <div class="near-anchor">Measuring from <strong>${esc(label)}</strong>${sub?` <span>(${sub})</span>`:""}
+        <button type="button" id="near-clear" class="near-clear">clear</button></div>
+      <ul class="near-list">${ranked.map(x=>nearRowHTML(x.o,x.d)).join("")}</ul>`;
+}
+/* The groups listed in one state: statewide voices first, then by name. */
+function nearStateHTML(st,lead){
+  const all=ORGS.filter(o=>o.s===st).sort((a,b)=>tierRank(a)-tierRank(b)||a.n.localeCompare(b.n));
+  const name=STATE_NAMES[st], pinned=POINT_MAP_STATES.includes(st);
+  const shown=all.slice(0,NEAR_ME_RESULTS);
+  return `<section class="near-answer" aria-label="Groups listed in ${esc(name)}">
+      ${lead||""}
+      <h3 tabindex="-1" class="near-h">${all.length} group${all.length===1?"":"s"} listed in ${esc(name)}</h3>
+      <p class="near-why">${pinned
+        ?`Type a town in ${esc(name)} above to rank its groups by distance, or open the trailhead map.`
+        :`Distance ranking is only available in ${PINNED_LIST()}, where groups have map pins. For ${esc(name)} the atlas can show which groups are listed, not which is closest. Statewide groups come first.`}</p>
+      <ul class="near-list">${shown.map(o=>nearRowHTML(o)).join("")}</ul>
+      <div class="near-actions">
+        ${nearRouteBtn(stateHash(st),all.length>shown.length?`See all ${all.length} and the ${esc(name)} scorecard`:`Open the ${esc(name)} scorecard`)}
+        ${pinned?nearRouteBtn("#detail?state="+st.toLowerCase(),`Open the ${esc(name)} trailhead map`):""}
+      </div>
+      ${missingPromptHTML(nearQuery.q,st)}
+    </section>`;
+}
+/* The answer to a typed town or state. */
+function nearAnswerHTML(q){
+  const L=nearLookup(q);
+  const town=titleCase(L.town);
+  if(!L.town&&L.state)return nearStateHTML(L.state);
+  const anchor=L.hits.find(o=>o.lat!=null&&o.lng!=null&&POINT_MAP_STATES.includes(o.s));
+  if(anchor){
+    const others=L.hits.filter(o=>!POINT_MAP_STATES.includes(o.s));
+    return nearDistanceHTML(anchor.lat,anchor.lng,town,`the map pin of ${esc(anchor.n)}, ${esc(STATE_NAMES[anchor.s])}`)+
+      (others.length?`<section class="near-answer"><h3>Also named &ldquo;${esc(town)}&rdquo; outside the mapped states</h3>
+        <ul class="near-list">${others.slice(0,NEAR_ME_RESULTS).map(o=>nearRowHTML(o)).join("")}</ul></section>`:"");
   }
+  if(L.hits.length){
+    const states=[...new Set(L.hits.map(o=>o.s))].filter(s=>s!=="US");
+    const one=states.length===1?states[0]:"";
+    return `<section class="near-answer">
+      <h3 tabindex="-1" class="near-h">${L.hits.length} listing${L.hits.length===1?" names":"s name"} &ldquo;${esc(town)}&rdquo;</h3>
+      <p class="near-why">Matched against each group's name, towns and description. Distance ranking is only available in ${PINNED_LIST()}, where groups have map pins, so these are not ordered by distance.</p>
+      <ul class="near-list">${L.hits.slice(0,NEAR_ME_RESULTS).map(o=>nearRowHTML(o)).join("")}</ul>
+      ${L.hits.length>NEAR_ME_RESULTS?`<p class="near-why">Showing ${NEAR_ME_RESULTS} of ${L.hits.length}. Try a more specific town name.</p>`:""}
+      <div class="near-actions">${states.map(s=>{const n=ORGS.filter(o=>o.s===s).length;
+        return nearRouteBtn(stateHash(s),`All ${n} group${n===1?"":"s"} listed in ${esc(STATE_NAMES[s])}`)}).join("")}</div>
+      ${missingPromptHTML(nearQuery.q,one)}
+    </section>`;
+  }
+  if(L.state){
+    const lead=`<p class="near-why"><strong>No listing in ${esc(STATE_NAMES[L.state])} names ${esc(town)}.</strong> Here is everything listed in ${esc(STATE_NAMES[L.state])} instead.</p>`;
+    return nearStateHTML(L.state,lead);
+  }
+  return `<section class="near-answer">
+      <h3 tabindex="-1" class="near-h">Nothing in the atlas names &ldquo;${esc(q.trim())}&rdquo;</h3>
+      <p class="near-why">${L.town.length<NEAR_TOWN_MIN?`Type at least ${NEAR_TOWN_MIN} letters of a town, or a state.`:"No group's name, towns or description mention that place, and it isn't a state name."} Pick your state to see the groups listed there.</p>
+      ${nearPickerHTML("Your state")}
+      ${missingPromptHTML(q.trim(),"")}
+    </section>`;
+}
+function renderNear(){
+  const geoN=ORGS.filter(o=>o.lat!=null&&o.lng!=null).length;
+  let resultHTML="";
+  if(nearAnchor)resultHTML=nearDistanceHTML(nearAnchor.lat,nearAnchor.lng,nearAnchor.label);
+  else if(nearGeoOutside)resultHTML=`<section class="near-answer">
+      <h3 tabindex="-1" class="near-h">You look to be outside ${PINNED_LIST()}</h3>
+      <p class="near-why">Those are the four states where groups have map pins. This page can't tell which other state you are in without sending your location to an outside service, which it does not do. Pick your state to see the groups listed there.</p>
+      ${nearPickerHTML("Your state")}
+      <div class="near-actions"><button type="button" id="near-anyway" class="near-btn near-btn-alt">Rank the mapped groups by distance anyway</button></div>
+    </section>`;
+  else if(nearQuery.q)resultHTML=nearAnswerHTML(nearQuery.q);
+  else if(nearQuery.state)resultHTML=nearStateHTML(nearQuery.state);
+  else resultHTML=nearPickerHTML("Or pick a state");
   $("p-near").innerHTML=`
-    <p class="map-note"><strong>Coverage note:</strong> this searches the ${geo.length} organizations that have precise coordinates — currently ${covered} only. If you're outside those four states you'll get a technically-correct but useless answer (the nearest org, hundreds of miles away). Everything else in the atlas is still findable through the Directory and search.</p>
+    <p class="map-note"><strong>How this works:</strong> in ${PINNED_LIST()}, ${geoN} groups have map pins, so Near me ranks them by distance from you or from a town you type. Everywhere else it lists the groups whose listing names your town, and the groups listed in your state, but it can't say which is closest.</p>
     <div class="near-controls">
       <button type="button" id="near-geo" class="near-btn">Use my location</button>
       <span class="near-or">or</span>
-      <input type="search" id="near-town" placeholder="Type a town — e.g. Durango, Truckee, Stowe" aria-label="Search by town name">
+      <input type="search" id="near-town" placeholder="Type a town or state, e.g. Durango, Austin TX, Ohio" aria-label="Search by town or state" value="${esc(nearQuery.q)}">
       <button type="button" id="near-town-go" class="near-btn near-btn-alt">Search</button>
     </div>
-    <div id="near-status" class="near-status"></div>
+    <div id="near-status" class="near-status" role="status"></div>
     ${resultHTML}`;
 
   const status=$("near-status");
+  const show=()=>{render();const h=document.querySelector("#p-near .near-h");if(h)h.focus({preventScroll:true})};
   $("near-geo").addEventListener("click",()=>{
-    if(!navigator.geolocation){status.textContent="This browser doesn't support location lookup — try the town search instead.";return}
+    if(!navigator.geolocation){status.textContent="This browser doesn't support location lookup. Type a town or state instead.";return}
     status.textContent="Asking your browser for your location…";
     navigator.geolocation.getCurrentPosition(
-      pos=>{ nearAnchor={lat:pos.coords.latitude,lng:pos.coords.longitude,label:"your current location"}; renderNear(); },
+      pos=>{
+        const lat=pos.coords.latitude,lng=pos.coords.longitude;
+        nearQuery={q:"",state:""};
+        if(pinnedStateAt(lat,lng)){nearAnchor={lat,lng,label:"your current location"};nearGeoOutside=null}
+        else{nearAnchor=null;nearGeoOutside={lat,lng}}
+        show();
+      },
       err=>{ status.textContent = err.code===1
-        ? "Location permission was declined — no problem, use the town search instead."
-        : "Couldn't get your location. Try the town search instead."; }
+        ? "Location permission was declined. No problem: type a town or state instead."
+        : "Couldn't get your location. Type a town or state instead."; }
     );
   });
   function townSearch(){
-    const q=$("near-town").value.trim().toLowerCase();
-    if(!q){status.textContent="Type a town name first.";return}
-    // match against city tags and region text of geocoded orgs
-    const hit=geo.find(o=>((o.c||"")+" "+(o.r||"")+" "+o.n).toLowerCase().includes(q));
-    if(!hit){status.textContent=`No geocoded organization mentions "${$("near-town").value.trim()}". Try a nearby larger town, or a town in ${covered}.`;return}
-    nearAnchor={lat:hit.lat,lng:hit.lng,label:$("near-town").value.trim()};
-    renderNear();
+    const q=$("near-town").value.trim().slice(0,PRINT_QUERY_MAX);
+    if(!q){status.textContent="Type a town or state first.";return}
+    nearAnchor=null;nearGeoOutside=null;nearQuery={q,state:""};
+    show();
   }
   $("near-town-go").addEventListener("click",townSearch);
   $("near-town").addEventListener("keydown",e=>{ if(e.key==="Enter")townSearch(); });
+  const pick=$("near-state");
+  if(pick)pick.addEventListener("change",()=>{
+    if(!pick.value)return;
+    nearAnchor=null;nearGeoOutside=null;nearQuery={q:"",state:pick.value};
+    show();
+  });
+  const any=$("near-anyway");
+  if(any)any.addEventListener("click",()=>{nearAnchor={...nearGeoOutside,label:"your current location"};nearGeoOutside=null;render()});
   const clr=$("near-clear");
-  if(clr)clr.addEventListener("click",()=>{nearAnchor=null;renderNear();});
+  if(clr)clr.addEventListener("click",()=>{nearAnchor=null;nearGeoOutside=null;nearQuery={q:"",state:""};render();});
 }
 
 /* ---------- map ---------- */
@@ -2800,7 +3076,7 @@ function renderMap(){
   if(!scoped){
     $("p-map").innerHTML=mapModeBar()+(list.length
       ?'<p class="empty">These are national/regional organizations that aren\'t tied to a single state, so there\'s nothing to map here. <a href="#" id="map-goto-list">See them in the Directory</a> instead.</p>'
-      :'<p class="empty">No organizations match those filters. Try a broader search.</p>');
+      :noMatchHTML());
     const link=document.getElementById("map-goto-list");
     if(link)link.addEventListener("click",e=>{e.preventDefault();switchTab("list");render()});
     return;
@@ -3614,6 +3890,8 @@ function render(){
      #why?miles=12&grant=40&infl=2    Why sliders that differ from the defaults (display only;
                                       computeWhy() and WHY_INPUTS are untouched)
      #why?town=Castle%20Rock&state=co the Why tab's town label and state picker (labels only)
+     #near?q=austin  #near?state=tx   Near me: a typed town or state, or a state picked from the list
+                                      (a location from the browser is never written into the link)
 
    The address is rewritten with history.replaceState, which never adds Back-button steps and never
    fires hashchange (so the page doesn't react to its own edits). Inside an iframe the frame's own
@@ -3660,6 +3938,10 @@ function resolveHashRoute(hash){
     const town=cleanTown(p.get("town")).trim();
     if(town)route.town=town;              // a label only: cleaned, never treated as HTML
     if(STATE_CODES.includes(st))route.whyState=st;
+  }else if(route.tab==="near"){
+    // Near me keeps its own town / state (it never touches the Directory filters)
+    if(p.get("q"))route.nearQ=p.get("q").slice(0,PRINT_QUERY_MAX);
+    else if(STATE_CODES.includes(st))route.nearState=st;
   }else{
     if(st&&has(STATE_NAMES,st)&&ORGS.some(o=>o.s===st))route.state=st;
     const tier=(p.get("tier")||"").toLowerCase();
@@ -3692,7 +3974,11 @@ function viewHash(){
     if(detailPin)p.set("pin",detailPin);
     return out("detail");
   }
-  if(activeTab==="near")return "#near";
+  if(activeTab==="near"){
+    if(nearQuery.q)p.set("q",nearQuery.q);
+    else if(nearQuery.state)p.set("state",nearQuery.state.toLowerCase());
+    return out("near");
+  }
   const q=filters.q.trim();
   // Directory filtered to just a state keeps the original, friendliest form: #colorado
   if(activeTab==="list"&&filters.state&&!filters.tier&&!filters.net&&!q)
@@ -3740,6 +4026,7 @@ function applyRoute(route){
   openOrg=null;
   if(route.org){openOrg=route.org;filters.state=ORG_BY_SLUG[route.org].s}
   if(route.tab==="map")mapMode=route.mode==="voice"?"voice":"count";
+  if(route.tab==="near"){nearQuery={q:route.nearQ||"",state:route.nearState||""};nearAnchor=null;nearGeoOutside=null}
   if(route.tab==="detail"){
     if(route.detail)detailState=route.detail;
     detailPin=route.pin&&ORG_BY_SLUG[route.pin].s===detailState?route.pin:null;
@@ -3854,13 +4141,15 @@ async function shareLink(url,what){
      data-clear="net"       remove one filter chip
      data-route="#colorado" any link this page writes (stat strip, scorecards, Who-speaks map tiles)
      data-copy-hash="#utah" copy a link to that view (data-copy-what names it in the confirmation)
-     data-map-mode="voice"  switch the Map tab's shading */
+     data-map-mode="voice"  switch the Map tab's shading
+     data-show-all="cap"    reveal the rest of a long list (see showAllHTML) */
 function onClickThrough(e){
-  const el=e.target.closest("[data-goto-state],[data-net],[data-open-org],[data-toggle-org],[data-pin-org],[data-copy-org],[data-clear],[data-route],[data-copy-hash],[data-map-mode]");
+  const el=e.target.closest("[data-goto-state],[data-net],[data-open-org],[data-toggle-org],[data-pin-org],[data-copy-org],[data-clear],[data-route],[data-copy-hash],[data-map-mode],[data-show-all]");
   if(!el)return;
   e.preventDefault();e.stopPropagation();   // inside a Structure <summary>, stops the row toggling too
   const d=el.dataset;
-  if(d.route){const r=resolveHashRoute(d.route);if(r){applyRoute(r);scrollToPanels()}}
+  if(d.showAll)revealAll(el);
+  else if(d.route){const r=resolveHashRoute(d.route);if(r){applyRoute(r);scrollToPanels()}}
   else if(d.copyHash)shareLink(shareURL(d.copyHash),d.copyWhat||"this view");
   else if(d.mapMode){mapMode=d.mapMode==="voice"?"voice":"count";render()}
   else if(d.gotoState)gotoState(d.gotoState);
@@ -3990,7 +4279,7 @@ function inFrame(){try{return window.self!==window.top}catch(e){return true}}
 
 function printViewURL(){
   const u=new URL(window.location.href);
-  u.search="";u.hash="#"+activeTab;
+  u.search="";u.hash=activeTab==="near"?viewHash():"#"+activeTab;   // Near me carries its town / state in the hash
   u.searchParams.set(PRINT_PARAM,"1");
   u.searchParams.set("theme",currentTheme);
   if(filters.q)u.searchParams.set("q",filters.q);

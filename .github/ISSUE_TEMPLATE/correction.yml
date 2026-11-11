@@ -1,0 +1,58 @@
+name: Suggest a correction
+description: Something in a listing is wrong or out of date (website, name, towns, network, map pin, closed or merged).
+title: "Correction: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping keep the Trail Advocacy Atlas accurate. Every change is checked against the group's own website (or its state coalition's member list) before it goes live, so a source link makes this much faster.
+
+        **This page is public.** Please don't post personal email addresses or phone numbers.
+  - type: input
+    id: group
+    attributes:
+      label: Group
+      description: The organization's name as it appears in the atlas.
+    validations:
+      required: true
+  - type: input
+    id: state
+    attributes:
+      label: State
+    validations:
+      required: false
+  - type: dropdown
+    id: what
+    attributes:
+      label: What needs fixing?
+      options:
+        - Website link
+        - Name or abbreviation
+        - Description or towns served
+        - Parent network (for example SORBA, COMTB)
+        - Map pin location
+        - The group has closed, renamed or merged
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What is wrong, and what should it say?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source link
+      description: A page that shows the correct information, ideally on the group's own website, its state coalition's member list, or its IRS / ProPublica Nonprofit Explorer record.
+      placeholder: https://
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Atlas link
+      description: Filled in automatically when you come from the atlas. Leave as is.
+    validations:
+      required: false
