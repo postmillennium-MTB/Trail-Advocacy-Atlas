@@ -40,6 +40,7 @@
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
     ==== everything past "END OF DATA" is logic ====
     · STATE_SLUGS ............... state name/code lookup for #utah-style URL-hash links
+    · ORG_BY_SLUG / NETWORKS .... one link key per organization (#org/...), and every parent network
     · runtime state ............. filters / activeTab / detailState
     · applyTheme() .............. swaps theme + updates mobile meta tag
     · buildProjection() ......... lat/lng -> SVG coords (heavily commented; the
@@ -58,6 +59,9 @@
     · computeWhy() .............. Why tab — THE cost model, all of it, one function
     · renderWhy() / updateWhy() . Why tab — shell built once, results redrawn live
     · buildTabs() / buildThemeSwatches() / switchTab() / render() .... UI generation
+    · LINKS THAT FOLLOW THE VISITOR  resolveHashRoute() reads a link, viewHash() writes one,
+                                  applyRoute() opens a view; Share button; click-throughs
+                                  (onClickThrough); active-filter chips (renderChips)
     · init() .................... wires up all the buttons on page load
     · title swap ................ rotates the headline every few seconds
     · PRINT BUTTON .............. printView() / printViewURL() / applyPrintParams(): prints directly,
@@ -311,6 +315,55 @@ ul.orgs li{
   color:var(--clay);border:1px solid var(--clay);padding:2px 6px;border-radius:2px;white-space:nowrap}
 .status-flag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
   color:var(--slate);border:1px dashed var(--slate);padding:2px 6px;border-radius:2px;white-space:nowrap}
+
+/* ---- links that follow the visitor: Share button, active-filter chips, org profiles ---- */
+.share-btn{border-left:0}
+.share-pop{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;
+  width:min(520px,calc(100% - 32px));display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  padding:12px 14px;background:var(--ink);color:var(--paper);border-radius:3px;
+  box-shadow:0 6px 24px rgba(0,0,0,.25);font-size:14px}
+.share-pop[hidden]{display:none}
+.share-pop-msg{font-weight:600;flex:1 1 0;min-width:0}
+.share-pop input{flex:1 1 100%;min-width:0;font:13px/1.2 ui-monospace,Menlo,monospace;padding:7px 8px;
+  border:1px solid var(--slate);border-radius:2px;background:#fff;color:#111}
+.share-pop-close{border:0;background:none;color:var(--paper);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+.filter-chips{display:flex;flex-wrap:wrap;gap:8px;margin:-10px 0 18px}
+.filter-chips[hidden]{display:none}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:5px 6px 5px 11px;border:1.5px solid var(--clay);
+  border-radius:999px;background:#fff;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.3;text-align:left;cursor:pointer}
+.chip b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.chip .x{font-size:16px;line-height:1;color:var(--clay);padding:0 4px}
+.chip:hover,.chip:focus-visible{background:var(--clay);color:#fff}
+.chip:hover b,.chip:hover .x,.chip:focus-visible b,.chip:focus-visible .x{color:#fff}
+@media(min-width:761px){.chip.chip-dup{display:none}}   /* wide screens already show these filters in the open filter bar */
+ul.orgs li{flex-wrap:wrap}
+button.parent{background:none;cursor:pointer}
+button.parent:hover,button.parent:focus-visible{color:#fff;background:var(--clay);border-color:var(--clay)}
+.org-more{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule);background:none;color:var(--slate);padding:2px 7px;border-radius:2px;cursor:pointer;white-space:nowrap}
+.org-more:hover,.org-more:focus-visible{color:var(--ink);border-color:var(--ink)}
+.org-more[aria-expanded=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.org-profile{flex:1 0 calc(100% - 21px);margin:4px 0 4px 21px;padding:12px 14px;border-left:3px solid var(--clay);background:#fff;font-size:14px}
+.org-profile p{margin:0 0 8px}
+.org-profile .op-meta{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.org-profile .op-chain button,.op-link{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;
+  text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.op-actions{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;align-items:center}
+.op-actions a,.op-actions button{font:600 13px/1.3 inherit;color:var(--clay);background:none;border:0;padding:0;cursor:pointer;
+  text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.op-actions a:hover,.op-actions button:hover,.op-chain button:hover,.op-link:hover{background:var(--clay);color:#fff}
+@keyframes orgflash{from{background:color-mix(in srgb,var(--clay) 28%,transparent)}to{background:transparent}}
+ul.orgs li.org-flash{animation:orgflash 2.4s ease-out}
+@media(prefers-reduced-motion:reduce){ul.orgs li.org-flash{animation:none;outline:2px solid var(--clay)}}
+.pie-note{font-size:14px;color:var(--slate);margin:10px 0 0;max-width:380px}
+.pie-note button{border:0;background:none;padding:0;font:inherit;color:var(--clay);font-weight:600;cursor:pointer;border-bottom:1.5px solid var(--clay)}
+button.cap-row{width:100%;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+button.cap-row:hover,button.cap-row:focus-visible{background:#fff}
+button.tree-count,button.tree-span{background:none;cursor:pointer}
+button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,button.tree-span:focus-visible{color:#fff;background:var(--clay);border-color:var(--clay)}
+.detail-card-foot button{font:600 14px inherit;color:var(--clay);background:none;border:0;padding:0;cursor:pointer;border-bottom:1.5px solid var(--clay)}
+.detail-card-foot button.detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;color:var(--slate);border-bottom:1px solid var(--rule)}
+.detail-card-foot button:hover{background:var(--clay);color:#fff}
 
 /* ---- pie ---- */
 /* The donut's own SVG caps at max-width:340px, so giving it an equal 1fr
@@ -661,7 +714,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   #reset-filters,.why-reset,.why-mobile-summary,.why-slider input[type=range],
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
-  .chart-hover-dot,.why-dot,.geo-hit{display:none!important}
+  .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions{display:none!important}
   /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
   h1.fading{opacity:1!important}
   h1{font-size:26pt}
@@ -956,8 +1009,23 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
     <span>Print / PDF</span>
   </button>
+  <!-- Share button: copies a link to exactly this view (or opens the phone's share sheet). Icon is Lucide "share-2". -->
+  <button type="button" class="print-btn share-btn" id="share-btn" aria-label="Share a link to this view" title="Share a link to this view">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+    <span>Share</span>
+  </button>
 </div>
+<!-- Active-filter chips, filled by renderChips(). Always shows a network filter (no other control
+     shows it); on phones it also shows state / tier / search, since the filter panel is folded away there. -->
+<div class="filter-chips" id="filter-chips" hidden></div>
 <div id="panels"></div>
+<!-- Share confirmation, filled by showSharePop(). Shows the link itself too, so it can be copied by hand
+     if the browser blocks automatic copying (common inside an iframe). -->
+<div class="share-pop" id="share-pop" role="status" aria-live="polite" hidden>
+  <span class="share-pop-msg" id="share-pop-msg"></span>
+  <button type="button" class="share-pop-close" id="share-pop-close" aria-label="Close">&times;</button>
+  <input type="text" id="share-pop-url" readonly aria-label="Link to this view">
+</div>
 
 <footer>
   <strong>Coverage status.</strong> Colorado, Vermont, Oregon and Washington are transcribed in full from their statewide coalition directories. California draws heavily on the California Mountain Biking Coalition's member directory (camtb.org/members), the closest thing CA has to a single source. All other states are assembled org-by-org from web research — every entry's URL and active status was independently checked before inclusion, but these aren't full coalition rosters and may be missing groups, especially in SORBA's eight-state Southeast footprint where only 1-2 chapters per state are listed so far. Tier definitions: <b>national</b> = umbrella body spanning the whole country (IMBA, NICA); <b>regional</b> = umbrella spanning multiple states or a broad multi-community footprint (NEMBA, SORBA, MORE); <b>statewide</b> = coalition of local orgs within one state; <b>local</b> = town, county, or regional chapter. Chapters carry a <code>parent</code> field linking them to their statewide or regional body (e.g. NEMBA for New England, SORBA for the Southeast, CAMTB for California).<br>
@@ -1679,13 +1747,54 @@ const PRINT_AUTO_DELAY_MS=500;    // wait after restoring the view before openin
 const PRINT_QUERY_MAX=100;        // longest search text accepted back from the URL
 const CARTOGRAM_INK="#111111";    // dark-label color assumed when picking light vs dark cartogram text; keep
                                   // near-black so it matches .maplabel.dark (--ink) in every theme
+const SHARE_BASE_URL="https://postmillenniumrenaissance.com/trail-advocacy-atlas/";
+                                  // every Share / Copy link points at the public PMR page; its wrapper passes
+                                  // the #hash on to this page, so the shared view opens there (and on Pinkbike,
+                                  // whose embed is a different site, readers still land on the PMR home)
+const PMR_ORIGINS=["https://www.postmillenniumrenaissance.com","https://postmillenniumrenaissance.com"];
+                                  // embedding pages allowed to send / receive the view hash by postMessage
+const URL_SYNC_DELAY_MS=250;      // wait this long after the last change before rewriting the address
+                                  // (keeps typing and slider drags from rewriting it on every keystroke)
+const SHARE_POP_MS=6000;          // how long the "Link copied" confirmation stays up
+const ORG_FLASH_MS=2400;          // highlight on an organization opened from a link (matches the CSS animation)
+
+/* ---------- ORG_SLUGS — one stable link key per organization, made from its NAME ----------
+   120 entries have no abbreviation, so the name is the only key every entry has. "Headwaters
+   Trails Alliance" -> "headwaters-trails-alliance". Names are unique (CLAUDE.md rule), but if two
+   ever reduce to the same slug the later one gets its state code appended so neither link breaks.
+   Renaming an organization changes its slug, so an old #org/ link then falls back to By state. */
+function orgSlugOf(name){
+  return String(name).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
+    .replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+}
+const ORG_BY_SLUG={}, SLUG_OF=new Map();   // slug -> org, org -> slug
+ORGS.forEach(o=>{
+  let k=orgSlugOf(o.n);
+  if(ORG_BY_SLUG[k])k+="-"+o.s.toLowerCase();
+  ORG_BY_SLUG[k]=o;SLUG_OF.set(o,k);
+});
+const ORG_BY_ABBR={};                      // abbreviation -> org (abbreviations are unique, CLAUDE.md rule)
+ORGS.forEach(o=>{if(o.a)ORG_BY_ABBR[o.a]=o});
+const NETWORKS=new Set(ORGS.filter(o=>o.p&&ORG_BY_ABBR[o.p]).map(o=>o.p));   // every abbreviation that has chapters
+/* true if o is the network's own entry or sits anywhere below it (COMTB -> COPMOBA -> chapter) */
+function inNetwork(o,net){
+  const seen=new Set();
+  for(let x=o;x&&!seen.has(x);x=ORG_BY_ABBR[x.p]){
+    if(x.a===net)return true;
+    seen.add(x);
+  }
+  return false;
+}
 
 
 /* ---------- runtime state (what the user has currently selected) ---------- */
-let filters={q:"",state:"",tier:""};   // search box, state dropdown, tier filter
+let filters={q:"",state:"",tier:"",net:""};   // search box, state dropdown, tier filter, network (parent) filter
 let activeTab=null;                    // set from DEFAULT_TAB in init()
 let curWhyInfl=0;                      // Why tab's own maintenance-inflation rate
 let detailState="CA";                  // which state the Trailhead map tab is showing
+let detailPin=null;                    // slug of the org pinned on the Trailhead map card, or null
+let openOrg=null;                      // slug of the org whose Directory profile is open, or null
+let urlSyncReady=false;                // the address is only rewritten once the page has finished loading
 // (currentTheme lives with the THEMES registry above, since it defaults from it)
 
 
@@ -1775,6 +1884,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 function matches(o){
   if(filters.state && o.s!==filters.state) return false;
   if(filters.tier && o.tier!==filters.tier) return false;
+  if(filters.net && !inNetwork(o,filters.net)) return false;
   if(filters.q){
     const hay=[o.n,o.a,o.r,o.p,o.c,STATE_NAMES[o.s]].filter(Boolean).join(" ").toLowerCase();
     if(!hay.includes(filters.q.toLowerCase())) return false;
@@ -1808,6 +1918,7 @@ function renderMapJump(){
 /* ==== renderList() — DIRECTORY tab ==== */
 function renderList(){
   const list=visible();
+  if(openOrg&&!list.includes(ORG_BY_SLUG[openOrg]))openOrg=null;   // its profile can't stay open once filtered out
   if(!list.length){$("p-list").innerHTML='<p class="empty">No organizations match those filters. Try a broader search.</p>';return}
   const byState={};
   list.forEach(o=>(byState[o.s]=byState[o.s]||[]).push(o));
@@ -1817,21 +1928,71 @@ function renderList(){
     const rows=byState[st].sort((a,b)=>{
       const rank={national:0,regional:0,state:0,local:1};
       return (rank[a.tier]-rank[b.tier])||a.n.localeCompare(b.n);
-    }).map(o=>`
-      <li>
+    }).map(o=>{const slug=SLUG_OF.get(o), open=slug===openOrg;return `
+      <li id="org-${slug}">
         <span class="tier-dot tier-${o.tier}" title="${o.tier}"></span>
         <span class="org-main">
           <span class="org-name">${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">${esc(o.n)}</a>`:`<span class="noweb">${esc(o.n)}</span>`}${o.a?`<span class="abbr">${esc(o.a)}</span>`:""}</span>
           ${o.r?`<span class="org-region">${esc(o.r)}</span>`:""}
         </span>
-        ${o.p?`<span class="parent">${esc(o.p)}</span>`:""}
+        ${o.p?`<button type="button" class="parent" data-net="${esc(o.p)}" title="Show every group in the ${esc(o.p)} network">${esc(o.p)}</button>`:""}
+        <button type="button" class="org-more" data-toggle-org="${slug}" aria-expanded="${open}" aria-controls="op-${slug}">${open?"Close":"Details"}</button>
         ${o.conf==="draft"?'<span class="draft-flag" title="Not yet independently verified — supplied secondhand, URL and status unconfirmed">draft</span>':""}
         ${o.status==="unconfirmed-active"?'<span class="status-flag" title="Org and URL are real, but current activity could not be confirmed — one report suggested possible inactivity">not confirmed active</span>':""}
-      </li>`).join("");
+        ${open?orgProfileHTML(o):""}
+      </li>`}).join("");
     return `<section class="stategroup">
       <h2>${esc(STATE_NAMES[st]||st)}<span>${byState[st].length} listed</span></h2>
       <ul class="orgs">${rows}</ul></section>`;
   }).join("");
+}
+
+/* ==== orgProfileHTML() — the short profile a Directory row opens into. Uses only fields already
+   in the data: description, tier, state, parent chain, website, map pin. Nothing is looked up. ==== */
+function orgProfileHTML(o){
+  const slug=SLUG_OF.get(o);
+  // parent chain, top first: "COMTB > COPMOBA > this group"
+  const chain=[];const seen=new Set([o]);
+  for(let x=ORG_BY_ABBR[o.p];x&&!seen.has(x);x=ORG_BY_ABBR[x.p]){chain.unshift(x);seen.add(x)}
+  const kids=o.a&&NETWORKS.has(o.a)?ORGS.filter(x=>x!==o&&inNetwork(x,o.a)).length:0;
+  const host=o.w?o.w.replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,""):"";
+  const mapped=o.lat!=null&&o.lng!=null&&POINT_MAP_STATES.includes(o.s);
+  return `<div class="org-profile" id="op-${slug}">
+    <p class="op-meta">${esc(TIER_LABELS[o.tier]||o.tier)} &middot; ${esc(STATE_NAMES[o.s]||o.s)}${o.a?" &middot; "+esc(o.a):""}</p>
+    ${chain.length?`<p class="op-chain">Part of ${chain.map(x=>`<button type="button" data-open-org="${SLUG_OF.get(x)}" title="Open ${esc(x.n)}">${esc(x.n)}${x.a?" ("+esc(x.a)+")":""}</button>`).join(" &rsaquo; ")} &rsaquo; this group.</p>`:""}
+    ${kids?`<p>Network with <button type="button" class="op-link" data-net="${esc(o.a)}">${kids} member group${kids===1?"":"s"} listed</button>.</p>`:""}
+    ${o.status==="unconfirmed-active"?"<p>Listed, but no 2025 or later activity was found when it was checked.</p>":""}
+    <div class="op-actions">
+      ${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener">Visit ${esc(host)} &rarr;</a>`:'<span class="noweb">No website on file</span>'}
+      ${mapped?`<button type="button" data-pin-org="${slug}">See on the trailhead map</button>`:""}
+      <button type="button" data-copy-org="${slug}">Copy link to this group</button>
+    </div>
+  </div>`;
+}
+/* Open or close one Directory profile in place (one open at a time), without redrawing the list. */
+function toggleOrgProfile(slug){
+  const prev=openOrg;
+  if(prev){
+    const old=$("op-"+prev);if(old)old.remove();
+    const b=document.querySelector(`[data-toggle-org="${prev}"]`);
+    if(b){b.setAttribute("aria-expanded","false");b.textContent="Details"}
+  }
+  openOrg=prev===slug?null:slug;
+  if(!openOrg)return;
+  const li=$("org-"+slug), o=ORG_BY_SLUG[slug];
+  if(!li||!o){openOrg=null;return}
+  li.insertAdjacentHTML("beforeend",orgProfileHTML(o));
+  const b=li.querySelector("[data-toggle-org]");
+  if(b){b.setAttribute("aria-expanded","true");b.textContent="Close"}
+}
+/* Scroll an organization's Directory row into view and flash it briefly. */
+function revealOrg(slug){
+  const li=$("org-"+slug);
+  if(!li)return;
+  const calm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  li.scrollIntoView({block:"center",behavior:calm?"auto":"smooth"});
+  li.classList.remove("org-flash");void li.offsetWidth;li.classList.add("org-flash");
+  setTimeout(()=>li.classList.remove("org-flash"),ORG_FLASH_MS);
 }
 
 /* ---------- charts tab ---------- */
@@ -1881,7 +2042,7 @@ function renderCharts(){
   $("p-charts").innerHTML=`
     <div class="chart-card">
       <h3>Organizations by state</h3>
-      <p class="chart-desc">All ${rows.length} states/territories with at least one listed org, ranked highest to lowest. Hover the line for exact counts.</p>
+      <p class="chart-desc">All ${rows.length} states/territories with at least one listed org, ranked highest to lowest. Hover the line for exact counts; click a point (on a phone, tap it twice) to open that state in the Directory.</p>
       <div class="chart-svg-wrap" id="area-wrap">
         <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Organizations by state, area chart">
           <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
@@ -1921,11 +2082,11 @@ function renderCharts(){
   const capBars=capRows.map(r=>{
     const pct=Math.max(r.perM/maxPerM*100,1.5);
     const tier=r.perM>PER_CAPITA_HIGH?"tier-top":r.perM>=PER_CAPITA_MID?"tier-mid":"tier-low";
-    return `<div class="cap-row ${tier}" title="${esc(r.name)}: ${r.n} org${r.n===1?"":"s"} / ${STATE_POPULATION[r.s].toLocaleString()} residents">
+    return `<button type="button" class="cap-row ${tier}" data-goto-state="${r.s}" title="${esc(r.name)}: ${r.n} org${r.n===1?"":"s"} / ${STATE_POPULATION[r.s].toLocaleString()} residents. Click to open in the Directory">
       <span class="cap-code">${r.s}</span>
       <span class="cap-track"><span class="cap-fill" style="width:${pct}%"></span></span>
       <span class="cap-val">${r.perM.toFixed(2)}/M &middot; n=${r.n}</span>
-    </div>`;
+    </button>`;
   }).join("");
   $("p-charts").innerHTML+=`
     <div class="chart-card">
@@ -1938,15 +2099,17 @@ function renderCharts(){
       </div>
       <div class="cap-list">${capBars}</div>
     </div>`;
-  wireChartHover("area", rows, i=>`${rows[i].name}: ${rows[i].n} org${rows[i].n===1?"":"s"}`, xAt, W, H);
-  wireChartHover("line", cumRows, i=>`Top ${i+1} states: ${cumRows[i].cumPct.toFixed(1)}% of orgs`, xAt, W, H);
+  wireChartHover("area", rows, i=>`${rows[i].name}: ${rows[i].n} org${rows[i].n===1?"":"s"}`, xAt, W, H, i=>gotoState(rows[i].s));
+  wireChartHover("line", cumRows, i=>`Top ${i+1} states: ${cumRows[i].cumPct.toFixed(1)}% of orgs (through ${cumRows[i].name})`, xAt, W, H, i=>gotoState(cumRows[i].s));
 }
 /* wireChartHover — attaches crosshair + tooltip behavior to one chart.
    svgW / svgH MUST be the same viewBox dimensions the chart was drawn with: the mouse
    arrives in screen pixels, but the dots' cx/cy are in viewBox units, so we scale
    between the two. These are passed in (not hardcoded) so changing a chart's size in
-   renderCharts() can't silently misalign the tooltips. */
-function wireChartHover(prefix, rows, labelFn, xAt, svgW, svgH){
+   renderCharts() can't silently misalign the tooltips.
+   onPick(i), if given, runs on a click — or, on a touch screen, on a second tap on the same point
+   (the first tap only shows the tooltip, so a phone user can still read a value without leaving). */
+function wireChartHover(prefix, rows, labelFn, xAt, svgW, svgH, onPick){
   const svg=$(prefix+"-wrap").querySelector("svg");
   const zone=$(prefix+"-hoverzone");
   const hoverline=$(prefix+"-hoverline");
@@ -1987,7 +2150,18 @@ function wireChartHover(prefix, rows, labelFn, xAt, svgW, svgH){
   zone.addEventListener("mouseleave",hide);
   zone.addEventListener("touchstart",e=>{show(e.touches[0]);e.preventDefault()},{passive:false});
   zone.addEventListener("touchmove",e=>{show(e.touches[0]);e.preventDefault()},{passive:false});
-  zone.addEventListener("touchend",hide);
+  let touchIdx=null,lastTapIdx=null,moved=false;
+  const idxAt=evt=>{const rect=svg.getBoundingClientRect();return nearestIdx((evt.clientX-rect.left)*svgW/rect.width)};
+  zone.addEventListener("touchstart",e=>{touchIdx=idxAt(e.touches[0]);moved=false},{passive:true});
+  zone.addEventListener("touchmove",()=>{moved=true},{passive:true});
+  zone.addEventListener("touchend",()=>{
+    if(moved||!onPick){hide();lastTapIdx=null;return}
+    if(touchIdx===lastTapIdx){lastTapIdx=null;hide();onPick(touchIdx);return}
+    lastTapIdx=touchIdx;
+    tooltip.textContent=labelFn(touchIdx)+" \u00B7 tap again to open";
+  });
+  // A tap never produces a click here (touchstart above cancels it), so this is mouse and keyboard only.
+  if(onPick)zone.addEventListener("click",e=>onPick(idxAt(e)));
 }
 
 /* ---------- pie ---------- */
@@ -2005,6 +2179,7 @@ function renderPie(){
     return;
   }
   const total=entries.reduce((s,[,n])=>s+n,0);
+  const usCount=list.filter(o=>o.s==="US").length;   // national / multi-state groups: in the header count, not in the ring
   const palette=THEME_BY_ID[currentTheme].pie;
   const cx=150,cy=150,rOuter=130,rInner=58;
   let ang=-Math.PI/2, paths="";
@@ -2029,7 +2204,9 @@ function renderPie(){
       ${paths}
       <text x="150" y="144" text-anchor="middle" style="font:600 34px Georgia,serif;fill:var(--ink)">${total}</text>
       <text x="150" y="164" text-anchor="middle" style="font:600 9px ui-monospace,Menlo,monospace;fill:var(--slate);letter-spacing:.16em">ORGANIZATIONS</text>
-    </svg></div>
+    </svg>
+    ${usCount?`<p class="pie-note">The ring counts the ${total} groups tied to one state. ${usCount===1?"One more works":usCount+" more work"} nationally or across several states and ${usCount===1?"isn't":"aren't"} drawn${total+usCount===ORGS.length?`, which is why the header says ${ORGS.length}`:""}. <button type="button" data-goto-state="US">See ${usCount===1?"it":"them"}</button></p>`:""}
+    </div>
     <ul class="legend">${legend}</ul></div>
     <button type="button" class="pie-map-teaser" id="pie-map-teaser">
       <span class="pie-map-teaser-inner">${miniSvg}</span>
@@ -2108,7 +2285,9 @@ function renderTree(){
     if(!kids.length) return `<li class="tree-leaf">${label}</li>`;
     const total=countDescendants(o);
     return `<li><details${depth===0?"":" open"}>
-      <summary>${label}<span class="tree-count">${total} below</span></summary>
+      <summary>${label}${o.a&&NETWORKS.has(o.a)
+        ?`<button type="button" class="tree-count" data-net="${esc(o.a)}" title="List all ${total} in the Directory">${total} below</button>`
+        :`<span class="tree-count">${total} below</span>`}</summary>
       <ul class="tree-children">${kids.map(k=>nodeHTML(k,depth+1,seen)).join("")}</ul>
     </details></li>`;
   }
@@ -2125,11 +2304,14 @@ function renderTree(){
   };
 
   $("p-tree").innerHTML=`
-    <p class="map-note">How the movement is actually organized. Umbrella bodies are listed first with their chapters nested underneath — click any row with a triangle to expand or collapse it. Nesting can go three deep (COMTB &rarr; COPMOBA &rarr; Delta Area Mountain Bikers, for example). Organizations that operate entirely on their own are listed separately at the bottom.</p>
+    <p class="map-note">How the movement is actually organized. Umbrella bodies are listed first with their chapters nested underneath — click any row with a triangle to expand or collapse it, or click a "below" count to list that whole network in the Directory. Nesting can go three deep (COMTB &rarr; COPMOBA &rarr; Delta Area Mountain Bikers, for example). Organizations that operate entirely on their own are listed separately at the bottom.</p>
     <h3 class="tree-h">Umbrella organizations and their chapters</h3>
     <ul class="tree-root">${umbrellas.map(o=>{
       const st=spanStates(o);
-      return nodeHTML(o,0).replace('</summary>',`<span class="tree-span">${st} state${st===1?"":"s"}</span></summary>`);
+      const span=`${st} state${st===1?"":"s"}`;
+      return nodeHTML(o,0).replace('</summary>',o.a&&NETWORKS.has(o.a)
+        ?`<button type="button" class="tree-span" data-net="${esc(o.a)}" title="See this network by state">${span}</button></summary>`
+        :`<span class="tree-span">${span}</span></summary>`);
     }).join("")}</ul>
     <h3 class="tree-h">Independent organizations <span class="tree-h-note">(${standalone.length} with no parent body listed)</span></h3>
     <ul class="tree-root tree-standalone">${standalone.map(o=>nodeHTML(o,0)).join("")}</ul>`;
@@ -2322,15 +2504,12 @@ function renderPointMap(list){
       <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${TIER_COLORS[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.3"/></g>`;
   });
   $("p-map").innerHTML=`
-    <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that org. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
+    <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that group's profile in the Directory. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
     <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>${unpinnedNote(list)}`;
   $("p-map").querySelectorAll(".geo-hit").forEach(el=>
-    el.addEventListener("click",()=>{
-      const o=pts[+el.dataset.idx];
-      if(o.w)window.open(o.w,"_blank","noopener");
-    }));
+    el.addEventListener("click",()=>openOrgProfile(pts[+el.dataset.idx])));
   const link=document.getElementById("map-goto-all");
   if(link)link.addEventListener("click",e=>{e.preventDefault();filters.state="";$("statesel").value="";render()});
 }
@@ -2384,10 +2563,12 @@ function renderDetailMap(){
         ${pinned?'<button class="detail-card-close" title="Clear">&times;</button>':""}
       </div>
       ${o.r?`<div class="detail-card-region">${esc(o.r)}</div>`:""}
-      <div class="detail-card-foot">${web}${o.p?`<span class="detail-card-parent">part of ${esc(o.p)}</span>`:""}</div>
+      <div class="detail-card-foot">${web}${pinned?`<button type="button" data-open-org="${SLUG_OF.get(o)}">Profile and link</button>`:""}${o.p?(pinned
+        ?`<button type="button" class="detail-card-parent" data-net="${esc(o.p)}" title="Show every group in this network">part of ${esc(o.p)}</button>`
+        :`<span class="detail-card-parent">part of ${esc(o.p)}</span>`):""}</div>
     </div>`;
     const close=card.querySelector(".detail-card-close");
-    if(close)close.addEventListener("click",()=>{ pinnedIdx=null; clearCard(); });
+    if(close)close.addEventListener("click",()=>{ pinnedIdx=null; detailPin=null; clearCard(); scheduleURLSync(); });
   }
   function clearCard(){
     card.classList.add("empty");
@@ -2397,9 +2578,13 @@ function renderDetailMap(){
     const idx=+el.dataset.idx, o=pts[idx];
     el.addEventListener("mouseenter",()=>{ if(pinnedIdx===null)paintCard(o,false); });
     el.addEventListener("mouseleave",()=>{ if(pinnedIdx===null)clearCard(); });
-    el.addEventListener("click",()=>{ pinnedIdx=idx; paintCard(o,true);
-      card.scrollIntoView({behavior:"smooth",block:"nearest"}); });
+    el.addEventListener("click",()=>{ pinnedIdx=idx; detailPin=SLUG_OF.get(o); paintCard(o,true);
+      card.scrollIntoView({behavior:"smooth",block:"nearest"}); scheduleURLSync(); });
   });
+  // Re-pin the card from a link (#detail?state=vt&pin=...) or after a redraw.
+  const pinIdx=detailPin?pts.indexOf(ORG_BY_SLUG[detailPin]):-1;
+  if(pinIdx>=0){pinnedIdx=pinIdx;paintCard(pts[pinIdx],true)}
+  else detailPin=null;
   wireDetailStateButtons();
 }
 function wireDetailStateButtons(){
@@ -2407,7 +2592,9 @@ function wireDetailStateButtons(){
     b.addEventListener("click",()=>{
       const y=window.scrollY;
       detailState=b.dataset.detailState;
+      detailPin=null;
       renderDetailMap();
+      scheduleURLSync();
       window.scrollTo(0,y);
     }));
 }
@@ -2872,7 +3059,7 @@ function switchTab(name){
 }
 /* Phone Filters button: show how many filters are active so a hidden filter is never a surprise. */
 function updateFilterBadge(){
-  const n=(filters.q.trim()?1:0)+(filters.state?1:0)+(filters.tier?1:0);
+  const n=(filters.q.trim()?1:0)+(filters.state?1:0)+(filters.tier?1:0)+(filters.net?1:0);
   const b=$("filter-toggle"),c=$("ft-count");
   if(!b||!c)return;
   c.textContent=n+" active";
@@ -2891,20 +3078,271 @@ function render(){
   const fn=window[tab.render];
   if(typeof fn==="function")fn();
   else console.error("Tab '"+tab.id+"' points at missing render function:",tab.render);
+  renderChips();
+  scheduleURLSync();
 }
 
-/* ==== resolveHashRoute() — turns a URL-hash fragment into a tab id or a state code.
-   Shared by the initial page load, live #hash changes and the cross-origin
-   postMessage fallback in init(), so all three read a hash the same way.
-   A tab hash (#why) opens that tab. A state hash (#utah, #ut, #new-hampshire)
-   opens the Directory filtered to that state, same as clicking that state's pie
-   slice. Returns {tab} or {tab:"list",state:CODE}, or null if neither matches. ==== */
+/* ==== LINKS THAT FOLLOW THE VISITOR ===================================================
+   The address always describes the current view, so copying it (or pressing Share) gives a link
+   that reopens exactly this view. One format, read by resolveHashRoute() and written by viewHash():
+
+     #utah  #ut  #new-hampshire       a state: Directory filtered to it (the original links, unchanged)
+     #why  #map  #charts ...          a tab
+     #map?state=co&tier=local         a tab plus filters: state, tier, net (a network such as SORBA), q (search)
+     #org/headwaters-trails-alliance  one organization: Directory, its state, its profile open
+     #detail?state=vt&pin=<org>       Trailhead map for a state, with one group pinned
+     #why?miles=12&grant=40&infl=2    Why sliders that differ from the defaults (display only;
+                                      computeWhy() and WHY_INPUTS are untouched)
+
+   The address is rewritten with history.replaceState, which never adds Back-button steps and never
+   fires hashchange (so the page doesn't react to its own edits). Inside an iframe the frame's own
+   address changes, not the visitor's address bar; Share therefore builds the public PMR link itself,
+   and the new hash is also offered to the PMR wrapper page by postMessage (see notifyParentOfView). ==== */
+
+/* resolveHashRoute() — the single place a hash is interpreted: first load, a live hashchange and
+   the postMessage fallback all use it. Every value is checked against what the page offers, so a
+   hand-edited link can't push anything the controls themselves couldn't. Returns null for a hash
+   that matches nothing, and the caller then opens DEFAULT_TAB. */
 function resolveHashRoute(hash){
-  const norm=String(hash||"").replace("#","").toLowerCase();
-  if(!norm)return null;
-  if(TABS.some(t=>t.id===norm))return{tab:norm};
-  const code=STATE_SLUGS[slugifyStateHash(norm)];
-  return code?{tab:"list",state:code}:null;
+  const raw=String(hash||"").replace(/^#/,"");
+  if(!raw)return null;
+  const qi=raw.indexOf("?");
+  let head=qi>=0?raw.slice(0,qi):raw;
+  const p=new URLSearchParams(qi>=0?raw.slice(qi+1):"");
+  try{head=decodeURIComponent(head)}catch(e){}
+  head=head.toLowerCase();
+  const route={};
+  if(head.startsWith("org/")){
+    const slug=head.slice(4).replace(/\/+$/,"");
+    return ORG_BY_SLUG[slug]?{tab:"list",org:slug}:null;
+  }
+  if(TABS.some(t=>t.id===head))route.tab=head;
+  else{
+    const code=STATE_SLUGS[slugifyStateHash(head)];
+    if(!code)return null;
+    route.tab="list";route.state=code;
+  }
+  const has=(obj,k)=>Object.prototype.hasOwnProperty.call(obj,k);   // not obj[k]: "__proto__" is truthy
+  const st=(p.get("state")||"").toUpperCase();
+  if(route.tab==="detail"){
+    if(POINT_MAP_STATES.includes(st))route.detail=st;
+    const pin=(p.get("pin")||"").toLowerCase();
+    if(has(ORG_BY_SLUG,pin))route.pin=pin;
+  }else if(route.tab==="why"){
+    route.why={};
+    WHY_INPUTS.forEach(i=>{
+      const n=parseFloat(p.get(i.key));
+      if(Number.isFinite(n))route.why[i.key]=Math.min(i.max,Math.max(i.min,n));
+    });
+    const r=parseFloat(p.get("infl"));
+    if(Number.isFinite(r))route.infl=r;   // checked against the real pills when applied
+  }else{
+    if(st&&has(STATE_NAMES,st)&&ORGS.some(o=>o.s===st))route.state=st;
+    const tier=(p.get("tier")||"").toLowerCase();
+    if(has(TIER_LABELS,tier))route.tier=tier;
+    const net=(p.get("net")||"").toUpperCase();
+    if(NETWORKS.has(net))route.net=net;
+    if(p.get("q"))route.q=p.get("q").slice(0,PRINT_QUERY_MAX);
+  }
+  return route;
+}
+
+/* viewHash() — the hash that describes what is on screen now ("" for the plain default view). */
+function viewHash(){
+  const p=new URLSearchParams();
+  const out=head=>"#"+head+(p.toString()?"?"+p.toString():"");
+  if(activeTab==="list"&&openOrg)return "#org/"+openOrg;
+  if(activeTab==="why"){
+    if(whyBuilt){
+      const v=whyValues();
+      WHY_INPUTS.forEach(i=>{if(v[i.key]!==i.value)p.set(i.key,v[i.key])});
+      if(curWhyInfl)p.set("infl",curWhyInfl);
+    }
+    return out("why");
+  }
+  if(activeTab==="detail"){
+    if(detailState!==POINT_MAP_STATES[0])p.set("state",detailState.toLowerCase());
+    if(detailPin)p.set("pin",detailPin);
+    return out("detail");
+  }
+  if(activeTab==="near")return "#near";
+  const q=filters.q.trim();
+  // Directory filtered to just a state keeps the original, friendliest form: #colorado
+  if(activeTab==="list"&&filters.state&&!filters.tier&&!filters.net&&!q)
+    return "#"+String(STATE_NAMES[filters.state]||filters.state).toLowerCase().replace(/[^a-z0-9]+/g,"-");
+  if(filters.state)p.set("state",filters.state.toLowerCase());
+  if(filters.tier)p.set("tier",filters.tier);
+  if(filters.net)p.set("net",filters.net);
+  if(q)p.set("q",q);
+  if(activeTab===DEFAULT_TAB&&!p.toString())return "";
+  return out(activeTab);
+}
+
+let urlSyncTimer=null;
+function scheduleURLSync(){
+  if(!urlSyncReady)return;
+  clearTimeout(urlSyncTimer);
+  urlSyncTimer=setTimeout(syncURL,URL_SYNC_DELAY_MS);
+}
+function syncURL(){
+  const h=viewHash();
+  if(h===window.location.hash||(!h&&!window.location.hash))return;
+  try{history.replaceState(null,"",h||window.location.pathname+window.location.search)}catch(e){}
+  notifyParentOfView(h);
+}
+/* When embedded on the PMR site, offer the new hash to the wrapper page so it can update the
+   visitor's address bar too (the wrapper needs a small listener for {type:"pmr-atlas-view"}; see
+   README). Only sent when the embedding page is known to be PMR, so no other site receives it,
+   and so the browser never logs an origin-mismatch error. */
+function notifyParentOfView(hash){
+  if(!inFrame())return;
+  let origin="";
+  try{
+    const ao=window.location.ancestorOrigins;
+    origin=ao&&ao.length?ao[0]:(document.referrer?new URL(document.referrer).origin:"");
+  }catch(e){}
+  if(!PMR_ORIGINS.includes(origin))return;
+  try{window.parent.postMessage({type:"pmr-atlas-view",hash},origin)}catch(e){}
+}
+
+/* applyRoute() — put the page into the view a route describes. Used for links (on load, hashchange,
+   postMessage) and by every click-through below, so a click and the link it writes always agree. */
+function applyRoute(route){
+  filters.q=route.q||"";filters.state=route.state||"";filters.tier=route.tier||"";filters.net=route.net||"";
+  openOrg=null;
+  if(route.org){openOrg=route.org;filters.state=ORG_BY_SLUG[route.org].s}
+  if(route.tab==="detail"){
+    if(route.detail)detailState=route.detail;
+    detailPin=route.pin&&ORG_BY_SLUG[route.pin].s===detailState?route.pin:null;
+  }
+  syncFilterControls();
+  switchTab(route.tab);
+  if(route.tab==="why"){
+    if(!whyBuilt)renderWhy();
+    const w=route.why||{};
+    WHY_INPUTS.forEach(i=>{$("why-"+i.key).value=w[i.key]!=null?w[i.key]:i.value});
+    const pills=[...document.querySelectorAll("#why-inflation-pills .why-pill")];
+    setWhyInflation(pills.some(b=>+b.dataset.rate===route.infl)?route.infl:0);
+  }
+  render();
+  if(openOrg)revealOrg(openOrg);
+}
+/* Make the search box, state dropdown and tier buttons show the current filters. */
+function syncFilterControls(){
+  $("q").value=filters.q;
+  $("statesel").value=filters.state;
+  document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===filters.tier));
+}
+/* If the tab bar has scrolled off the top (e.g. after clicking deep in a chart), bring it back. */
+function scrollToPanels(){
+  const row=document.querySelector(".tabrow");
+  if(row&&row.getBoundingClientRect().top<0)row.scrollIntoView({block:"start"});
+}
+
+/* ---------- click-throughs ---------- */
+/* A state from a chart or note: the Directory for that state, keeping any tier / search / network filter. */
+function gotoState(st){
+  filters.state=st;openOrg=null;
+  syncFilterControls();switchTab("list");render();scrollToPanels();
+}
+/* A network badge (SORBA, CAMTB...): the Directory showing that network and everything below it. */
+function gotoNetwork(net){
+  if(!NETWORKS.has(net))return;
+  applyRoute({tab:"list",net});scrollToPanels();
+}
+/* One organization: its state's Directory with its profile open and highlighted. */
+function openOrgProfile(o){
+  const slug=SLUG_OF.get(o);
+  if(slug)applyRoute({tab:"list",org:slug});
+}
+
+/* ==== renderChips() — removable chips for the active filters, under the tab bar. A network filter
+   has no other control, so its chip always shows; the others show on phones only (CSS), where the
+   filter panel is folded away. ==== */
+function renderChips(){
+  const box=$("filter-chips");
+  if(!box)return;
+  const usesFilters=(TABS.find(t=>t.id===activeTab)||{}).filters!==false;
+  const chips=[];
+  if(filters.net){
+    const o=ORG_BY_ABBR[filters.net];
+    chips.push(`<button type="button" class="chip" data-clear="net" title="Remove the network filter"><b>Network</b>${esc(o?o.n+" ("+o.a+")":filters.net)}<span class="x" aria-hidden="true">&times;</span></button>`);
+  }
+  if(filters.state)chips.push(`<button type="button" class="chip chip-dup" data-clear="state" title="Remove the state filter"><b>State</b>${esc(STATE_NAMES[filters.state]||filters.state)}<span class="x" aria-hidden="true">&times;</span></button>`);
+  if(filters.tier)chips.push(`<button type="button" class="chip chip-dup" data-clear="tier" title="Remove the tier filter"><b>Tier</b>${esc(TIER_LABELS[filters.tier]||filters.tier)}<span class="x" aria-hidden="true">&times;</span></button>`);
+  if(filters.q.trim())chips.push(`<button type="button" class="chip chip-dup" data-clear="q" title="Clear the search"><b>Search</b>${esc(filters.q.trim())}<span class="x" aria-hidden="true">&times;</span></button>`);
+  box.innerHTML=chips.join("");
+  box.hidden=!(usesFilters&&chips.length);
+}
+
+/* ==== SHARE — copy a link to this view, or open the phone's share sheet. =====================
+   Links always point at the public PMR page (SHARE_BASE_URL), whose wrapper hands the hash on to
+   this page, so a link copied from the github.io copy, the PMR embed or a Pinkbike embed all open
+   the same view. Inside an iframe the browser may refuse the share sheet and automatic copying
+   unless the embedding <iframe> allows them (allow="web-share; clipboard-write"); when it does,
+   the confirmation box shows the link selected, ready to copy by hand. */
+function shareURL(hash){return SHARE_BASE_URL+(hash===undefined?viewHash():hash)}
+async function copyText(text){
+  // In an iframe that hasn't been granted clipboard-write, the modern API is refused (and Chrome logs
+  // a console error), so skip straight to the older path there.
+  const fp=document.featurePolicy;
+  const apiOK=navigator.clipboard&&window.isSecureContext&&!(inFrame()&&fp&&!fp.allowsFeature("clipboard-write"));
+  try{if(apiOK){await navigator.clipboard.writeText(text);return true}}catch(e){}
+  try{   // older fallback; often still allowed inside an iframe
+    const t=document.createElement("textarea");
+    t.value=text;t.setAttribute("readonly","");t.style.position="fixed";t.style.opacity="0";
+    document.body.appendChild(t);t.select();
+    const ok=document.execCommand("copy");t.remove();return ok;
+  }catch(e){return false}
+}
+let sharePopTimer=null;
+function showSharePop(msg,url,autoHide){
+  const pop=$("share-pop"),inp=$("share-pop-url");
+  $("share-pop-msg").textContent=msg;
+  inp.value=url;pop.hidden=false;
+  clearTimeout(sharePopTimer);
+  if(autoHide)sharePopTimer=setTimeout(()=>{pop.hidden=true},SHARE_POP_MS);
+  else{inp.focus({preventScroll:true});inp.select()}
+}
+async function shareLink(url,what){
+  const phone=window.matchMedia&&window.matchMedia("(pointer:coarse)").matches;
+  let shareOK=!!navigator.share&&phone;
+  if(shareOK&&inFrame())shareOK=!!(document.featurePolicy&&document.featurePolicy.allowsFeature("web-share"));
+  if(shareOK){
+    try{await navigator.share({title:document.title,url});return}
+    catch(e){if(e&&e.name==="AbortError")return}   // visitor closed the sheet; anything else falls through to copy
+  }
+  const ok=await copyText(url);
+  showSharePop(ok?`Link to ${what} copied. Paste it anywhere.`:`Copy this link to ${what}:`,url,ok);
+}
+
+/* One click handler for every click-through, keyed on data- attributes, so newly drawn panels need
+   no wiring of their own:
+     data-goto-state="CO"   Directory for that state        data-net="SORBA"  that network
+     data-open-org=<slug>   that group's profile            data-toggle-org   open / close a profile
+     data-pin-org=<slug>    that group on the Trailhead map data-copy-org     copy that group's link
+     data-clear="net"       remove one filter chip */
+function onClickThrough(e){
+  const el=e.target.closest("[data-goto-state],[data-net],[data-open-org],[data-toggle-org],[data-pin-org],[data-copy-org],[data-clear]");
+  if(!el)return;
+  e.preventDefault();e.stopPropagation();   // inside a Structure <summary>, stops the row toggling too
+  const d=el.dataset;
+  if(d.gotoState)gotoState(d.gotoState);
+  else if(d.net)gotoNetwork(d.net);
+  else if(d.openOrg&&ORG_BY_SLUG[d.openOrg])openOrgProfile(ORG_BY_SLUG[d.openOrg]);
+  else if(d.toggleOrg){toggleOrgProfile(d.toggleOrg);scheduleURLSync()}
+  else if(d.pinOrg&&ORG_BY_SLUG[d.pinOrg]){
+    const o=ORG_BY_SLUG[d.pinOrg];
+    applyRoute({tab:"detail",detail:o.s,pin:d.pinOrg});scrollToPanels();
+  }
+  else if(d.copyOrg&&ORG_BY_SLUG[d.copyOrg])shareLink(shareURL("#org/"+d.copyOrg),ORG_BY_SLUG[d.copyOrg].n);
+  else if(d.clear){
+    if(d.clear==="net")filters.net="";
+    if(d.clear==="state")filters.state="";
+    if(d.clear==="tier")filters.tier="";
+    if(d.clear==="q")filters.q="";
+    syncFilterControls();render();
+  }
 }
 
 /* ==== init() — runs once on load: builds the state dropdown, wires up every button, restores saved theme ==== */
@@ -2919,7 +3357,7 @@ function init(){
   });
   $("tabbar").addEventListener("scroll",updateTabFade,{passive:true});
   window.addEventListener("resize",updateTabFade);window.addEventListener("load",updateTabFade);
-  $("q").addEventListener("input",e=>{filters.q=e.target.value;render()});
+  $("q").addEventListener("input",e=>{filters.q=e.target.value.slice(0,PRINT_QUERY_MAX);render()});
   $("statesel").addEventListener("change",e=>{filters.state=e.target.value;render()});
   document.querySelectorAll(".tierbar button[data-tier]").forEach(b=>
     b.addEventListener("click",()=>{
@@ -2928,9 +3366,8 @@ function init(){
       render();
     }));
   $("reset-filters").addEventListener("click",()=>{
-    filters.q="";filters.state="";filters.tier="";
-    $("q").value="";$("statesel").value="";
-    document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===""));
+    filters.q="";filters.state="";filters.tier="";filters.net="";
+    syncFilterControls();
     render();
   });
   // Deep link: a URL ending in #why (or any other valid tab id) lands
@@ -2940,9 +3377,10 @@ function init(){
   // unrecognized, or missing hash.
   // A state hash (trail-advocacy-atlas/#utah) lands on the Directory filtered to
   // that state; see resolveHashRoute() / STATE_SLUGS.
+  // A link that carries filters, an organization or Why settings (see LINKS THAT FOLLOW THE
+  // VISITOR) is applied in full by applyRoute() once the theme is in place, below.
   const route=resolveHashRoute(window.location.hash);
   activeTab=route?route.tab:DEFAULT_TAB;
-  if(route&&route.state){filters.state=route.state;$("statesel").value=route.state;}
   buildTabs();
   switchTab(activeTab);   // also settles whether the filter bar is shown for this tab
   // restore the saved theme (falling back to the default if it's unknown/missing),
@@ -2953,7 +3391,14 @@ function init(){
   currentTheme=saved;
   buildThemeSwatches();
   applyTheme(saved);   // sets data-theme, meta tag, pressed state, and calls render()
+  if(route)applyRoute(route);
   renderCounts();
+  document.addEventListener("click",onClickThrough);
+  // Why sliders and pills, the Near me box: any change inside a panel may change the link.
+  $("panels").addEventListener("input",scheduleURLSync);
+  $("panels").addEventListener("click",scheduleURLSync);
+  $("share-btn").addEventListener("click",()=>shareLink(shareURL(),"this view"));
+  $("share-pop-close").addEventListener("click",()=>{$("share-pop").hidden=true});
   document.querySelectorAll(".map-jump").forEach(b=>
     b.addEventListener("click",()=>{switchTab("map");render()}));
   $("print-btn").addEventListener("click",printView);
@@ -2961,9 +3406,7 @@ function init(){
   // not just the one the page was opened with.
   window.addEventListener("hashchange",()=>{
     const route=resolveHashRoute(window.location.hash);
-    if(!route)return;
-    if(route.state){filters.state=route.state;const sel=$("statesel");if(sel)sel.value=route.state;}
-    switchTab(route.tab);render();
+    if(route)applyRoute(route);
   });
   // Fallback deep-link path for when this page is embedded in a cross-origin
   // <iframe> (e.g. postmillenniumrenaissance.com/trail-advocacy-atlas/) — a
@@ -2973,13 +3416,10 @@ function init(){
   // postMessage instead of (or in addition to) appending it to the iframe's
   // src, this picks it up. Expected message shape: {type:"pmr-hash", hash:"#why"}
   window.addEventListener("message",e=>{
-    const okOrigins=["https://www.postmillenniumrenaissance.com","https://postmillenniumrenaissance.com"];
-    if(!okOrigins.includes(e.origin))return;
+    if(!PMR_ORIGINS.includes(e.origin))return;
     if(!e.data||e.data.type!=="pmr-hash"||typeof e.data.hash!=="string")return;
     const route=resolveHashRoute(e.data.hash);
-    if(!route)return;
-    if(route.state){filters.state=route.state;const sel=$("statesel");if(sel)sel.value=route.state;}
-    switchTab(route.tab);render();
+    if(route)applyRoute(route);
   });
 }
 /* periodic masthead title swap */
@@ -3005,7 +3445,7 @@ function init(){
    button instead opens the tool in a new top-level tab with the current view encoded in the
    URL, and THAT tab restores the view and opens the print dialog itself (applyPrintParams).
 
-   What travels in the URL: open tab, search/state/tier filters, theme, and — on the Why tab —
+   What travels in the URL: open tab, search/state/tier/network filters, theme, and — on the Why tab —
    every slider value that differs from its default plus the inflation pill. The theme rides
    along because a cross-origin iframe may have partitioned localStorage, so the new tab can't
    assume it can read the choice. NOT carried: the Near me tab's location search (that tab
@@ -3020,6 +3460,7 @@ function printViewURL(){
   if(filters.q)u.searchParams.set("q",filters.q);
   if(filters.state)u.searchParams.set("state",filters.state);
   if(filters.tier)u.searchParams.set("tier",filters.tier);
+  if(filters.net)u.searchParams.set("net",filters.net);
   if(activeTab==="why"&&whyBuilt){
     const v=whyValues();
     WHY_INPUTS.forEach(i=>{if(v[i.key]!==i.value)u.searchParams.set("w_"+i.key,v[i.key])});
@@ -3046,6 +3487,7 @@ function applyPrintParams(){
   filters.q=(p.get("q")||"").slice(0,PRINT_QUERY_MAX);
   filters.state=[...$("statesel").options].some(o=>o.value===st)?st:"";
   filters.tier=Object.prototype.hasOwnProperty.call(TIER_LABELS,tier)?tier:"";
+  filters.net=NETWORKS.has((p.get("net")||"").toUpperCase())?p.get("net").toUpperCase():"";
   $("q").value=filters.q;$("statesel").value=filters.state;
   document.querySelectorAll(".tierbar button[data-tier]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tier===filters.tier));
   if(activeTab==="why"&&whyBuilt){
@@ -3087,6 +3529,7 @@ window.addEventListener("beforeprint",()=>{
     const bits=[];
     if(filters.state)bits.push(STATE_NAMES[filters.state]||filters.state);
     if(filters.tier)bits.push(TIER_LABELS[filters.tier]||filters.tier);
+    if(filters.net)bits.push(filters.net+" network");
     if(filters.q)bits.push("matching \u201C"+filters.q+"\u201D");
     pf.textContent=bits.length?"Filtered to: "+bits.join(" \u00B7 "):"";
     pf.hidden=!(usesFilters&&bits.length);
@@ -3098,6 +3541,7 @@ window.addEventListener("afterprint",()=>{printReopen.forEach(d=>d.open=false);p
 
 init();
 applyPrintParams();   // after init() so the dropdowns, tabs and (on #why) the sliders all exist
+urlSyncReady=true;    // from here on, every change rewrites the address (the arrival link is left as it came)
 </script>
 <div class="pmr-license"><p>&copy; 2026 Post Millennium Renaissance &middot; <a href="https://www.postmillenniumrenaissance.com/" target="_top">postmillenniumrenaissance.com</a> &middot; Free for noncommercial use under <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener noreferrer">PolyForm Noncommercial 1.0.0</a>. Source studies remain the property of their authors.</p></div>
 </body>

@@ -177,7 +177,7 @@ Everything for paper lives in one `@media print` block at the **end** of the `<s
 
 **Known print limits:** on a black-and-white printer the stacked bars on the Why tab rely on their printed `$` labels and the legend order (two segments land on similar greys; narrow segments under 13% carry no inline label), the 52-slice pie relies on its legend, and the point maps distinguish national/regional/statewide by color only. Near me results don't carry into the new tab described below.
 
-**The Print / PDF button and iframes.** Opened on its own, the button just calls `window.print()`. Embedded in an iframe (the PMR site, Pinkbike), the browser's print command prints the frame as a fixed-size box clipped to what is visible — not the full content — so the button instead opens the tool in a new tab with the current view in the URL (`?print=1&theme=…&q=…&state=…&tier=…`, plus `w_<slider key>=…` and `w_infl=…` on the Why tab, only for values that differ from defaults). That tab restores the view, strips the `print` flag (so a reload doesn't reopen the dialog) and opens the print dialog after `PRINT_AUTO_DELAY_MS`. Every URL value is validated (known theme / state / tier, slider min–max, real inflation pill, search text capped at `PRINT_QUERY_MAX`), and the theme is applied for that tab only, not saved. Needs the iframe to allow popups — the wrapper template has no `sandbox` attribute, so it does; if one is ever added, include `allow-popups`. The button sits beside the tab list, not inside it (ARIA: a tablist may only contain tabs).
+**The Print / PDF button and iframes.** Opened on its own, the button just calls `window.print()`. Embedded in an iframe (the PMR site, Pinkbike), the browser's print command prints the frame as a fixed-size box clipped to what is visible — not the full content — so the button instead opens the tool in a new tab with the current view in the URL (`?print=1&theme=…&q=…&state=…&tier=…&net=…`, plus `w_<slider key>=…` and `w_infl=…` on the Why tab, only for values that differ from defaults). That tab restores the view, strips the `print` flag (so a reload doesn't reopen the dialog) and opens the print dialog after `PRINT_AUTO_DELAY_MS`. Every URL value is validated (known theme / state / tier, slider min–max, real inflation pill, search text capped at `PRINT_QUERY_MAX`), and the theme is applied for that tab only, not saved. Needs the iframe to allow popups — the wrapper template has no `sandbox` attribute, so it does; if one is ever added, include `allow-popups`. The button sits beside the tab list, not inside it (ARIA: a tablist may only contain tabs).
 
 ## Mobile dark-mode fix
 
@@ -189,12 +189,38 @@ Earlier versions of this file rendered correctly on desktop but showed a dark, h
 
 If a dark-background report ever comes back, check these three things first before assuming it's a new CSS bug.
 
-## URL-hash deep links
+## URL-hash deep links and the Share button
+
+The address follows the visitor: switching tab, picking a state or tier, searching, opening an organization's profile, pinning a Trailhead map dot or moving a Why slider rewrites the hash, and opening that address restores the same view. The original links keep working exactly as before.
 
 - **A tab id**: `trail-advocacy-atlas/#why` opens the Why tab. Works for any `TABS` id.
-- **A state**: `trail-advocacy-atlas/#utah` opens the Directory filtered to Utah. The full name, the two-letter code and dashed or run-together spellings all work (`#utah`, `#ut`, `#new-hampshire`, `#newhampshire`). Covers every state plus DC (`#dc` or `#washington-dc`; the atlas spells it "Washington DC", so `#district-of-columbia` does not match), Puerto Rico and the national group (`#us`). A hash that matches nothing is ignored and the default tab opens. See `STATE_SLUGS` and `resolveHashRoute()`.
+- **A state**: `trail-advocacy-atlas/#utah` opens the Directory filtered to Utah. The full name, the two-letter code and dashed or run-together spellings all work (`#utah`, `#ut`, `#new-hampshire`, `#newhampshire`). Covers every state plus DC (`#dc` or `#washington-dc`; the atlas spells it "Washington DC", so `#district-of-columbia` does not match), Puerto Rico and the national group (`#us` or `#national`). This is also the form the page writes for "Directory filtered to one state".
+- **A tab with filters**: `#map?state=co&tier=local`, `#charts?q=springs`, `#list?net=SORBA`. `state`, `tier`, `q` (search) and `net` (a network: the parent organization and every group below it) are the keys.
+- **One organization**: `#org/headwaters-trails-alliance` opens the Directory on that group's state with its profile open and highlighted. The key is made from the organization's **name** (120 entries have no abbreviation), lowercased with every run of other characters turned into a dash. Renaming an organization changes its link; an old link then falls back to the default tab.
+- **Trailhead map**: `#detail?state=vt&pin=<org key>` opens that state's map with that group pinned.
+- **Why**: `#why?miles=12&grant=40&infl=2` restores sliders that differ from their defaults (keys are the `WHY_INPUTS` keys, `infl` is the inflation pill). Display only: `computeWhy()` and `WHY_INPUTS` are not touched, so nothing needs porting to the ROI Calculator.
 
-Both work on initial load, on a live `hashchange`, and through a `postMessage({type:"pmr-hash", hash:"#utah"})` fallback for when the atlas is iframed cross-origin on the PMR site. `resolveHashRoute()` is the single place a hash is interpreted.
+A hash that matches nothing is ignored and the default tab opens. Every value is checked against what the page offers (real state, tier, network, organization, slider range). `resolveHashRoute()` reads a hash and `viewHash()` writes one; both live in the "LINKS THAT FOLLOW THE VISITOR" block. All work on initial load, on a live `hashchange`, and through the `postMessage({type:"pmr-hash", hash:"#utah"})` fallback. The page rewrites its address with `history.replaceState`, so it never adds Back-button steps.
+
+**Share button** (next to Print / PDF): copies a link to the current view, or opens the phone's share sheet. Each Directory profile also has "Copy link to this group". Links always point at `postmillenniumrenaissance.com/trail-advocacy-atlas/` plus the hash (`SHARE_BASE_URL`); the PMR wrapper already passes its hash on to the iframe, so shared links open the right view there. A box at the bottom of the screen confirms the copy and shows the link, so it can be copied by hand if the browser blocks automatic copying.
+
+**Inside an iframe** (the PMR page, Pinkbike) two things are limited by the browser, not by this file:
+1. The visitor's address bar shows the outer page's address, not the atlas view. The atlas sends `{type:"pmr-atlas-view", hash}` to the PMR wrapper (only when the wrapper is a PMR origin). To make the PMR address bar follow along, add to the wrapper's script:
+   ```js
+   window.addEventListener('message', e => {
+     if (e.origin === 'https://postmillennium-mtb.github.io' && e.data && e.data.type === 'pmr-atlas-view')
+       history.replaceState(null, '', e.data.hash || location.pathname);
+   });
+   ```
+2. Copying and the share sheet need the iframe to allow them. Without it the button falls back to an older copy method, which worked in testing, or to the hand-copy box. To let it use the phone share sheet too, give the wrapper's `<iframe>` `allow="clipboard-write; web-share"`.
+
+## Click-throughs
+
+Anything that looks like data can be clicked: By state slices and legend rows (California, Colorado, Vermont and Oregon open their trailhead map), Map tiles, Charts points (on a phone, tap twice: the first tap shows the value) and per-million bars open that state in the Directory; Structure's "N below" and "N states" badges and the parent tag on each Directory row (`SORBA`, `CAMTB`) open the Directory filtered to that network, shown as a removable chip under the tab bar; Map tab dots open that group's profile; a pinned Trailhead map card links to the profile and the network. One delegated handler (`onClickThrough()`) reads `data-goto-state`, `data-net`, `data-open-org`, `data-toggle-org`, `data-pin-org`, `data-copy-org` and `data-clear`, so a new panel only needs the attribute.
+
+**Directory profiles.** "Details" on a row opens a short profile in place, built only from fields already in the data: tier, state, abbreviation, the parent chain (each step clickable), the number of member groups for a network, the website, a "See on the trailhead map" link when the group has a pin, and "Copy link to this group".
+
+**449 versus 445.** The header counts every entry (449). The By state ring counts the 445 tied to one state; the 4 national or multi-state entries (`s:"US"`) are not drawn, and a note under the ring now says so and links to them.
 
 ## The eight tabs
 
@@ -204,7 +230,7 @@ Why (cost model, see below), Directory (searchable list grouped by state), By st
 
 - **The cartogram is a grid, not real geography.** One square per state in roughly correct relative position — good for reading relative density, not for tracing actual borders.
 - **Search includes a hidden `c` field.** If a search misses an org you'd expect to find (e.g. searching a small town name), it's likely because that org's `c` field hasn't been populated yet — the city name needs to be manually added, it's not automatically extracted from anywhere.
-- **Reset button** (dashed, next to "Local" in the tier bar) clears search text, state, and tier filters back to defaults — it deliberately does *not* touch your color theme or active tab, which are treated as separate preferences.
+- **Reset button** (dashed, next to "Local" in the tier bar) clears search text, state, tier and network filters back to defaults — it deliberately does *not* touch your color theme or active tab, which are treated as separate preferences.
 - **Default tab on load is "By state"** (the pie chart), not the Directory — changed deliberately partway through development. "Why" sits first in the tab bar as the thesis of the whole atlas, but isn't the landing tab.
 - **On phones the filters sit behind a "Filters & palette" button** (`#filter-toggle`, opens `#filter-panel`), with an "N active" badge when a filter is set, so the first screen shows content. The tab row fades at the edge that still has hidden tabs (`updateTabFade()`).
 - **The Why tab hides the filter bar and counters.** Tabs registered with `filters:false` in the `TABS` registry don't read the search/state/tier controls, so `switchTab()` hides them rather than leaving dead controls on screen. Any future tab that ignores the filters gets the same treatment with one flag.
