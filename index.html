@@ -729,6 +729,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border:0;border-radius:6px 6px 0 0;
   background:var(--ink);color:var(--paper);box-shadow:0 -4px 18px rgba(0,0,0,.22);cursor:pointer;font:inherit}
 .why-pin[hidden]{display:none}
+.why-live{display:none}
 .why-pin-main{font-size:14px;font-weight:600;min-width:0}
 .why-pin-val{font:400 20px/1.1 "Iowan Old Style",Georgia,serif;white-space:nowrap}
 .why-pin-inputs{order:3;flex:1 1 auto;font:11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.03em;opacity:.8}
@@ -741,6 +742,11 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .why-layout{grid-template-columns:1fr}
   .why-inputs{position:static}
   .why-stats{grid-template-columns:1fr}
+  .why-live{display:block;width:100%;text-align:left;margin:0 0 14px;padding:8px 10px;border:1.5px solid var(--ink);
+    border-radius:3px;background:#fff;color:var(--ink);font:13px/1.4 inherit;font-family:inherit;cursor:pointer}
+  .why-live b{font-weight:600}
+  .why-live span{display:block;font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--slate)}
+  .why-live i{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:var(--clay)}
   .why-mobile-summary{display:flex;gap:8px;position:sticky;top:0;z-index:6;background:#fff;border:1.5px solid var(--rule);border-radius:4px;padding:9px 11px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 }
 @media(max-width:760px){
@@ -810,7 +816,7 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .info-ico,.near-controls,.near-clear,.near-or,.detail-statebar,.detail-card.empty,
   .detail-card-close,.pie-map-teaser,.map-jump,.chart-tooltip,.chart-hoverzone,.chart-hover-line,
   .chart-hover-dot,.why-dot,.geo-hit,.share-pop,.filter-chips,.org-more,.op-actions,.map-modes,.sc-copy,
-  .why-personal,.why-pin,.why-partner-actions,#why-pick-state{display:none!important}
+  .why-personal,.why-pin,.why-live,.why-partner-actions,#why-pick-state{display:none!important}
   body.why-pin-on{padding-bottom:0}
   /* The rotating headline fades to opacity 0 mid-swap; never print it mid-fade. */
   h1.fading{opacity:1!important}
@@ -3096,6 +3102,7 @@ function whyShellHTML(){
     <div class="why-group">
       <h4>${esc(g.title)}</h4>
       <p class="why-group-sub">${esc(g.sub)}</p>
+      <button type="button" class="why-live" data-why-live aria-controls="why-top"></button>
       ${WHY_INPUTS.filter(i=>i.group===g.id).map(i=>{
         const tip=i.tip?`<span class="info-ico" tabindex="0" role="img" aria-label="${esc(i.tip)}">${infoIcon}<span class="info-tip">${esc(i.tip)}</span></span>`:"";
         return `
@@ -3475,10 +3482,12 @@ function wireWhyPersonal(){
     updateWhy();scheduleURLSync();
   });
   $("why-share").addEventListener("click",()=>{syncURL();shareLink(shareURL(),"this scenario")});
-  $("why-pin").addEventListener("click",()=>{
+  const toResult=()=>{
     const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     $("why-top").scrollIntoView({block:"start",behavior:reduce?"auto":"smooth"});
-  });
+  };
+  $("why-pin").addEventListener("click",toResult);
+  document.querySelectorAll("[data-why-live]").forEach(b=>b.addEventListener("click",toResult));
   $("why-rest").addEventListener("click",e=>{
     if(!e.target.closest("#why-pick-state"))return;
     $("why-personal").scrollIntoView({block:"center"});sel.focus({preventScroll:true});
@@ -3503,6 +3512,12 @@ function updateWhyPinText(v,hl){
   $("why-pin-lbl").textContent=(whyPlace.town.trim()?whyPlace.town.trim()+": ":"")+hl.label;
   $("why-pin-val").textContent=hl.value+(hl.pct?" ("+hl.pct+")":"");
   $("why-pin-inputs").textContent=whyKeyInputs(v,true).join(" \u00B7 ");
+  // The in-flow copy at the top of each slider group (phones only, CSS). It does not depend on
+  // position:fixed, so it still shows if an embedding page hides the bottom of the frame.
+  const live=(hl.label+" "+hl.value+(hl.pct?" ("+hl.pct+")":"")).trim();
+  document.querySelectorAll("[data-why-live]").forEach(b=>{
+    b.innerHTML=`<b>${esc(live)}</b> <span>${esc(whyKeyInputs(v,true).join(" \u00B7 "))}</span> <i>See full result &darr;</i>`;
+  });
 }
 let whyPinQueued=false;
 function queueWhyPin(){
