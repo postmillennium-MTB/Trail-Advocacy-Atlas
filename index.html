@@ -2055,6 +2055,13 @@ function stateFacts(st){
 const voiceOf=st=>stateFacts(st).voice;
 const VOICE_BY_ID=Object.fromEntries(VOICE_LEVELS.map(v=>[v.id,v]));
 
+/* "50 states, DC &amp; Puerto Rico": spells out exactly which places a count of STATE_CODES covers. */
+const NATIONAL_COUNT=ORGS.filter(o=>o.s==="US").length;   // national / multi-state entries, tied to no one state
+function placesLabel(){
+  const n=STATE_CODES.filter(c=>c!=="DC"&&c!=="PR").length;
+  const extra=["DC","PR"].filter(c=>STATE_CODES.includes(c)).map(c=>c==="DC"?"DC":"Puerto Rico");
+  return `places with a group listed: ${n} state${n===1?"":"s"}${extra.length?", "+extra.join(" &amp; "):""}`;
+}
 /* National facts for the stat strip. */
 function nationalFacts(){
   const counts=Object.values(stateCounts(ORGS)).sort((a,b)=>b-a);
@@ -2085,15 +2092,15 @@ function renderCounts(){
     const sw=f.statewide[0];
     const top=f.nets[0];
     html=statHTML(f.n,`group${f.n===1?"":"s"} listed in ${esc(f.name)}`,stateHash(st),`Open the ${f.name} scorecard and its full list`)+
-      (f.rank?statHTML(ordinal(f.rank),`of ${f.ranked} for groups listed per resident (${f.perM.toFixed(1)} per million)`,"#charts","See every state per million residents on the Charts tab"):"")+
+      (f.rank?statHTML(ordinal(f.rank),`of ${f.ranked} places for groups listed per resident (${f.perM.toFixed(1)} per million)`,"#charts","See every state per million residents on the Charts tab"):"")+
       (sw?statHTML(esc(sw.a||sw.n),`statewide group listed${f.statewide.length>1?` (+${f.statewide.length-1} more)`:""}`,"#org/"+SLUG_OF.get(sw),`Open ${sw.n}`)
          :statHTML("None",`statewide group listed here`,"#map?mode=voice","See who speaks for each state on the map"))+
       (f.pointMap?statHTML(f.mapped,"on the trailhead map","#detail?state="+code,`Open the ${f.name} trailhead map`)
-         :statHTML(f.inNet,`belong to a larger network${top?" ("+esc(top.net)+(f.nets.length>1?" and others":"")+")":""}`,top?`#list?state=${code}&net=${top.net}`:null,top?`Show the ${top.net} groups in ${f.name}`:""));
+         :statHTML(f.inNet,`${f.inNet===1?"belongs":"belong"} to a larger network${top?" ("+esc(top.net)+(f.nets.length>1?" and others":"")+")":""}`,top?`#list?state=${code}&net=${top.net}`:null,top?`Show the ${top.net} groups in ${f.name}`:""));
   }else{
     const f=nationalFacts();
     html=statHTML(f.total,"groups listed in this atlas","#list","Open the full Directory")+
-      statHTML(f.places,"states, DC &amp; Puerto Rico with a group listed","#map?mode=voice","See who speaks for each state on the map")+
+      statHTML(f.places,placesLabel(),"#map?mode=voice","See who speaks for each state on the map")+
       statHTML(f.netPct+"%","belong to a larger network","#tree","See how the networks fit together on the Structure tab")+
       statHTML(f.half,"states hold half of all listed groups","#charts","See the cumulative share chart on the Charts tab");
   }
@@ -2122,7 +2129,7 @@ function scorecardHTML(st){
     </div>
     <div class="sc-stats">
       ${statHTML(f.n,f.n===1?"group listed":"groups listed",stateHash(st),`Show every listed group in ${f.name}`)}
-      ${f.rank?statHTML(ordinal(f.rank),`of ${f.ranked} for groups listed per resident`,"#charts","See every state on the Charts tab"):""}
+      ${f.rank?statHTML(ordinal(f.rank),`of ${f.ranked} places (${placesLabel().replace(/^places with a group listed: /,"")}) for groups listed per resident`,"#charts","See every state on the Charts tab"):""}
       ${f.perM!=null?statHTML(f.perM.toFixed(1),"groups listed per million residents","",`${f.n} groups listed / ${STATE_POPULATION[st].toLocaleString()} residents (${POPULATION_SOURCE})`):""}
       ${f.pointMap?statHTML(f.mapped,"on the trailhead map","#detail?state="+code,`Open the ${f.name} trailhead map`)
         :statHTML(f.inNet,"belong to a larger network","","")}
@@ -2134,7 +2141,7 @@ function scorecardHTML(st){
       <dt>Listed by tier</dt><dd>${tierHTML}</dd>
       <dt>How this list was built</dt><dd>${esc(src?src.how:LIST_SOURCE_DEFAULT)}${src?` <span class="sc-src">Source: ${esc(src.src)}</span>`:""}</dd>
     </dl>
-    <p class="sc-note">Counts are groups listed in this atlas. They reflect how much research has been done in each state, not how many groups exist, so a low count or rank says more about coverage than about the riding community. Population: ${esc(POPULATION_SOURCE)}.</p>
+    <p class="sc-note">Counts are groups listed in this atlas. They reflect how much research has been done in each state, not how many groups exist, so a low count or rank says more about coverage than about the riding community. Rank covers the ${PER_MILLION_RANKED.length} places with a listed group (${placesLabel().replace(/^places with a group listed: /,"")}); the ${NATIONAL_COUNT} national or multi-state umbrella groups are not counted toward any state. Population: ${esc(POPULATION_SOURCE)}.</p>
   </section>`;
 }
 
@@ -2716,7 +2723,7 @@ function renderVoiceMap(){
       <span><b>${esc(v.label)}</b> <i>${tally[v.id]||0}</i><br><small>${esc(v.desc)}</small></span></li>`).join("");
   const filtered=filters.q.trim()||filters.tier||filters.net;
   $("p-map").innerHTML=`${mapModeBar()}
-    <p class="map-note">Who speaks for each state, as listed in this atlas. Of the ${STATE_CODES.length} states, DC and Puerto Rico with a listed group, <strong>${tally.state||0} have a statewide group listed</strong>; the rest have no statewide group listed. Click a state for its scorecard. A state's color shows what this atlas has found so far, not what exists there${filtered?". This map ignores the search, tier and network filters":""}.</p>
+    <p class="map-note">Who speaks for each state, as listed in this atlas. Of the ${STATE_CODES.length} ${placesLabel().replace(/^places with a group listed: /,"places (")}) with a listed group, <strong>${tally.state||0} have a statewide group listed</strong>; the rest have no statewide group listed. Click a state for its scorecard. A state's color shows what this atlas has found so far, not what exists there. The ${NATIONAL_COUNT} national or multi-state umbrella groups (${esc(ORGS.filter(o=>o.s==="US").map(o=>o.a||o.n).join(", "))}) are tied to no one state, so they are not counted here; their chapters are${filtered?". This map ignores the search, tier and network filters":""}.</p>
     ${buildVoiceSVG()}
     <ul class="voice-legend">${legend}</ul>`;
 }
