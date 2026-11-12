@@ -120,7 +120,7 @@ The "who pays to build it" bars are deliberately the same length in both options
 
 ### Making it personal (display only)
 
-None of this touches `computeWhy()`, `WHY_INPUTS`, a slider range or a default, so nothing here needs porting to the ROI Calculator.
+None of this touches `computeWhy()`, `WHY_INPUTS`, a slider range or a default. The wording relabel further down does need porting (see "Waiting to be ported to the ROI Calculator").
 
 - **Your town (optional).** A text box at the top of the tab. The name labels the result ("Scenario for Castle Rock, Colorado"), the pinned bar, the printout and the shared link. It is a label only: nothing is looked up and no number changes. Because it can arrive in a link, it is cleaned (`cleanTown()`: letters, digits, spaces and `. , ' ’ ( ) & -` only, at most `WHY_TOWN_MAX` = 60 characters) and only ever written as text, never as HTML.
 - **Your state (optional).** A state picker. It adds a card under the ledger, "Groups listed in Colorado that could be the partner", with the count listed in this atlas, any statewide group, the networks with groups there, and buttons into that state's Directory and scorecard (and its trailhead map for CA, CO, VT, OR). It does not change any number. Arriving from a one-state view (`#colorado`, then Why) starts the picker on that state.
@@ -132,8 +132,31 @@ None of this touches `computeWhy()`, `WHY_INPUTS`, a slider range or a default, 
   ```
   (`100dvh` is the currently visible height; browsers that do not know it keep using `100vh`.) If the frame is ever sized to the full content height instead, the result is always "on screen" from the frame's point of view and the bar will not appear; the in-flow copy still does.
 - **Share this scenario.** Copies a link that restores every slider, the inflation pill, the town and the state (`#why?miles=14&grant=40&infl=2&town=Castle+Rock&state=co`), or opens the phone's share sheet. The link opens the full tab, so the number always arrives with its inputs and caveats.
-- **The number never travels alone.** Under the three result cards a scenario line lists the key inputs (trail length, cost per mile, grant share, volunteer hours, private capital, horizon, and inflation when on) and the model's caveat line. It prints on page 1 beside the number. Print / PDF from an iframe carries the town and state too (`w_town`, `w_state`).
-- **All wording in one place.** `WHY_TEXT` in the data block holds the result labels ("Option 1 · Municipal only", "Partnership saves" and so on) and the caveat line. The result cards, the phone summary, the pinned bar, the scenario line and the "Data sources & methodology notes" section all read it, so relabelling the dollar language is one edit there. The values are the tab's existing wording, unchanged; if they are ever relabelled, check the ROI Calculator's Partnerships panel for the same wording.
+- **The number never travels alone.** Under the three result cards a scenario line lists the key inputs (trail length, cost per mile, grant share, volunteer hours, private capital, horizon, and inflation when on), the "illustrative only" line and the model's caveat line. It prints on page 1 beside the number. Print / PDF from an iframe carries the town and state too (`w_town`, `w_state`).
+- **All wording in one place.** `WHY_TEXT` in the data block holds the tab heading, the result labels ("Option 1 · Municipal only", "Option 2 estimated lower by" and so on), the "illustrative only" line and the caveat line. The heading, result cards, phone summary, in-flow phone result, pinned bar, scenario line, share sheet text and the "Data sources & methodology notes" section all read it, so changing the dollar language is one edit there. If it changes, make the same change in the ROI Calculator's Partnerships panel (see below).
+
+### Illustrative cost comparison (labelling rule, November 2026)
+
+Results on this tab are shareable by link and print, so every dollar figure is presented as an **illustrative cost comparison**, not a forecast, a promise of savings, or advice.
+
+- The tab is headed "Illustrative cost comparison". The lead result reads "Option 2 estimated lower by $225K (33%)" (or "estimated higher by"; "Estimated difference" when within 1%), with "under these inputs" in its sub-line. It never says a town "saves".
+- A fixed line goes beside every result: **"Illustrative only. Based on the inputs shown, which you can change. Not a forecast, an offer, or financial advice."** It sits in the scenario line (screen and print page 1) and in the methodology section. A shorter form, "Illustrative only, from the inputs shown. Not a forecast, offer or advice.", sits in the pinned bar, the phone's in-flow result and the phone's sticky summary, and goes with the share sheet text and the "link copied" message on the Why tab.
+- Do not use "ROI", "return", "savings", "guaranteed" or any promise of what a town will get in result wording.
+- This is wording only: `computeWhy()`, `WHY_INPUTS` ranges and defaults, and every number are unchanged (checked: default and all-maximum outputs are identical before and after).
+
+### Waiting to be ported to the ROI Calculator
+
+The November 2026 relabel above changes the result wording and adds a paragraph to the "Data sources & methodology notes" section, which the sync rule in `CLAUDE.md` says must match in both tools. The ROI Calculator (`postmillennium-MTB/mtb-economic-studies`, Partnerships panel) still needs these changes. Remove this list once they are made there.
+
+1. Panel heading or title: add "Illustrative cost comparison".
+2. Result labels: "Partnership saves" becomes "Option 2 estimated lower by"; "Partnership costs more" becomes "Option 2 estimated higher by"; "Difference" (within 1%) becomes "Estimated difference".
+3. Result sub-line: "Cheaper / Costlier municipal cost over N years" becomes "Lower / Higher estimated town cost over N years, under these inputs"; "Within 1% — on these assumptions the two approaches are a wash." becomes "Within 1%: under these inputs the two estimates are about the same."; "Town's N-year cost:" becomes "Estimated town N-year cost:".
+4. Beside every result (on screen and in its print report): "Illustrative only. Based on the inputs shown, which you can change. Not a forecast, an offer, or financial advice."
+5. "Data sources & methodology notes": add a first section, **What this comparison is**: "An illustrative cost comparison for planning conversations. Every figure on this tab is an estimate computed from the inputs shown, all of which you can change. Illustrative only. Based on the inputs shown, which you can change. Not a forecast, an offer, or financial advice." and repeat the line after the closing caveat.
+6. Wording in the panel's flags and chart notes: "Option 2 still comes out ahead here." becomes "Option 2 still comes out lower on these inputs."; "...is where the money actually is." becomes "On these inputs the gap widens every year the non-profit keeps its crews out there: the maintenance liability, not the construction discount, drives most of the difference."; the build-only flag's "volunteer adoption savings are included" becomes "volunteer adoption offset is included".
+7. Slider hints (wording only, no figure): "The ceiling on volunteer savings." becomes "The ceiling on what volunteer labor can offset."; "...the partnership stops paying for itself." becomes "...Option 2 comes out more expensive."
+
+No figure, slider range, default or line of `computeWhy()` changes, so the cost models stay identical.
 
 ## Color themes
 
