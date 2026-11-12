@@ -2000,9 +2000,11 @@ const SPOTLIGHT_STRIDE=97;   // automatic rotation steps this far through the al
 /* ================== END OF DATA — everything below is logic ================== */
 
 /* ==== FEEDBACK — where "Suggest a correction" and "Know a group we're missing?" send visitors ====
-   Today every such link opens a NEW GITHUB ISSUE on the atlas repo, pre-filled with the group (or
-   the search and state) through the two forms in .github/ISSUE_TEMPLATE/ (correction.yml and
-   missing-group.yml). The sender needs a free GitHub account. Nothing is sent by this page itself.
+   Since November 2026 every such link opens Jon's GOOGLE FORM (kind:"form"): no account needed and
+   the answers stay private. Nothing is sent by this page itself.
+   kind:"github" opens a new public GitHub issue instead, pre-filled through the two forms in
+   .github/ISSUE_TEMPLATE/ (correction.yml, missing-group.yml); the sender needs a GitHub account.
+   That branch is kept, so switching back is this one setting.
 
    TO SWITCH TO A GOOGLE FORM (or any other form):
      1. Set kind to "form" and url to the form's public link, e.g.
@@ -2014,10 +2016,14 @@ const SPOTLIGHT_STRIDE=97;   // automatic rotation steps this far through the al
         group, state, what was searched, atlas link.
    NEVER put an email address here (or anywhere in this page): the page is public. ==== */
 const FEEDBACK={
-  kind:"github",
-  url:"https://github.com/postmillennium-MTB/Trail-Advocacy-Atlas/issues/new",
-  note:"Opens a pre-filled form on GitHub (free account needed). Every suggestion is checked against the group's own site before it is listed.",
-  formFields:{kind:"",group:"",state:"",search:"",link:""}
+  kind:"form",
+  url:"https://docs.google.com/forms/d/e/1FAIpQLScH2YmiMrd-WLa5eGSTu55xtNdiwnXLZn0h1dOCHutTG3FhFw/viewform",
+  note:"Opens a short Google Form. No account needed, and nothing you send is published. Every suggestion is checked against the group's own site before the atlas changes.",
+  // summary: ONE question that a correction pre-fills with the group, its state and the atlas link
+  // (today the form's first question, "Name of the trail organization & website URL"). A missing-group
+  // report leaves it empty for the visitor to type. The other five pre-fill a question each, if the
+  // form ever gets separate questions for them.
+  formFields:{summary:"entry.851645013",kind:"",group:"",state:"",search:"",link:""}
 };
 
 /* ---------- tuning constants (named so they're findable, not buried in functions) ---------- */
@@ -2450,6 +2456,8 @@ function feedbackURL(info){
     const put=(k,v)=>{if(f[k]&&v)p.set(f[k],v)};
     put("kind",info.kind==="correction"?"Correction":"Missing group");
     put("group",info.group);put("state",stName);put("search",info.search);put("link",info.link);
+    if(info.kind==="correction")put("summary",
+      "Correction for "+info.group+(stName?" ("+stName+")":"")+(info.link?", "+info.link:"")+". What should change: ");
     if(p.toString())p.set("usp","pp_url");   // Google Forms' own flag for a pre-filled link
   }
   const qs=p.toString();
