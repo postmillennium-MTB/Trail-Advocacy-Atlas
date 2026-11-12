@@ -41,6 +41,7 @@
                                   by the result cards, pinned bar, scenario line and printout)
     · LIST_SOURCES .............. how each state's list was built (copied from the README), shown on scorecards
     · VOICE_LEVELS registry ..... the four "Who speaks for my state" map categories
+    · SPOTLIGHT ................. "Organization of the month" picks for the Start tab (optional)
     · tuning constants .......... dot sizes, thresholds, timings (named, not buried)
     ==== everything past "END OF DATA" is logic ====
     · STATE_SLUGS ............... state name/code lookup for #utah-style URL-hash links
@@ -538,6 +539,24 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
   .start-door p{display:none}      /* phones: heading and the control only, so all three fit the first screen */
   .door-kicker{display:none}
 }
+/* ---- Organization of the month, on the Start tab (spotlightHTML, SPOTLIGHT in the data) ---- */
+.spotlight{border:1.5px solid var(--rule);border-left:5px solid var(--clay);border-radius:4px;background:#fff;
+  padding:14px 18px 12px;margin:0 0 26px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.spotlight h3{margin:0;font:400 24px/1.15 "Iowan Old Style",Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
+.spotlight h3 .abbr{margin-left:8px;vertical-align:middle}
+.spot-meta{margin:0;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.spot-desc{margin:0;font-size:15px;line-height:1.45;color:var(--ink);max-width:70ch}
+.spot-note{margin:0;font-size:14px;line-height:1.45;color:var(--slate);font-style:italic;max-width:70ch}
+.spot-actions{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding-top:2px}
+.spot-actions a,.spot-actions button{border:0;background:none;padding:6px 0;min-height:32px;cursor:pointer;text-decoration:none;
+  font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.spot-actions a span,.spot-actions button span{border-bottom:1.5px solid var(--clay)}
+.spot-actions a:hover span,.spot-actions button:hover span{background:var(--clay);color:#fff}
+.spot-actions a:focus-visible,.spot-actions button:focus-visible{outline:2px solid var(--clay);outline-offset:2px}
+.spot-how{margin:0;font-size:12px;line-height:1.35;color:var(--slate)}
+.spot-how a{color:var(--clay);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--clay)}
+.spot-how a:hover,.spot-how a:focus-visible{background:var(--clay);color:#fff}
+@media(max-width:560px){.spotlight{padding:12px 13px 10px}.spotlight h3{font-size:20px}.spotlight .spot-kicker{display:block}}
 /* "Know a group we're missing?" and "Suggest a correction" (see FEEDBACK in the logic) */
 .feedback-prompt{font-size:14px;color:var(--slate);margin:16px 0 0;padding:12px 14px;border:1.5px dashed var(--rule);border-radius:2px;text-align:left}
 .empty .feedback-prompt{max-width:60ch;margin:16px auto 0}
@@ -1960,6 +1979,24 @@ const VOICE_LEVELS=[
   {id:"thin",    glyph:"\u25CB", label:"Thin coverage",                     desc:"One or two groups listed and no statewide group listed. More probably exist."},
 ];
 
+/* ==== SPOTLIGHT — "Organization of the month" on the Start tab ====
+   Each month the Start tab features one group from the directory. To choose the group yourself,
+   add one line here (newest at the bottom is fine, order does not matter):
+     month  "YYYY-MM", the visitor's own calendar month
+     org    the group's abbreviation (a) or, when it has none, its exact name (n)
+     note   OPTIONAL: one sentence of your own, shown under the listing. Leave it out rather
+            than guess: the card otherwise shows only what the listing already says.
+   Example:  {month:"2026-12", org:"COPMOBA", note:"Built the Lunch Loops with the City of Grand Junction."},
+   (that note is an example of the format only, not a checked fact).
+   A month with no line here picks a group automatically: it rotates through every group with a
+   website that is not flagged "not confirmed active", skipping the national umbrellas, and does
+   not repeat until it has been through them all. Adding or removing groups reshuffles the
+   automatic order, so pin a month here if the pick has to stay put (for a post or a newsletter). */
+const SPOTLIGHT=[
+];
+const SPOTLIGHT_STRIDE=97;   // automatic rotation steps this far through the alphabet each month, so
+                             // neighbouring months land in different states (any value works)
+
 /* ================== END OF DATA — everything below is logic ================== */
 
 /* ==== FEEDBACK — where "Suggest a correction" and "Know a group we're missing?" send visitors ====
@@ -2960,6 +2997,50 @@ function nearAnswerHTML(q){
      See my state           -> that state's Directory with its scorecard on top (#colorado)
      Make the case ...      -> the Why tab, with the typed town as its label (#why?town=...)
    Then the national stat strip as context. Nothing here is stored in the link. ==== */
+/* ==== spotlightFor() / spotlightHTML() — "Organization of the month" on the Start tab ====
+   A month listed in SPOTLIGHT shows that pick (and its optional note). Any other month picks
+   automatically: the eligible groups, sorted by name, are stepped through SPOTLIGHT_STRIDE at a
+   time (nudged to share no factor with the pool size, so every group comes up once before any
+   repeats). The card only repeats what the listing already holds: name, tier, state, network,
+   description and website. Returns "" (no card) if nothing qualifies. */
+function spotlightEligible(o){
+  return o.tier!=="national"&&o.w&&!o.status&&!o.conf&&!/not confirmed|unconfirmed/i.test(o.r||"");
+}
+function spotlightFor(date){
+  const ym=date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0");
+  const pick=SPOTLIGHT.find(x=>x.month===ym);
+  if(pick){
+    const o=(pick.org&&ORG_BY_ABBR[pick.org])||ORGS.find(x=>x.n===pick.org);
+    if(o)return{o,note:pick.note||"",chosen:true};
+  }
+  const pool=ORGS.filter(spotlightEligible).sort((a,b)=>a.n.localeCompare(b.n));
+  if(!pool.length)return null;
+  const gcd=(a,b)=>b?gcd(b,a%b):a;
+  let step=Math.max(1,SPOTLIGHT_STRIDE|0);
+  while(pool.length>1&&gcd(step,pool.length)!==1)step++;
+  const monthNo=date.getFullYear()*12+date.getMonth();
+  return{o:pool[(monthNo*step)%pool.length],note:"",chosen:false};
+}
+function spotlightHTML(date){
+  const sp=spotlightFor(date);
+  if(!sp)return "";
+  const o=sp.o, slug=SLUG_OF.get(o), parent=o.p&&ORG_BY_ABBR[o.p];
+  const month=date.toLocaleString("en-US",{month:"long",year:"numeric"});
+  const meta=[TIER_LABELS[o.tier]||o.tier,STATE_NAMES[o.s]||o.s].concat(parent?["Part of "+(parent.a||parent.n)]:[]);
+  return `<section class="spotlight" aria-labelledby="spot-h">
+      <span class="door-kicker spot-kicker">Organization of the month &middot; ${esc(month)}</span>
+      <h3 id="spot-h">${esc(o.n)}${o.a?`<span class="abbr">${esc(o.a)}</span>`:""}</h3>
+      <p class="spot-meta">${meta.map(esc).join(" &middot; ")}</p>
+      ${o.r?`<p class="spot-desc">${esc(o.r)}</p>`:""}
+      ${sp.note?`<p class="spot-note">${esc(sp.note)}</p>`:""}
+      <div class="spot-actions">
+        ${o.w?`<a href="${esc(o.w)}" target="_blank" rel="noopener"><span>Visit their website</span> &rarr;</a>`:""}
+        <button type="button" data-open-org="${slug}"><span>See it in the Directory</span></button>
+        <button type="button" data-copy-org="${slug}"><span>Copy link</span></button>
+      </div>
+      <p class="spot-how">${sp.chosen?"Picked for this month by the atlas.":"A different group from the directory every month."} Something out of date? ${feedbackLink({kind:"correction",group:o.n,state:o.s,link:shareURL("#org/"+slug)},"Suggest a correction")}</p>
+    </section>`;
+}
 function renderStart(){
   const box=$("p-start");
   const f=nationalFacts(), counts=stateCounts(ORGS);
@@ -2999,6 +3080,7 @@ function renderStart(){
         <span class="door-note">${esc(WHY_TEXT.noticeShort)}</span>
       </section>
     </div>
+    ${spotlightHTML(new Date())}
     <div class="start-more">
       <h3>The atlas at a glance</h3>
       <div class="stat-strip">${nationalStatsHTML()}${STAT_NOTE_HTML}</div>

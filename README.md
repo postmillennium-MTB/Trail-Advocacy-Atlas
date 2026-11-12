@@ -294,6 +294,14 @@ The plain address opens on the **Start** tab instead of the By state donut. It s
 
 Below them, the national stat strip, as context. The Start tab hides the stat strip, search and tier bar at the top of the page (it is registered with `filters:false`, like Why), which is what lifts the start choices above the fold: on a 1280×800 desktop all three forms sit inside the first screen; on a 390px phone the tab row moved up from about 680px to about 415px and the first two forms are on the first screen. Phones get the same three choices with the one-line descriptions dropped. `renderStart()` builds it; `LANDING_TAB` names it.
 
+## Organization of the month (Start tab)
+
+Under the three start choices, the Start tab features one listed group each month: its name, tier, state, parent network and description exactly as the listing has them, with links to its website, its Directory profile, a copyable link and "Suggest a correction". Nothing is added beyond the listing.
+
+- **Choosing the group yourself:** add one line to `SPOTLIGHT` in the data block, for example `{month:"2026-12", org:"COPMOBA"}`. `org` is the abbreviation, or the exact name for a group without one. An optional `note` shows one sentence of your own under the listing; leave it out rather than guess.
+- **Any month without a line picks automatically.** It steps through every group that has a website, is not flagged "not confirmed active" and is not a national umbrella, and uses every one before repeating. Adding or removing groups reshuffles the automatic order, so pin a month in `SPOTLIGHT` when the pick must stay fixed (a post or newsletter that names it).
+- The month is the visitor's own calendar month, so around midnight on the 1st two visitors in different time zones can see different groups.
+
 ## The nine tabs
 
 Start (the landing view, see above), Why (cost model, see below), Directory (searchable list grouped by state), By state (donut chart; also where a link that matches nothing opens), Map (50-state cartogram, point map for CA/CO/VT/OR), Trailhead map (standalone point map), Charts (per-capita and coverage charts), Structure (parent organization and chapter hierarchy, built from the `p` field) and Near me (distance ranking from your location or a town in CA/CO/VT/OR, and a state-level answer everywhere else; see "Near me everywhere"). The list lives in the `TABS` registry.
