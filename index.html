@@ -60,6 +60,7 @@
     · renderPie() ............... By State tab (donut chart)
     · renderTree() .............. Structure tab (parent/chapter hierarchy)
     · renderNear() .............. Near me tab (geolocation / town search)
+    · renderStart() ............. Start tab: the landing view with three start choices (plain address)
     · renderMap() ............... Map tab (cartogram shaded by count or by "Who speaks for my state",
                                   or point map for CA/CO/VT/OR)
     · renderPointMap() .......... inline point map
@@ -507,6 +508,36 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .near-name button:hover,.near-name button:focus-visible{background:var(--clay);color:#fff}
 .near-tag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
   border:1px solid var(--rule);padding:1px 6px;border-radius:2px;white-space:nowrap}
+/* ---- start (landing) ---- the three start choices, renderStart() */
+.start-lede{font:400 19px/1.4 "Iowan Old Style",Georgia,serif;color:var(--ink);margin:0 0 14px}
+.start-lede b{font-weight:600}
+.start-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 26px}
+.start-door{display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;min-width:0}
+.door-kicker{font:600 10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dirt)}
+.start-door h3{margin:0;font:400 27px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
+.start-door p{margin:0;font-size:14px;line-height:1.4;color:var(--slate)}
+.door-form{display:flex;gap:8px;margin-top:auto;padding-top:4px}
+.door-form input,.door-form select{flex:1;min-width:0;width:auto;min-height:46px;font:15px inherit;padding:10px 11px;
+  border:1.5px solid var(--rule);background:#fff;color:var(--ink);border-radius:2px}
+.door-form input:focus,.door-form select:focus{outline:2px solid var(--clay);outline-offset:1px;border-color:var(--clay)}
+.door-form .near-btn{min-height:46px;white-space:nowrap;flex:0 0 auto}
+.door-form .near-btn:focus-visible,.door-alt:focus-visible{outline:2px solid var(--clay);outline-offset:2px}
+.door-alt{align-self:flex-start;border:0;background:none;padding:6px 0;min-height:32px;cursor:pointer;text-align:left;
+  font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.door-alt span{border-bottom:1.5px solid var(--clay)}
+.door-alt:hover span{color:var(--ink);background:var(--clay)}
+.door-note{font-size:12px;line-height:1.35;color:var(--slate);min-height:32px;display:flex;align-items:center}
+.start-more{border-top:1.5px solid var(--rule);padding-top:16px}
+.start-more .stat-strip{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}   /* as .counts */
+.start-more h3{margin:0 0 12px;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+@media(max-width:900px){.start-doors{grid-template-columns:1fr;gap:12px}}
+@media(max-width:560px){
+  .start-lede{font-size:16.5px;margin:0 0 12px}
+  .start-door{padding:13px 13px 12px;gap:7px}
+  .start-door h3{font-size:22px}
+  .start-door p{display:none}      /* phones: heading and the control only, so all three fit the first screen */
+  .door-kicker{display:none}
+}
 /* "Know a group we're missing?" and "Suggest a correction" (see FEEDBACK in the logic) */
 .feedback-prompt{font-size:14px;color:var(--slate);margin:16px 0 0;padding:12px 14px;border:1.5px dashed var(--rule);border-radius:2px;text-align:left}
 .empty .feedback-prompt{max-width:60ch;margin:16px auto 0}
@@ -887,7 +918,7 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .is-clipped>.cap-row,.is-clipped>li{display:revert!important}
   .is-clipped>.cap-row{display:grid!important}
   .is-clipped>li.tree-leaf{display:flex!important}
-  .show-all,.feedback-prompt,.near-pick,.near-actions{display:none!important}
+  .show-all,.feedback-prompt,.near-pick,.near-actions,.door-form,.door-alt{display:none!important}
 
   /* ---- keep things together across page breaks ---- */
   .stategroup h2,.tree-h,.chart-card h3,.why-group h4,.why-caveats h4{break-after:avoid;page-break-after:avoid}
@@ -1793,6 +1824,7 @@ let currentTheme=DEFAULT_THEME;
    time avoids any declaration-order trap.
    ================================================================================ */
 const TABS=[
+  {id:"start",  label:"Start",         render:"renderStart", filters:false},
   {id:"why",    label:"Why",           render:"renderWhy", filters:false},
   {id:"list",   label:"Directory",     render:"renderList"},
   {id:"pie",    label:"By state",      render:"renderPie"},
@@ -1802,7 +1834,8 @@ const TABS=[
   {id:"tree",   label:"Structure",     render:"renderTree"},
   {id:"near",   label:"Near me",       render:"renderNear"},
 ];
-const DEFAULT_TAB="pie";
+const DEFAULT_TAB="pie";      // where a link that matches nothing opens (#nonsense)
+const LANDING_TAB="start";    // what the plain address (no # at all) opens: the three start choices
 
 /* ==== WHY TAB — number formatters =============================================
    Declared above WHY_INPUTS because the registry stores direct references to
@@ -2195,11 +2228,12 @@ const VOICE_BY_ID=Object.fromEntries(VOICE_LEVELS.map(v=>[v.id,v]));
 
 /* "50 states, DC &amp; Puerto Rico": spells out exactly which places a count of STATE_CODES covers. */
 const NATIONAL_COUNT=ORGS.filter(o=>o.s==="US").length;   // national / multi-state entries, tied to no one state
-function placesLabel(){
+function placesList(){
   const n=STATE_CODES.filter(c=>c!=="DC"&&c!=="PR").length;
   const extra=["DC","PR"].filter(c=>STATE_CODES.includes(c)).map(c=>c==="DC"?"DC":"Puerto Rico");
-  return `places with a group listed: ${n} state${n===1?"":"s"}${extra.length?", "+extra.join(" &amp; "):""}`;
+  return `${n} state${n===1?"":"s"}${extra.length?", "+extra.join(" &amp; "):""}`;
 }
+function placesLabel(){return "places with a group listed: "+placesList()}
 /* National facts for the stat strip. */
 function nationalFacts(){
   const counts=Object.values(stateCounts(ORGS)).sort((a,b)=>b-a);
@@ -2235,15 +2269,18 @@ function renderCounts(){
          :statHTML("None",`statewide group listed here`,"#map?mode=voice","See who speaks for each state on the map"))+
       (f.pointMap?statHTML(f.mapped,"on the trailhead map","#detail?state="+code,`Open the ${f.name} trailhead map`)
          :statHTML(f.inNet,`${f.inNet===1?"belongs":"belong"} to a larger network${top?" ("+esc(top.net)+(f.nets.length>1?" and others":"")+")":""}`,top?`#list?state=${code}&net=${top.net}`:null,top?`Show the ${top.net} groups in ${f.name}`:""));
-  }else{
-    const f=nationalFacts();
-    html=statHTML(f.total,"groups listed in this atlas","#list","Open the full Directory")+
-      statHTML(f.places,placesLabel(),"#map?mode=voice","See who speaks for each state on the map")+
-      statHTML(f.netPct+"%","belong to a larger network","#tree","See how the networks fit together on the Structure tab")+
-      statHTML(f.half,"states hold half of all listed groups","#charts","See the cumulative share chart on the Charts tab");
-  }
-  box.innerHTML=html+`<p class="stat-note">Counts are groups listed in this atlas. They reflect how much research has been done in each state, not how many groups exist.</p>`;
+  }else html=nationalStatsHTML();
+  box.innerHTML=html+STAT_NOTE_HTML;
 }
+/* The four national facts; also shown under the start choices on the Start tab. */
+function nationalStatsHTML(){
+  const f=nationalFacts();
+  return statHTML(f.total,"groups listed in this atlas","#list","Open the full Directory")+
+    statHTML(f.places,placesLabel(),"#map?mode=voice","See who speaks for each state on the map")+
+    statHTML(f.netPct+"%","belong to a larger network","#tree","See how the networks fit together on the Structure tab")+
+    statHTML(f.half,"states hold half of all listed groups","#charts","See the cumulative share chart on the Charts tab");
+}
+const STAT_NOTE_HTML=`<p class="stat-note">Counts are groups listed in this atlas. They reflect how much research has been done in each state, not how many groups exist.</p>`;
 
 /* ==== scorecardHTML() — the summary card at the top of a one-state Directory (#colorado). Every
    number is a button that opens the matching Directory view, through the same links Share writes. ==== */
@@ -2917,6 +2954,88 @@ function nearAnswerHTML(q){
       ${missingPromptHTML(q.trim(),"")}
     </section>`;
 }
+/* ==== renderStart() — the Start tab: what the plain address opens (LANDING_TAB). Three start choices,
+   each a small form, so Enter works and every choice ends in a view that already has its own link:
+     Find a group           -> Near me with the typed town or state (#near?q=...), or Near me empty
+     See my state           -> that state's Directory with its scorecard on top (#colorado)
+     Make the case ...      -> the Why tab, with the typed town as its label (#why?town=...)
+   Then the national stat strip as context. Nothing here is stored in the link. ==== */
+function renderStart(){
+  const box=$("p-start");
+  const f=nationalFacts(), counts=stateCounts(ORGS);
+  const opts=STATE_CODES.slice().sort((a,b)=>STATE_NAMES[a].localeCompare(STATE_NAMES[b]))
+    .map(c=>`<option value="${c}">${esc(STATE_NAMES[c])} (${counts[c]||0})</option>`).join("");
+  box.innerHTML=`
+    <p class="start-lede">A directory of <b>${f.total} nonprofit trail groups</b> in ${placesList()}. Where would you like to start?</p>
+    <div class="start-doors">
+      <section class="start-door" aria-labelledby="door-find-h">
+        <span class="door-kicker">Search or Near me</span>
+        <h3 id="door-find-h">Find a group</h3>
+        <p>Type your town or state to see the groups that ride, build and maintain trails there.</p>
+        <form class="door-form" id="door-find" role="search">
+          <input type="search" id="door-find-q" placeholder="Town or state, e.g. Durango" aria-label="Your town or state" autocomplete="off">
+          <button type="submit" class="near-btn">Find</button>
+        </form>
+        <button type="button" class="door-alt" data-route="#list"><span>Or browse the full Directory</span></button>
+      </section>
+      <section class="start-door" aria-labelledby="door-state-h">
+        <span class="door-kicker">Scorecard</span>
+        <h3 id="door-state-h">See my state</h3>
+        <p>Who speaks for your state, how many groups are listed and which networks they belong to.</p>
+        <form class="door-form" id="door-state">
+          <select id="door-state-pick" aria-label="Your state"><option value="">Pick a state</option>${opts}</select>
+          <button type="submit" class="near-btn">Open</button>
+        </form>
+        <button type="button" class="door-alt" data-route="#map?mode=voice"><span>Or see every state on the map</span></button>
+      </section>
+      <section class="start-door" aria-labelledby="door-why-h">
+        <span class="door-kicker">${esc(WHY_TEXT.heading)}</span>
+        <h3 id="door-why-h">Make the case to my town</h3>
+        <p>Compare a town building and maintaining trails on its own with partnering with a local nonprofit. Every input can be changed.</p>
+        <form class="door-form" id="door-why">
+          <input type="text" id="door-why-town" placeholder="Your town (optional)" aria-label="Your town (optional)" maxlength="60" autocomplete="off">
+          <button type="submit" class="near-btn">Open</button>
+        </form>
+        <span class="door-note">${esc(WHY_TEXT.noticeShort)}</span>
+      </section>
+    </div>
+    <div class="start-more">
+      <h3>The atlas at a glance</h3>
+      <div class="stat-strip">${nationalStatsHTML()}${STAT_NOTE_HTML}</div>
+    </div>`;
+  const go=(route,focusSel)=>{
+    applyRoute(route);   // switchTab() inside it adds the Back step (leaveLanding)
+    scrollToPanels();
+    const el=(focusSel&&document.querySelector(focusSel))||$("tabbar").querySelector('button[aria-selected="true"]');
+    if(el)el.focus({preventScroll:true});
+  };
+  $("door-find").addEventListener("submit",e=>{
+    e.preventDefault();
+    const q=$("door-find-q").value.trim().slice(0,PRINT_QUERY_MAX);
+    if(q)go({tab:"near",nearQ:q},"#p-near .near-h");
+    else go({tab:"near"},"#near-town");
+  });
+  $("door-state").addEventListener("submit",e=>{
+    e.preventDefault();
+    const st=$("door-state-pick").value;
+    if(!STATE_CODES.includes(st)){$("door-state-pick").focus();return}
+    go({tab:"list",state:st},".scorecard .sc-head h2");
+  });
+  $("door-why").addEventListener("submit",e=>{
+    e.preventDefault();
+    go({tab:"why",town:cleanTown($("door-why-town").value).trim()});
+  });
+}
+/* Leaving the Start tab adds one step to the browser's history (every other move only rewrites the
+   current step, see LINKS THAT FOLLOW THE VISITOR), so Back returns to the start choices. Not done
+   while the page is following Back / Forward itself, or before it has finished loading. */
+let followingHistory=false;
+function leaveLanding(){
+  if(activeTab!==LANDING_TAB||!urlSyncReady||followingHistory)return;
+  clearTimeout(urlSyncTimer);
+  try{history.pushState(null,"",window.location.href)}catch(e){}
+}
+
 function renderNear(){
   const geoN=ORGS.filter(o=>o.lat!=null&&o.lng!=null).length;
   let resultHTML="";
@@ -3860,6 +3979,7 @@ function buildTabs(){
     b.addEventListener("click",()=>{switchTab(b.dataset.panel);render()}));
 }
 function switchTab(name){
+  if(name!==LANDING_TAB)leaveLanding();
   activeTab=name;
   $("tabbar").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
   // Keep the chosen tab inside the visible part of the bar (scrolls the bar only, never the page).
@@ -3987,6 +4107,7 @@ function resolveHashRoute(hash){
 function viewHash(){
   const p=new URLSearchParams();
   const out=head=>"#"+head+(p.toString()?"?"+p.toString():"");
+  if(activeTab===LANDING_TAB)return "";   // the start choices live at the plain address
   if(activeTab==="list"&&openOrg)return "#org/"+openOrg;
   if(activeTab==="why"){
     if(whyBuilt){
@@ -4017,7 +4138,6 @@ function viewHash(){
   if(filters.net)p.set("net",filters.net);
   if(q)p.set("q",q);
   if(activeTab==="map"&&mapMode==="voice")p.set("mode","voice");
-  if(activeTab===DEFAULT_TAB&&!p.toString())return "";
   return out(activeTab);
 }
 
@@ -4236,8 +4356,9 @@ function init(){
   // that state; see resolveHashRoute() / STATE_SLUGS.
   // A link that carries filters, an organization or Why settings (see LINKS THAT FOLLOW THE
   // VISITOR) is applied in full by applyRoute() once the theme is in place, below.
+  // No # at all (or a bare #) opens the Start tab; a # that matches nothing opens DEFAULT_TAB.
   const route=resolveHashRoute(window.location.hash);
-  activeTab=route?route.tab:DEFAULT_TAB;
+  activeTab=route?route.tab:(window.location.hash.replace(/^#/,"")?DEFAULT_TAB:LANDING_TAB);
   buildTabs();
   switchTab(activeTab);   // also settles whether the filter bar is shown for this tab
   // restore the saved theme (falling back to the default if it's unknown/missing),
@@ -4261,10 +4382,9 @@ function init(){
   $("print-btn").addEventListener("click",printView);
   // React to a hash change after load too (e.g. a same-page anchor click),
   // not just the one the page was opened with.
-  window.addEventListener("hashchange",()=>{
-    const route=resolveHashRoute(window.location.hash);
-    if(route)applyRoute(route);
-  });
+  window.addEventListener("hashchange",followAddress);
+  // Back / Forward between the start choices and the view a visitor went on to (see leaveLanding).
+  window.addEventListener("popstate",followAddress);
   // Fallback deep-link path for when this page is embedded in a cross-origin
   // <iframe> (e.g. postmillenniumrenaissance.com/trail-advocacy-atlas/) — a
   // hash on the OUTER page's URL never reaches this page's own
@@ -4276,8 +4396,21 @@ function init(){
     if(!PMR_ORIGINS.includes(e.origin))return;
     if(!e.data||e.data.type!=="pmr-hash"||typeof e.data.hash!=="string")return;
     const route=resolveHashRoute(e.data.hash);
-    if(route)applyRoute(route);
+    // The wrapper page passing on its own address is not the visitor leaving the start choices,
+    // so it adds no Back step.
+    followingHistory=true;
+    try{if(route)applyRoute(route)}finally{followingHistory=false}
   });
+}
+/* Open whatever the address now says. A plain address means the start choices; they keep the
+   Directory filters as they were, so Back then Directory returns to the same list. */
+function followAddress(){
+  const route=resolveHashRoute(window.location.hash);
+  followingHistory=true;
+  try{
+    if(route)applyRoute(route);
+    else if(!window.location.hash.replace(/^#/,"")&&activeTab!==LANDING_TAB){switchTab(LANDING_TAB);render()}
+  }finally{followingHistory=false}
 }
 /* periodic masthead title swap */
 (function(){
