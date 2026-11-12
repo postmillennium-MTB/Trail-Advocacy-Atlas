@@ -46,7 +46,7 @@ The live page is the GitHub Pages copy of `main` (`postmillennium-mtb.github.io/
 
 ## Checking a build before merge
 
-Load `index.html` in a headless browser at about 390px and 1280px wide and confirm: no console errors; `#utah`, `#ut`, `#dc`, `#why` and a nonsense hash all behave (nonsense falls back to By state); the phone Filters button opens the panel; the Trailhead map draws one dot per entry with `lat`/`lng` for each of CA, CO, VT, OR; every tab renders; no duplicate abbreviations or names; every `p` value matches an existing `a`.
+Load `index.html` in a headless browser at about 390px and 1280px wide and confirm: no console errors; the plain address opens the Start tab and its three start choices land in the right place, with Back returning to Start; `#utah`, `#ut`, `#dc`, `#why` and a nonsense hash all behave (nonsense falls back to By state); the phone Filters button opens the panel; the Trailhead map draws one dot per entry with `lat`/`lng` for each of CA, CO, VT, OR; every tab renders; no duplicate abbreviations or names; every `p` value matches an existing `a`.
 
 ## Contact details: collect, but do not publish
 
