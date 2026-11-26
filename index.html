@@ -914,6 +914,19 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
    print dialog (Letter in the US, A4 elsewhere); the layout is fluid and fits either. */
 .print-only{display:none}
 @page{margin:.55in}
+/* ==== KEYBOARD ==============================================================
+   Skip link: off-screen until focused. Focus rings on map/chart marks use stroke for SVG
+   shapes (outline is unreliable on SVG in Safari) and an outline for the legend rows. */
+.skip-link{position:absolute;left:8px;top:-60px;z-index:100;padding:10px 14px;border:0;border-radius:2px;
+  background:var(--ink);color:var(--paper);font:600 14px/1.2 "Iowan Old Style",Charter,Georgia,serif;cursor:pointer}
+.skip-link:focus{top:8px;outline:3px solid var(--clay-t);outline-offset:2px}
+.tabs button:focus-visible{outline:2px solid var(--clay-t);outline-offset:-2px}
+.panel:focus{outline:none}
+#p-pie li[data-state]:focus-visible{outline:2px solid var(--clay-t);outline-offset:2px}
+#p-map rect.state-path:focus-visible,#p-map g.voice-tile:focus-visible rect{stroke:var(--ink);stroke-width:4;outline:none}
+#p-map g.voice-tile:focus-visible{outline:none}
+#p-detail .geo-hit:focus-visible{stroke:var(--ink);stroke-width:3;outline:none}
+
 /* ==== TOUCH TARGETS ==========================================================
    On touch screens every control gets at least a 44px tap height (Apple's minimum;
    WCAG 2.5.8). Where a control can grow without changing the layout much, it gets a
@@ -1186,6 +1199,9 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
 </style>
 </head>
 <body>
+<!-- Keyboard users' shortcut past the masthead, stats and filters. A <button>, not a
+     #link, because every # on this page is a route (a bare #panels would open By state). -->
+<button type="button" class="skip-link" id="skip-link">Skip to content</button>
 <div class="texture" aria-hidden="true"></div>
 <div class="texture-2" aria-hidden="true"></div>
 <!-- ============ PAGE MARKUP ============
@@ -3307,7 +3323,7 @@ function buildCartogramSVG(counts,{cell=52,gap=4,mini=false}={}){
   });
   const w=cols*(cell+gap), h=rows*(cell+gap);
   return{
-    svg:`<svg viewBox="0 0 ${w} ${h}" width="100%" ${mini?'aria-hidden="true" focusable="false"':'role="img" aria-label="Map of organizations by state"'}>
+    svg:`<svg viewBox="0 0 ${w} ${h}" width="100%" ${mini?'aria-hidden="true" focusable="false"':'role="group" aria-label="Map of organizations by state. Each state tile is a button."'}>
       <rect x="0" y="0" width="${w}" height="${h}" fill="var(--paper)"/>${sq}</svg>`,
     max, mapFrom, mapTo
   };
@@ -3346,7 +3362,7 @@ function buildVoiceSVG(cell=52,gap=4){
       <text class="maplabel voice-glyph${dark?" dark":""}" x="${x+cell/2}" y="${y+cell/2+14}">${v.glyph}</text></g>`;
   });
   const w=12*(cell+gap), hgt=8*(cell+gap);
-  return `<svg viewBox="0 0 ${w} ${hgt}" width="100%" role="img" aria-label="Map: who speaks for each state, as listed in this atlas">
+  return `<svg viewBox="0 0 ${w} ${hgt}" width="100%" role="group" aria-label="Map: who speaks for each state, as listed in this atlas. Each state tile is a button.">
     <rect x="0" y="0" width="${w}" height="${hgt}" fill="var(--paper)"/>${sq}</svg>`;
 }
 function renderVoiceMap(){
@@ -3427,7 +3443,7 @@ function renderPointMap(list){
   });
   $("p-map").innerHTML=`${mapModeBar()}
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that group's profile in the Directory. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
-    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="group" aria-label="${STATE_NAMES[filters.state]} organizations by location">
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
     <div class="scalebar tier-key"><span class="tk"><span class="tier-dot tier-national" style="margin:0"></span>National</span><span class="tk"><span class="tier-dot tier-regional" style="margin:0"></span>Regional</span><span class="tk"><span class="tier-dot tier-state" style="margin:0"></span>Statewide</span><span class="tk"><span class="tier-dot tier-local" style="margin:0"></span>Local</span></div>${unpinnedNote(list)}`;
   $("p-map").querySelectorAll(".geo-hit").forEach(el=>
@@ -3456,7 +3472,7 @@ function renderDetailMap(){
   pts.forEach((o,i)=>{
     const cx=projX(o.lng),cy=projY(o.lat);
     const r=o.tier==="local"?DOT_R_LOCAL:DOT_R_UMBRELLA;
-    dots+=`<g><circle class="geo-hit" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r+DOT_HIT_PADDING}" fill="transparent"/>
+    dots+=`<g><circle class="geo-hit" data-idx="${i}" aria-label="${esc(o.n)}" cx="${cx}" cy="${cy}" r="${r+DOT_HIT_PADDING}" fill="transparent"/>
       <circle class="geo-dot" cx="${cx}" cy="${cy}" r="${r}" fill="${TIER_COLORS[o.tier]||palette[0]}" stroke="var(--paper)" stroke-width="1.5"/></g>`;
   });
   $("p-detail").innerHTML=`${statebar}
@@ -3466,7 +3482,7 @@ function renderDetailMap(){
       </div>
     </div>
     <p class="map-note" style="min-height:42px">${pts.length} geocoded organizations in ${esc(STATE_NAMES[detailState])} — real trailhead, shop, or office locations, not estimates. Click a dot to pin its details above; click the name to open its website.</p>
-    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(STATE_NAMES[detailState])} organizations, detailed map">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="group" aria-label="${esc(STATE_NAMES[detailState])} organizations, detailed map">
       <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.3" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5 4"/>${dots}
     </svg>
@@ -4123,23 +4139,72 @@ function updateWhyPin(){
   document.body.classList.toggle("why-pin-on",show);
 }
 
+/* ---------- keyboard access to map and chart marks ----------
+   The By state legend rows, the Map tab's state tiles (both modes) and the Trailhead map dots
+   are clickable but were mouse/touch only. After each render this gives every one a Tab stop,
+   role=button and a spoken name (from its tooltip text), and makes Enter/Space click it, so
+   the existing click handlers do the rest. Pie slices are skipped on purpose: each one is the
+   same state as a legend row, so keying both would double every stop. The interactive maps'
+   <svg> elements are role="group", not role="img", because an img's children are hidden from
+   screen readers. */
+const KEYABLE_MARKS='#p-pie li[data-state], #p-map rect.state-path[data-state], #p-map g.voice-tile, #p-detail .geo-hit';
+function makeMarksKeyable(){
+  document.querySelectorAll(KEYABLE_MARKS).forEach(el=>{
+    if(el.hasAttribute("tabindex"))return;
+    el.setAttribute("tabindex","0");
+    el.setAttribute("role","button");
+    if(!el.getAttribute("aria-label")){
+      const t=el.querySelector("title")||(el.parentNode&&el.parentNode.querySelector&&el.parentNode.querySelector(":scope > title"));
+      const name=(t&&t.textContent)||el.getAttribute("title")||el.textContent;
+      if(name&&name.trim())el.setAttribute("aria-label",name.trim().replace(/\s+/g," "));
+    }
+  });
+}
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  const el=e.target.closest&&e.target.closest(KEYABLE_MARKS);
+  if(!el||el!==e.target)return;
+  e.preventDefault();
+  el.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true}));
+});
+
 /* ---------- shell ---------- */
 
 /* Build the tab buttons and their (empty) panels from the registry. */
 function buildTabs(){
   $("tabbar").innerHTML=TABS.map(t=>
-    `<button type="button" role="tab" aria-selected="${t.id===activeTab}" data-panel="${t.id}">${esc(t.label)}</button>`
+    `<button type="button" role="tab" id="tab-${t.id}" aria-controls="p-${t.id}" aria-selected="${t.id===activeTab}" tabindex="${t.id===activeTab?0:-1}" data-panel="${t.id}">${esc(t.label)}</button>`
   ).join("");
   $("panels").innerHTML=TABS.map(t=>
-    `<div class="panel" id="p-${t.id}"${t.id===activeTab?"":" hidden"}></div>`
+    `<div class="panel" id="p-${t.id}" role="tabpanel" aria-labelledby="tab-${t.id}" tabindex="-1"${t.id===activeTab?"":" hidden"}></div>`
   ).join("");
   $("tabbar").querySelectorAll("button").forEach(b=>
     b.addEventListener("click",()=>{switchTab(b.dataset.panel);render();scrollToPanels()}));
+  /* Keyboard: the tab row is ONE stop for the Tab key (roving tabindex). Left/Right move
+     between tabs and open them, Home/End jump to the first/last. The ARIA pieces
+     (role=tab, aria-selected, aria-controls, role=tabpanel, roving tabindex, this handler)
+     work as one: removing any one leaves a worse widget than having none. */
+  $("tabbar").addEventListener("keydown",e=>{
+    const btns=[...$("tabbar").querySelectorAll('[role="tab"]')];
+    const i=btns.indexOf(document.activeElement);
+    if(i<0)return;
+    let j=null;
+    if(e.key==="ArrowRight")j=(i+1)%btns.length;
+    else if(e.key==="ArrowLeft")j=(i-1+btns.length)%btns.length;
+    else if(e.key==="Home")j=0;
+    else if(e.key==="End")j=btns.length-1;
+    if(j===null)return;
+    e.preventDefault();
+    btns[j].focus();btns[j].click();
+  });
 }
 function switchTab(name){
   if(name!==LANDING_TAB)leaveLanding();
   activeTab=name;
-  $("tabbar").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.panel===name));
+  $("tabbar").querySelectorAll("button").forEach(b=>{
+    b.setAttribute("aria-selected",b.dataset.panel===name);
+    b.tabIndex=b.dataset.panel===name?0:-1;
+  });
   // Keep the chosen tab inside the visible part of the bar (scrolls the bar only, never the page).
   const sel=$("tabbar").querySelector('button[aria-selected="true"]');
   if(sel){
@@ -4183,6 +4248,7 @@ function render(){
   if(typeof fn==="function")fn();
   else console.error("Tab '"+tab.id+"' points at missing render function:",tab.render);
   renderChips();
+  makeMarksKeyable();
   updateWhyPin();
   scheduleURLSync();
 }
@@ -4499,6 +4565,12 @@ function init(){
     $("filter-toggle").setAttribute("aria-expanded",open);
   });
   $("tabbar").addEventListener("scroll",updateTabFade,{passive:true});
+  $("skip-link").addEventListener("click",()=>{
+    const pnl=$("p-"+activeTab); if(!pnl)return;
+    pnl.focus({preventScroll:true}); scrollToPanels();
+    const top=pnl.getBoundingClientRect().top, row=document.querySelector(".tabrow").getBoundingClientRect().bottom;
+    if(top>row+40||top<row)window.scrollBy(0,top-row-12);
+  });
   document.querySelectorAll(".tab-more").forEach(b=>b.addEventListener("click",()=>{
     const t=$("tabbar");
     t.scrollBy({left:+b.dataset.dir*Math.round(t.clientWidth*0.7),behavior:(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)?"auto":"smooth"});
