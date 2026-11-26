@@ -156,6 +156,8 @@ Three palettes, switchable in the UI under the tier filter, persisted via `local
 - **Moose** — warm earth tones: cream paper, forest-green/rust accents, soft charcoal-gray ink (not pure black — see mobile note below on why near-black was a problem).
 - **Elk** — warm gold parchment paper, mahogany-brown ink, amber/marigold accents.
 
+**Fill colours vs text colours.** Each palette's bright accents (`--clay`, `--dirt`, `--loam`) are fills for the map, pie, bars and swatches. Several of them fail text contrast (Caribou's cyan is about 1.8:1 on its paper), so every theme block also sets a darker **text shade** of the same hue, `--clay-t`, `--dirt-t` and `--loam-t`, used wherever an accent colours words, a link underline, a hover background behind white text, or a focus ring. Each text shade clears WCAG AA 4.5:1 on both `--paper` and white cards. `--slate` (secondary text) was nudged darker in Caribou (#5c7075) and Elk (#7c6439) for the same reason. A new theme must set all three `-t` shades.
+
 Each theme is defined in **two places** that must stay in sync if you add a fourth:
 1. CSS custom properties under `[data-theme="name"]{...}` — controls page chrome.
 2. The `THEMES` registry in `<script>` — controls pie chart slice colors, the map's color-mix gradient, and the `paper` hex pushed to `<meta name="theme-color">`, since those are drawn in JS and can't read CSS variables automatically for computed effects like `color-mix()`.
