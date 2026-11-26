@@ -195,7 +195,7 @@ header.mast{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom
 .mast-link{display:block;text-decoration:none;color:inherit}
 .mast-link:hover h1{color:var(--clay-t)}
 .kicker{
-  font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace;
+  font:600 12px/1 ui-monospace,"SF Mono",Menlo,monospace;
   letter-spacing:.22em;text-transform:uppercase;color:var(--dirt-t);margin-bottom:10px;
 }
 h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em;transition:opacity .5s,color .2s}
@@ -211,11 +211,13 @@ h1.fading{opacity:0}
 .stat{display:block;text-align:left;font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--slate);
   line-height:1.3;background:none;border:0;padding:0 0 3px;margin:0;border-bottom:1.5px solid transparent;min-width:0}
 .stat b{display:block;font:400 30px/1 "Iowan Old Style",Georgia,serif;color:var(--ink);letter-spacing:-.01em;margin-bottom:5px;text-transform:none}
-.stat span{display:block;font-size:11px}
+.stat span{display:block;font:400 14px/1.3 "Iowan Old Style",Charter,Georgia,serif;letter-spacing:0;text-transform:none}
+/* Stat labels are sentence-case body text: wrapped onto 3-5 lines on a phone, 11px
+   all-caps monospace was the slowest text on the page to read. */
 button.stat{cursor:pointer;border-bottom-color:var(--rule)}
 button.stat:hover,button.stat:focus-visible{border-bottom-color:var(--clay);outline:none}
 button.stat:hover b,button.stat:focus-visible b{color:var(--clay-t)}
-.stat-note{grid-column:1/-1;margin:0;font:400 12px/1.4 inherit;font-family:inherit;letter-spacing:0;text-transform:none;color:var(--slate)}
+.stat-note{grid-column:1/-1;margin:0;font:400 13px/1.4 "Iowan Old Style",Charter,Georgia,serif;letter-spacing:0;text-transform:none;color:var(--slate)}
 /* Cartogram thumbnail that jumps to the Map tab. There are two copies of the button, filled by
    renderMapJump() so both follow the active palette: .map-jump-mast beside the subtitle (wide
    screens) and .map-jump-row at the right end of the counter row (phones). Only one is shown. */
@@ -241,7 +243,7 @@ input[type=search]{flex:1;min-width:220px}
 input[type=search]:focus,select:focus{outline:2px solid var(--clay-t);outline-offset:1px;border-color:var(--clay)}
 .tierbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 22px}
 .tierbar button{
-  font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:8px 12px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);
   border-radius:2px;cursor:pointer;
 }
@@ -272,11 +274,11 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay-t);outline-of
 
 /* ---- theme switcher ---- */
 .themebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-.themebar span{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate)}
+.themebar span{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate)}
 .theme-swatch{
   display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 7px;
   border:1.5px solid var(--rule);background:#fff;border-radius:2px;cursor:pointer;
-  font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+  font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
 }
 .theme-swatch[aria-pressed=true]{border-color:var(--ink);color:var(--ink)}
 .theme-dots{display:inline-flex;border-radius:50%;overflow:hidden;width:16px;height:16px;flex:0 0 16px}
@@ -347,7 +349,7 @@ html{scroll-padding-top:64px}
   margin:0 0 2px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);
   display:flex;justify-content:space-between;align-items:baseline;
 }
-.stategroup h2 span{color:var(--slate);font-size:11px}
+.stategroup h2 span{color:var(--slate);font-size:12px}
 ul.orgs{list-style:none;margin:0;padding:0}
 ul.orgs li{
   display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--rule);
@@ -361,14 +363,14 @@ ul.orgs li{
 .org-name{font-weight:600}
 .org-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
 .org-name a:hover{background:var(--clay-t);color:#fff;border-color:var(--clay-t)}
-.abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt-t);margin-left:7px;letter-spacing:.05em}
+.abbr{font:600 12px ui-monospace,Menlo,monospace;color:var(--dirt-t);margin-left:7px;letter-spacing:.05em}
 .org-region{color:var(--slate);font-size:14px;display:block;margin-top:1px}
-.parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+.parent{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   color:var(--slate);border:1px solid var(--rule);padding:2px 6px;border-radius:2px;white-space:nowrap}
 .noweb{color:var(--slate);font-style:italic}
-.draft-flag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
+.draft-flag{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
   color:var(--clay-t);border:1px solid var(--clay);padding:2px 6px;border-radius:2px;white-space:nowrap}
-.status-flag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
+.status-flag{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
   color:var(--slate);border:1px dashed var(--slate);padding:2px 6px;border-radius:2px;white-space:nowrap}
 
 /* ---- links that follow the visitor: Share button, active-filter chips, org profiles ---- */
@@ -386,7 +388,7 @@ ul.orgs li{
 .filter-chips[hidden]{display:none}
 .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 6px 5px 11px;border:1.5px solid var(--clay);
   border-radius:999px;background:#fff;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.3;text-align:left;cursor:pointer}
-.chip b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.chip b{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .chip .x{font-size:16px;line-height:1;color:var(--clay-t);padding:0 4px}
 .chip:hover,.chip:focus-visible{background:var(--clay-t);color:#fff}
 .chip:hover b,.chip:hover .x,.chip:focus-visible b,.chip:focus-visible .x{color:#fff}
@@ -394,14 +396,14 @@ ul.orgs li{
 ul.orgs li{flex-wrap:wrap}
 button.parent{background:none;cursor:pointer}
 button.parent:hover,button.parent:focus-visible{color:#fff;background:var(--clay-t);border-color:var(--clay-t)}
-.org-more{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+.org-more{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--rule);background:none;color:var(--slate);padding:2px 7px;border-radius:2px;cursor:pointer;white-space:nowrap}
 .org-more:hover,.org-more:focus-visible{color:var(--ink);border-color:var(--ink)}
 .org-more[aria-expanded=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .org-profile{flex:1 0 calc(100% - 21px);margin:4px 0 4px 21px;padding:12px 14px;border-left:3px solid var(--clay);background:#fff;font-size:14px}
 .org-profile p{margin:0 0 8px}
 .org-profile .op-note{margin:6px 0 0;font-size:12px;color:var(--slate)}
-.org-profile .op-meta{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.org-profile .op-meta{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .org-profile .op-chain button,.op-link{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;
   text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
 .op-actions{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;align-items:center}
@@ -424,7 +426,7 @@ button.cap-row:hover,button.cap-row:focus-visible{background:#fff}
 button.tree-count,button.tree-span{background:none;cursor:pointer}
 button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,button.tree-span:focus-visible{color:#fff;background:var(--clay-t);border-color:var(--clay-t)}
 .detail-card-foot button{font:600 14px inherit;color:var(--clay-t);background:none;border:0;padding:0;cursor:pointer;border-bottom:1.5px solid var(--clay-t)}
-.detail-card-foot button.detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;color:var(--slate);border-bottom:1px solid var(--rule)}
+.detail-card-foot button.detail-card-parent{font:600 12px ui-monospace,Menlo,monospace;color:var(--slate);border-bottom:1px solid var(--rule)}
 .detail-card-foot button:hover{background:var(--clay-t);color:#fff}
 
 /* ---- pie ---- */
@@ -466,7 +468,7 @@ button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,b
   transition:opacity .1s;white-space:nowrap;transform:translate(-50%,-115%);z-index:5;
 }
 .chart-svg-wrap{position:relative}
-.cap-legend{display:flex;gap:20px;flex-wrap:wrap;margin:2px 0 14px;font:600 11px ui-monospace,Menlo,monospace;
+.cap-legend{display:flex;gap:20px;flex-wrap:wrap;margin:2px 0 14px;font:600 12px ui-monospace,Menlo,monospace;
   letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .cap-legend span{display:inline-flex;align-items:center;gap:6px}
 .cap-legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
@@ -501,12 +503,12 @@ ul.tree-children{margin-left:16px;padding-left:14px;border-left:1.5px solid var(
 .tree-name{font-weight:600}
 .tree-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
 .tree-name a:hover{background:var(--clay-t);color:#fff}
-.tree-abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt-t);letter-spacing:.05em}
-.tree-state{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
-.tree-count,.tree-span{margin-left:auto;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;
+.tree-abbr{font:600 12px ui-monospace,Menlo,monospace;color:var(--dirt-t);letter-spacing:.05em}
+.tree-state{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.tree-count,.tree-span{margin-left:auto;font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;
   text-transform:uppercase;color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
 .tree-span{margin-left:8px}
-.has-map{color:var(--clay-t);font-size:9px;margin-left:6px;vertical-align:2px}
+.has-map{color:var(--clay-t);font-size:12px;margin-left:6px;vertical-align:2px}
 
 /* ---- near me ---- */
 .near-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
@@ -522,11 +524,11 @@ ul.tree-children{margin-left:16px;padding-left:14px;border-left:1.5px solid var(
 .near-anchor{font-size:14px;color:var(--slate);padding:10px 0;border-bottom:1.5px solid var(--ink);margin-bottom:4px}
 .near-anchor strong{color:var(--ink)}
 .near-clear{margin-left:10px;border:0;background:none;color:var(--clay-t);cursor:pointer;
-  font:600 11px ui-monospace,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
+  font:600 12px ui-monospace,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
 ul.near-list{list-style:none;margin:0;padding:0}
 ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule)}
 .near-dist{font:600 20px/1 "Iowan Old Style",Georgia,serif;color:var(--clay-t);min-width:62px;text-align:right}
-.near-dist small{font:600 10px ui-monospace,Menlo,monospace;color:var(--slate);margin-left:2px}
+.near-dist small{font:600 12px ui-monospace,Menlo,monospace;color:var(--slate);margin-left:2px}
 .near-main{flex:1;min-width:0}
 .near-name{font-weight:600;display:flex;align-items:center;gap:8px}
 .near-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
@@ -541,14 +543,14 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .near-name button{border:0;background:none;padding:0;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;
   border-bottom:1.5px solid var(--clay-t)}
 .near-name button:hover,.near-name button:focus-visible{background:var(--clay-t);color:#fff}
-.near-tag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+.near-tag{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
   border:1px solid var(--rule);padding:1px 6px;border-radius:2px;white-space:nowrap}
 /* ---- start (landing) ---- the three start choices, renderStart() */
 .start-lede{font:400 19px/1.4 "Iowan Old Style",Georgia,serif;color:var(--ink);margin:0 0 14px}
 .start-lede b{font-weight:600}
 .start-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 26px}
 .start-door{display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;min-width:0}
-.door-kicker{font:600 10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dirt-t)}
+.door-kicker{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dirt-t)}
 .start-door h3{margin:0;font:400 27px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
 .start-door p{margin:0;font-size:14px;line-height:1.4;color:var(--slate)}
 .door-form{display:flex;gap:8px;margin-top:auto;padding-top:4px}
@@ -558,13 +560,13 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .door-form .near-btn{min-height:46px;white-space:nowrap;flex:0 0 auto}
 .door-form .near-btn:focus-visible,.door-alt:focus-visible{outline:2px solid var(--clay-t);outline-offset:2px}
 .door-alt{align-self:flex-start;border:0;background:none;padding:6px 0;min-height:32px;cursor:pointer;text-align:left;
-  font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+  font:600 12px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .door-alt span{border-bottom:1.5px solid var(--clay-t)}
 .door-alt:hover span{color:var(--ink);background:var(--clay)}
 .door-note{font-size:12px;line-height:1.35;color:var(--slate);min-height:32px;display:flex;align-items:center}
 .start-more{border-top:1.5px solid var(--rule);padding-top:16px}
 .start-more .stat-strip{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}   /* as .counts */
-.start-more h3{margin:0 0 12px;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+.start-more h3{margin:0 0 12px;font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
 @media(max-width:900px){.start-doors{grid-template-columns:1fr;gap:12px}}
 @media(max-width:560px){
   .start-lede{font-size:16.5px;margin:0 0 12px}
@@ -578,12 +580,12 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
   padding:14px 18px 12px;margin:0 0 26px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .spotlight h3{margin:0;font:400 24px/1.15 "Iowan Old Style",Georgia,serif;color:var(--ink);overflow-wrap:anywhere}
 .spotlight h3 .abbr{margin-left:8px;vertical-align:middle}
-.spot-meta{margin:0;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.spot-meta{margin:0;font:600 12px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .spot-desc{margin:0;font-size:15px;line-height:1.45;color:var(--ink);max-width:70ch}
 .spot-note{margin:0;font-size:14px;line-height:1.45;color:var(--slate);font-style:italic;max-width:70ch}
 .spot-actions{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding-top:2px}
 .spot-actions a,.spot-actions button{border:0;background:none;padding:6px 0;min-height:32px;cursor:pointer;text-decoration:none;
-  font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+  font:600 12px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
 .spot-actions a span,.spot-actions button span{border-bottom:1.5px solid var(--clay-t)}
 .spot-actions a:hover span,.spot-actions button:hover span{background:var(--clay-t);color:#fff}
 .spot-actions a:focus-visible,.spot-actions button:focus-visible{outline:2px solid var(--clay-t);outline-offset:2px}
@@ -602,7 +604,7 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .map-note{color:var(--slate);font-size:14px;margin:0 0 16px;max-width:60ch}
 /* Map tab mode switch (mapModeBar): same look as the tier buttons. */
 .map-modes{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
-.map-modes button{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+.map-modes button{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:9px 12px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
 .map-modes button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .map-modes button:focus-visible{outline:2px solid var(--clay-t);outline-offset:1px}
@@ -621,18 +623,18 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .scorecard{border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;margin:0 0 26px}
 .sc-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .sc-head h2{margin:0;font:400 26px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
-.sc-head h2 span{font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt-t);margin-left:6px}
-.sc-copy{margin-left:auto;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+.sc-head h2 span{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt-t);margin-left:6px}
+.sc-copy{margin-left:auto;font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   padding:8px 10px;border:1.5px solid var(--clay);background:#fff;color:var(--ink);border-radius:2px;cursor:pointer}
 .sc-copy:hover,.sc-copy:focus-visible{background:var(--clay-t);color:#fff}
 .sc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px 20px;margin-bottom:14px;
-  font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
+  font:600 12px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
 .sc-rows{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:9px 16px;margin:0;font-size:14px;border-top:1px solid var(--rule);padding-top:12px}
-.sc-rows dt{font:600 10.5px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.sc-rows dt{font:600 12px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .sc-rows dd{margin:0;color:var(--ink);display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
 .sc-link,.sc-voice{font:inherit;font-size:13.5px;padding:3px 9px;border:1.5px solid var(--rule);border-radius:999px;background:var(--paper);
   color:var(--ink);cursor:pointer;text-align:left;max-width:100%}
-.sc-link i{font:600 11px ui-monospace,Menlo,monospace;font-style:normal;color:var(--slate);margin-left:3px}
+.sc-link i{font:600 12px ui-monospace,Menlo,monospace;font-style:normal;color:var(--slate);margin-left:3px}
 .sc-link:hover,.sc-link:focus-visible,.sc-voice:hover,.sc-voice:focus-visible{border-color:var(--clay);outline:none}
 .sc-voice{font-weight:600}
 .sc-src{color:var(--slate);font-size:12.5px}
@@ -664,7 +666,7 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .detail-card-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
 .detail-card-name{font:600 19px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
 .detail-card-abbr{font:600 12px ui-monospace,Menlo,monospace;color:var(--dirt-t);letter-spacing:.05em}
-.detail-card-tier{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+.detail-card-tier{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
 .detail-card-close{margin-left:auto;border:0;background:none;color:var(--slate);font-size:22px;line-height:1;
   cursor:pointer;padding:0 4px}
@@ -674,7 +676,7 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .detail-card-link{color:var(--clay-t);font-weight:600;text-decoration:none;font-size:14px;border-bottom:1.5px solid var(--clay-t)}
 .detail-card-link:hover{background:var(--clay-t);color:#fff}
 .detail-card-noweb{color:var(--slate);font-style:italic;font-size:13px}
-.detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.detail-card-parent{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .state-path:hover{stroke:var(--ink);stroke-width:2}
 .maplabel{font:600 10px ui-monospace,Menlo,monospace;fill:#fff;pointer-events:none;text-anchor:middle}
 .maplabel.dark{fill:var(--ink)}   /* ink, not slate: slate on a mid-tone tile was ~1.9:1 */
@@ -682,7 +684,7 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .unpinned-chip{border:1px solid var(--rule);border-radius:999px;padding:2px 10px;color:var(--ink);text-decoration:none;background:var(--paper)}
 a.unpinned-chip:hover{border-color:var(--slate)}
 .scalebar{display:flex;align-items:center;gap:8px;margin-top:14px;
-  font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+  font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .scalebar .grad{height:11px;flex:1;max-width:230px}
 /* The Trailhead tier key wraps whole items: on a 320px phone the four labels in one
    row were 38px wider than the screen and panned the whole page sideways. */
@@ -706,7 +708,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-inputs{position:sticky;top:14px}
 .why-group{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:15px 16px 4px;margin-bottom:16px}
 .why-group h4{
-  margin:0 0 3px;font:600 11px/1 ui-monospace,Menlo,monospace;
+  margin:0 0 3px;font:600 12px/1 ui-monospace,Menlo,monospace;
   letter-spacing:.14em;text-transform:uppercase;color:var(--dirt-t);
 }
 .why-group .why-group-sub{margin:0 0 14px;font-size:12.5px;color:var(--slate);line-height:1.45}
@@ -736,14 +738,14 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .info-ico{position:relative;display:inline-flex;vertical-align:-3px;margin-left:4px;color:var(--slate);cursor:help}
 .info-ico svg{display:block;width:13px;height:13px}
 .info-ico:hover,.info-ico:focus{color:var(--clay-t);outline:none}
-.info-tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:210px;background:var(--ink);color:var(--paper);font:400 11px/1.5 ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none;z-index:20;text-align:left}
+.info-tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:210px;background:var(--ink);color:var(--paper);font:400 12px/1.5 ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none;z-index:20;text-align:left}
 .info-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
 .info-ico:hover .info-tip,.info-ico:focus .info-tip{opacity:1;visibility:visible}
 /* Maintenance-inflation pill group — matches .tierbar's square-cornered,
    monospace-uppercase toggle-button look rather than importing the ROI
    calculator's rounded-pill style, so it reads as native to this page. */
 .why-pill-grp{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 4px}
-.why-pill{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;padding:6px 10px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
+.why-pill{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;padding:6px 10px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
 .why-pill:hover{border-color:var(--clay);color:var(--clay-t)}
 .why-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* MOBILE STICKY COST SUMMARY — hidden on desktop; on phones it pins the two
@@ -751,11 +753,11 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
    while scrolling through the funding chart, time chart, and ledger below. */
 .why-mobile-summary{display:none}
 .wms-item{flex:1;text-align:center}
-.wms-lbl{display:block;font:600 9px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--slate);margin-bottom:3px}
+.wms-lbl{display:block;font:600 12px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--slate);margin-bottom:3px}
 .wms-val{display:block;font:400 18px/1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
 .wms-item.opt2 .wms-val{color:var(--clay-t)}
 .why-reset{
-  font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:9px 13px;border:1.5px dashed var(--clay-t);background:#fff;color:var(--clay-t);
   border-radius:2px;cursor:pointer;width:100%;
 }
@@ -785,27 +787,27 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 /* Both bars deliberately show the same total ($X delivered value) — that's the chart's
    whole point, not a bug (a real user flagged this as one at a glance). The "delivered
    value" suffix makes that legible on the number itself, not just in the paragraph above. */
-.why-bar-total-note{font-weight:400;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);opacity:.75}
+.why-bar-total-note{font-weight:400;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);opacity:.75}
 .why-bar-track{display:flex;height:34px;border-radius:3px;overflow:hidden;background:var(--rule)}
 .why-seg{
   display:flex;align-items:center;justify-content:center;min-width:0;
   font:600 11px ui-monospace,Menlo,monospace;color:#fff;white-space:nowrap;overflow:hidden;
 }
 .why-legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin:2px 0 6px;
-  font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--slate)}
+  font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--slate)}
 .why-legend span{display:inline-flex;align-items:center;gap:6px}
 .why-legend i{width:11px;height:11px;border-radius:2px;display:inline-block;flex:0 0 11px}
 .why-ledger{width:100%;border-collapse:collapse;font-size:13.5px}
 .why-ledger th{
   text-align:right;padding:7px 8px;border-bottom:1.5px solid var(--ink);
-  font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);
+  font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);
 }
 .why-ledger th:first-child{text-align:left}
 .why-ledger td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
 .why-ledger td:first-child{text-align:left}
 .why-ledger tr.sum td{font-weight:600;border-bottom:1.5px solid var(--ink);background:rgba(0,0,0,.02)}
 .why-ledger tr.total td{font-weight:600;font-size:15px;border-bottom:3px double var(--ink)}
-.why-ledger .why-cell-note{display:block;font-size:11.5px;color:var(--slate);font-weight:400;margin-top:2px}
+.why-ledger .why-cell-note{display:block;font-size:12px;color:var(--slate);font-weight:400;margin-top:2px}
 .why-ledger td.neg{color:var(--loam-t)}
 /* Time-chart dots stay invisible until the crosshair picks one out, the same way
    the Charts tab's .chart-hover-dot works — 20+ visible dots per line is noise. */
@@ -815,10 +817,10 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   border-left:3px solid var(--clay);background:#fff;padding:11px 14px;margin:14px 0 0;
   font-size:13px;line-height:1.55;color:var(--ink);
 }
-.why-flag b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--clay-t);display:block;margin-bottom:3px}
+.why-flag b{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--clay-t);display:block;margin-bottom:3px}
 .why-caveats{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:18px 20px;margin-top:26px}
 .why-caveats h3{margin:0 0 10px;font-size:16px;letter-spacing:-.01em}
-.why-caveats h4{margin:16px 0 4px;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt-t)}
+.why-caveats h4{margin:16px 0 4px;font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt-t)}
 .why-caveats p,.why-caveats li{font-size:13.5px;line-height:1.6;color:var(--ink);max-width:78ch}
 .why-caveats p{margin:0 0 8px}
 .why-caveats ul{margin:0 0 8px;padding-left:20px}
@@ -833,7 +835,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-field input,.why-field select{font-size:16px;line-height:1.2;font-family:inherit;font-weight:400;padding:8px 9px;border:1.5px solid var(--rule);
   border-radius:3px;background:#fff;color:var(--ink);min-width:0;width:100%;box-sizing:border-box}
 .why-field input:focus-visible,.why-field select:focus-visible{outline:2px solid var(--clay-t);outline-offset:1px}
-.why-share,.why-partner-btn{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+.why-share,.why-partner-btn{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:11px 14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:2px;cursor:pointer}
 .why-share:hover,.why-partner-btn:hover{background:var(--clay-t);border-color:var(--clay-t);color:#fff}
 .why-partner-btn.alt{background:#fff;color:var(--ink)}
@@ -845,8 +847,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 /* The fixed "illustrative only" line beside every result (WHY_TEXT.notice / noticeShort). */
 .why-title{margin:0 0 6px;font:400 26px/1.15 "Iowan Old Style",Georgia,serif;letter-spacing:-.01em;color:var(--ink)}
 .why-notice{font-weight:600;color:var(--ink)}
-.wms-notice{flex:1 1 100%;margin:2px 0 0;font-size:11px;line-height:1.35;color:var(--slate)}
-.why-pin-notice{order:5;flex:1 1 100%;font-size:11px;line-height:1.3;opacity:.85}
+.wms-notice{flex:1 1 100%;margin:2px 0 0;font-size:12px;line-height:1.35;color:var(--slate)}
+.why-pin-notice{order:5;flex:1 1 100%;font-size:12px;line-height:1.3;opacity:.85}
 .why-live .why-live-notice{font-family:inherit}
 .why-partners .sc-rows{margin:6px 0 10px}
 .why-partner-actions{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
@@ -858,8 +860,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-live{display:none}
 .why-pin-main{font-size:14px;font-weight:600;min-width:0}
 .why-pin-val{font:400 20px/1.1 "Iowan Old Style",Georgia,serif;white-space:nowrap}
-.why-pin-inputs{order:3;flex:1 1 auto;font:11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.03em;opacity:.8}
-.why-pin-go{order:4;margin-left:auto;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.why-pin-inputs{order:3;flex:1 1 auto;font:12px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.03em;opacity:.8}
+.why-pin-go{order:4;margin-left:auto;font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 .why-pin:focus-visible{outline:3px solid var(--clay-t);outline-offset:-3px}
 body.why-pin-on{padding-bottom:calc(var(--why-pin-h,64px) + 10px)}
 body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
@@ -871,8 +873,8 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .why-live{display:block;width:100%;text-align:left;margin:0 0 14px;padding:8px 10px;border:1.5px solid var(--ink);
     border-radius:3px;background:#fff;color:var(--ink);font:13px/1.4 inherit;font-family:inherit;cursor:pointer}
   .why-live b{font-weight:600}
-  .why-live span{display:block;font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--slate)}
-  .why-live i{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:var(--clay-t)}
+  .why-live span{display:block;font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--slate)}
+  .why-live i{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:var(--clay-t)}
   .why-mobile-summary{display:flex;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:6;background:#fff;border:1.5px solid var(--rule);border-radius:4px;padding:9px 11px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 }
 @media(max-width:760px){
@@ -912,6 +914,27 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
    print dialog (Letter in the US, A4 elsewhere); the layout is fluid and fits either. */
 .print-only{display:none}
 @page{margin:.55in}
+/* ==== TOUCH TARGETS ==========================================================
+   On touch screens every control gets at least a 44px tap height (Apple's minimum;
+   WCAG 2.5.8). Where a control can grow without changing the layout much, it gets a
+   min-height. Where growing it would push rows apart (Directory and Structure badges,
+   the info icons), an invisible ::after enlarges the tap area instead, so it looks the
+   same and is easier to hit. Desktop with a mouse is left exactly as it was. Inline
+   links inside sentences are exempt (WCAG treats them separately) and are not changed. */
+@media (pointer:coarse),(max-width:640px){
+  .tabs button,.print-btn,.filter-toggle,.why-pill,.why-reset,.why-share,.why-partner-btn,
+  .detail-statebar button,.door-alt,.spot-actions a,.spot-actions button,.map-modes button,
+  .sc-copy,.tierbar button{min-height:44px}
+  .why-pill{min-width:44px}
+  .why-field input,.why-field select,.door-form input,.door-form select{min-height:44px}
+  .why-pill-grp{gap:8px}
+  .unpinned-chip{display:inline-flex;align-items:center;min-height:40px;padding:2px 12px}
+  .op-actions a,.op-actions button{display:inline-flex;align-items:center;min-height:44px}
+  .org-more,button.parent,.tree-count,.tree-span{position:relative}
+  .org-more::after,button.parent::after,.tree-count::after,.tree-span::after{
+    content:"";position:absolute;left:0;right:0;top:-5px;bottom:-5px}
+  .info-ico::before{content:"";position:absolute;inset:-15px}
+}
 @media print{
   :root:root{
     --ink:#111111;        /* 18.9:1 on white */
@@ -1152,7 +1175,7 @@ body{position:relative;isolation:isolate}   /* isolation makes the body a stacki
   -webkit-mask-composite:source-in;
   mask-composite:intersect;
 }
-.tex-credit{font-size:10px;line-height:1.5;color:var(--slate);margin:14px 0 0}
+.tex-credit{font-size:12px;line-height:1.5;color:var(--slate);margin:14px 0 0}
 .tex-credit span{display:none}
 .tex-credit span+span{margin-top:2px}
 :root:not([data-theme]) .tex-credit .tc-belt,
