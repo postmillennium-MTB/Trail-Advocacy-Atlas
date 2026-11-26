@@ -546,8 +546,6 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .near-tag{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
   border:1px solid var(--rule);padding:1px 6px;border-radius:2px;white-space:nowrap}
 /* ---- start (landing) ---- the three start choices, renderStart() */
-.start-lede{font:400 19px/1.4 "Iowan Old Style",Georgia,serif;color:var(--ink);margin:0 0 14px}
-.start-lede b{font-weight:600}
 .start-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 26px}
 .start-door{display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;min-width:0}
 .door-kicker{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dirt-t)}
@@ -569,7 +567,6 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .start-more h3{margin:0 0 12px;font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
 @media(max-width:900px){.start-doors{grid-template-columns:1fr;gap:12px}}
 @media(max-width:560px){
-  .start-lede{font-size:16.5px;margin:0 0 12px}
   .start-door{padding:13px 13px 12px;gap:7px}
   .start-door h3{font-size:22px}
   .start-door p{display:none}      /* phones: heading and the control only, so all three fit the first screen */
@@ -3135,11 +3132,10 @@ function spotlightHTML(date){
 }
 function renderStart(){
   const box=$("p-start");
-  const f=nationalFacts(), counts=stateCounts(ORGS);
+  const counts=stateCounts(ORGS);
   const opts=STATE_CODES.slice().sort((a,b)=>STATE_NAMES[a].localeCompare(STATE_NAMES[b]))
     .map(c=>`<option value="${c}">${esc(STATE_NAMES[c])} (${counts[c]||0})</option>`).join("");
   box.innerHTML=`
-    <p class="start-lede">A directory of <b>${f.total} nonprofit trail groups</b> in ${placesList()}. Where would you like to start?</p>
     <div class="start-doors">
       <section class="start-door" aria-labelledby="door-find-h">
         <span class="door-kicker">Search or Near me</span>
