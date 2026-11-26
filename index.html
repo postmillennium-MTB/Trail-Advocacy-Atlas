@@ -114,8 +114,15 @@
   --dirt:#ff2fb0;
   --loam:#00e6a8;
   --clay:#00d4ff;
-  --slate:#62777c;
+  --slate:#5c7075;    /* was #62777c (4.2:1 on paper); nudged to pass 4.5:1 */
   --rule:#cddad6;
+  /* TEXT SHADES. The bright --clay/--dirt/--loam above are fills (map, pie, bars,
+     swatches). Wherever an accent colours WORDS, links, or a focus ring, the CSS uses
+     the -t shade instead, which clears WCAG AA 4.5:1 on both --paper and white cards.
+     Every theme block must set all three. */
+  --clay-t:#00778f;
+  --dirt-t:#d20082;
+  --loam-t:#007b5a;
 }
 [data-theme="moose"]{
   --ink:#2b2f2c;
@@ -125,6 +132,9 @@
   --clay:#c1603a;
   --slate:#5b6a72;
   --rule:#ccc5b4;
+  --clay-t:#a85332;   /* text shades: see the note in the caribou block */
+  --dirt-t:#8c5a2b;
+  --loam-t:#3f5d3a;
 }
 /* Elk originally ran all three accents through one hue (amber/brown/tan) — legible
    individually, but a pie or map with ten states in it read as ten shades of the
@@ -139,8 +149,11 @@
   --dirt:#b5541c;
   --loam:#4f6b2f;
   --clay:#d4900f;
-  --slate:#8a6f3f;
+  --slate:#7c6439;    /* was #8a6f3f (3.9:1 on paper); nudged to pass 4.5:1 */
   --rule:#e0cd9e;
+  --clay-t:#8a5e0a;   /* text shades: see the note in the caribou block */
+  --dirt-t:#a64d1a;
+  --loam-t:#4f6b2f;
 }
 :root{color-scheme:only light}
 :root{
@@ -180,10 +193,10 @@ body{
   border-radius:6px;margin-bottom:18px}
 header.mast{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
 .mast-link{display:block;text-decoration:none;color:inherit}
-.mast-link:hover h1{color:var(--clay)}
+.mast-link:hover h1{color:var(--clay-t)}
 .kicker{
   font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace;
-  letter-spacing:.22em;text-transform:uppercase;color:var(--dirt);margin-bottom:10px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--dirt-t);margin-bottom:10px;
 }
 h1{font-size:clamp(30px,5.4vw,50px);line-height:.98;margin:0 0 8px;letter-spacing:-.02em;transition:opacity .5s,color .2s}
 h1.fading{opacity:0}
@@ -201,7 +214,7 @@ h1.fading{opacity:0}
 .stat span{display:block;font-size:11px}
 button.stat{cursor:pointer;border-bottom-color:var(--rule)}
 button.stat:hover,button.stat:focus-visible{border-bottom-color:var(--clay);outline:none}
-button.stat:hover b,button.stat:focus-visible b{color:var(--clay)}
+button.stat:hover b,button.stat:focus-visible b{color:var(--clay-t)}
 .stat-note{grid-column:1/-1;margin:0;font:400 12px/1.4 inherit;font-family:inherit;letter-spacing:0;text-transform:none;color:var(--slate)}
 /* Cartogram thumbnail that jumps to the Map tab. There are two copies of the button, filled by
    renderMapJump() so both follow the active palette: .map-jump-mast beside the subtitle (wide
@@ -225,7 +238,7 @@ input[type=search],select{
   background:#fff;border-radius:2px;color:var(--ink);
 }
 input[type=search]{flex:1;min-width:220px}
-input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offset:1px;border-color:var(--clay)}
+input[type=search]:focus,select:focus{outline:2px solid var(--clay-t);outline-offset:1px;border-color:var(--clay)}
 .tierbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 22px}
 .tierbar button{
   font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
@@ -233,8 +246,8 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
   border-radius:2px;cursor:pointer;
 }
 .tierbar button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.tierbar button#reset-filters{margin-left:6px;border-style:dashed;color:var(--clay);border-color:var(--clay)}
-.tierbar button#reset-filters:hover{background:var(--clay);color:#fff}
+.tierbar button#reset-filters{margin-left:6px;border-style:dashed;color:var(--clay-t);border-color:var(--clay)}
+.tierbar button#reset-filters:hover{background:var(--clay-t);color:#fff}
 
 /* ---- phone: filters collapse behind a button ----
    On a wide screen the search box, tier buttons and palette sit open as before. On a phone
@@ -242,7 +255,7 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
    #filter-panel, which stays closed until the Filters button is tapped. */
 .filter-toggle{display:none}
 .filter-toggle .ft-count{display:none;min-width:18px;padding:3px 5px;border-radius:9px;
-  background:var(--clay);color:#fff;font-size:10px;line-height:1;text-align:center}
+  background:var(--clay-t);color:#fff;font-size:10px;line-height:1;text-align:center}
 .filter-toggle.has-filters .ft-count{display:inline-block}
 @media(max-width:760px){
   .filter-toggle{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 14px;padding:11px 12px;
@@ -251,7 +264,7 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
     text-align:left}
   .filter-toggle .ft-chev{margin-left:auto;transition:transform .15s}
   .filter-toggle[aria-expanded=true] .ft-chev{transform:rotate(180deg)}
-  .filter-toggle:focus-visible{outline:2px solid var(--clay);outline-offset:1px}
+  .filter-toggle:focus-visible{outline:2px solid var(--clay-t);outline-offset:1px}
   #filter-panel{display:none}
   #filter-panel.open{display:block}
   #filter-panel .controls{margin-top:0}
@@ -300,7 +313,7 @@ input[type=search]:focus,select:focus{outline:2px solid var(--clay);outline-offs
   border:0;border-bottom:1.5px solid var(--rule);background:none;color:var(--slate);cursor:pointer;
 }
 .print-btn:hover{color:var(--ink)}
-.print-btn:focus-visible{outline:2px solid var(--clay);outline-offset:-2px}
+.print-btn:focus-visible{outline:2px solid var(--clay-t);outline-offset:-2px}
 .print-btn svg{width:16px;height:16px;flex:0 0 16px}
 .print-btn span{display:none}
 .print-btn span.keep{display:inline}  /* the short "PDF" label shows on phones too */
@@ -326,15 +339,15 @@ ul.orgs li{
 .tier-local{background:var(--tier-local)}
 .org-main{flex:1;min-width:0}
 .org-name{font-weight:600}
-.org-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
-.org-name a:hover{background:var(--clay);color:#fff;border-color:var(--clay)}
-.abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt);margin-left:7px;letter-spacing:.05em}
+.org-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
+.org-name a:hover{background:var(--clay-t);color:#fff;border-color:var(--clay-t)}
+.abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt-t);margin-left:7px;letter-spacing:.05em}
 .org-region{color:var(--slate);font-size:14px;display:block;margin-top:1px}
 .parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   color:var(--slate);border:1px solid var(--rule);padding:2px 6px;border-radius:2px;white-space:nowrap}
 .noweb{color:var(--slate);font-style:italic}
 .draft-flag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--clay);border:1px solid var(--clay);padding:2px 6px;border-radius:2px;white-space:nowrap}
+  color:var(--clay-t);border:1px solid var(--clay);padding:2px 6px;border-radius:2px;white-space:nowrap}
 .status-flag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
   color:var(--slate);border:1px dashed var(--slate);padding:2px 6px;border-radius:2px;white-space:nowrap}
 
@@ -354,13 +367,13 @@ ul.orgs li{
 .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 6px 5px 11px;border:1.5px solid var(--clay);
   border-radius:999px;background:#fff;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.3;text-align:left;cursor:pointer}
 .chip b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
-.chip .x{font-size:16px;line-height:1;color:var(--clay);padding:0 4px}
-.chip:hover,.chip:focus-visible{background:var(--clay);color:#fff}
+.chip .x{font-size:16px;line-height:1;color:var(--clay-t);padding:0 4px}
+.chip:hover,.chip:focus-visible{background:var(--clay-t);color:#fff}
 .chip:hover b,.chip:hover .x,.chip:focus-visible b,.chip:focus-visible .x{color:#fff}
 @media(min-width:761px){.chip.chip-dup{display:none}}   /* wide screens already show these filters in the open filter bar */
 ul.orgs li{flex-wrap:wrap}
 button.parent{background:none;cursor:pointer}
-button.parent:hover,button.parent:focus-visible{color:#fff;background:var(--clay);border-color:var(--clay)}
+button.parent:hover,button.parent:focus-visible{color:#fff;background:var(--clay-t);border-color:var(--clay-t)}
 .org-more{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--rule);background:none;color:var(--slate);padding:2px 7px;border-radius:2px;cursor:pointer;white-space:nowrap}
 .org-more:hover,.org-more:focus-visible{color:var(--ink);border-color:var(--ink)}
@@ -370,16 +383,16 @@ button.parent:hover,button.parent:focus-visible{color:#fff;background:var(--clay
 .org-profile .op-note{margin:6px 0 0;font-size:12px;color:var(--slate)}
 .org-profile .op-meta{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .org-profile .op-chain button,.op-link{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;
-  text-decoration:none;border-bottom:1.5px solid var(--clay)}
+  text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
 .op-actions{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;align-items:center}
-.op-actions a,.op-actions button{font:600 13px/1.3 inherit;color:var(--clay);background:none;border:0;padding:0;cursor:pointer;
-  text-decoration:none;border-bottom:1.5px solid var(--clay)}
-.op-actions a:hover,.op-actions button:hover,.op-chain button:hover,.op-link:hover{background:var(--clay);color:#fff}
+.op-actions a,.op-actions button{font:600 13px/1.3 inherit;color:var(--clay-t);background:none;border:0;padding:0;cursor:pointer;
+  text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
+.op-actions a:hover,.op-actions button:hover,.op-chain button:hover,.op-link:hover{background:var(--clay-t);color:#fff}
 @keyframes orgflash{from{background:color-mix(in srgb,var(--clay) 28%,transparent)}to{background:transparent}}
 ul.orgs li.org-flash{animation:orgflash 2.4s ease-out}
-@media(prefers-reduced-motion:reduce){ul.orgs li.org-flash{animation:none;outline:2px solid var(--clay)}}
+@media(prefers-reduced-motion:reduce){ul.orgs li.org-flash{animation:none;outline:2px solid var(--clay-t)}}
 .pie-note{font-size:14px;color:var(--slate);margin:10px 0 0;max-width:380px}
-.pie-note button{border:0;background:none;padding:0;font:inherit;color:var(--clay);font-weight:600;cursor:pointer;border-bottom:1.5px solid var(--clay)}
+.pie-note button{border:0;background:none;padding:0;font:inherit;color:var(--clay-t);font-weight:600;cursor:pointer;border-bottom:1.5px solid var(--clay-t)}
 button.cap-row{width:100%;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
 button.cap-row:hover,button.cap-row:focus-visible{background:#fff}
 /* Touch screens: the small badge buttons (Details, network badges, Structure counts, per-million rows)
@@ -389,10 +402,10 @@ button.cap-row:hover,button.cap-row:focus-visible{background:#fff}
   button.cap-row{min-height:34px}
 }
 button.tree-count,button.tree-span{background:none;cursor:pointer}
-button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,button.tree-span:focus-visible{color:#fff;background:var(--clay);border-color:var(--clay)}
-.detail-card-foot button{font:600 14px inherit;color:var(--clay);background:none;border:0;padding:0;cursor:pointer;border-bottom:1.5px solid var(--clay)}
+button.tree-count:hover,button.tree-span:hover,button.tree-count:focus-visible,button.tree-span:focus-visible{color:#fff;background:var(--clay-t);border-color:var(--clay-t)}
+.detail-card-foot button{font:600 14px inherit;color:var(--clay-t);background:none;border:0;padding:0;cursor:pointer;border-bottom:1.5px solid var(--clay-t)}
 .detail-card-foot button.detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;color:var(--slate);border-bottom:1px solid var(--rule)}
-.detail-card-foot button:hover{background:var(--clay);color:#fff}
+.detail-card-foot button:hover{background:var(--clay-t);color:#fff}
 
 /* ---- pie ---- */
 /* The donut's own SVG caps at max-width:340px, so giving it an equal 1fr
@@ -466,38 +479,38 @@ ul.tree-children{margin-left:16px;padding-left:14px;border-left:1.5px solid var(
 .tree-root summary:hover{background:#fff}
 .tree-leaf{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:7px 0 7px 22px;border-bottom:1px solid var(--rule)}
 .tree-name{font-weight:600}
-.tree-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
-.tree-name a:hover{background:var(--clay);color:#fff}
-.tree-abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt);letter-spacing:.05em}
+.tree-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
+.tree-name a:hover{background:var(--clay-t);color:#fff}
+.tree-abbr{font:600 11px ui-monospace,Menlo,monospace;color:var(--dirt-t);letter-spacing:.05em}
 .tree-state{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .tree-count,.tree-span{margin-left:auto;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;
   text-transform:uppercase;color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
 .tree-span{margin-left:8px}
-.has-map{color:var(--clay);font-size:9px;margin-left:6px;vertical-align:2px}
+.has-map{color:var(--clay-t);font-size:9px;margin-left:6px;vertical-align:2px}
 
 /* ---- near me ---- */
 .near-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
 .near-btn{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   padding:11px 16px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:2px;cursor:pointer}
-.near-btn:hover{background:var(--clay);border-color:var(--clay)}
+.near-btn:hover{background:var(--clay-t);border-color:var(--clay-t)}
 .near-btn-alt{background:#fff;color:var(--slate);border-color:var(--rule)}
-.near-btn-alt:hover{background:var(--clay);color:#fff;border-color:var(--clay)}
+.near-btn-alt:hover{background:var(--clay-t);color:#fff;border-color:var(--clay-t)}
 .near-or{color:var(--slate);font-size:13px;font-style:italic}
 #near-town{flex:1;min-width:200px;font:15px/1 inherit;padding:10px 12px;border:1.5px solid var(--rule);
   background:#fff;border-radius:2px;color:var(--ink)}
 .near-status{color:var(--slate);font-size:13px;min-height:20px;margin-bottom:10px}
 .near-anchor{font-size:14px;color:var(--slate);padding:10px 0;border-bottom:1.5px solid var(--ink);margin-bottom:4px}
 .near-anchor strong{color:var(--ink)}
-.near-clear{margin-left:10px;border:0;background:none;color:var(--clay);cursor:pointer;
+.near-clear{margin-left:10px;border:0;background:none;color:var(--clay-t);cursor:pointer;
   font:600 11px ui-monospace,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
 ul.near-list{list-style:none;margin:0;padding:0}
 ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule)}
-.near-dist{font:600 20px/1 "Iowan Old Style",Georgia,serif;color:var(--clay);min-width:62px;text-align:right}
+.near-dist{font:600 20px/1 "Iowan Old Style",Georgia,serif;color:var(--clay-t);min-width:62px;text-align:right}
 .near-dist small{font:600 10px ui-monospace,Menlo,monospace;color:var(--slate);margin-left:2px}
 .near-main{flex:1;min-width:0}
 .near-name{font-weight:600;display:flex;align-items:center;gap:8px}
-.near-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay)}
-.near-name a:hover{background:var(--clay);color:#fff}
+.near-name a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
+.near-name a:hover{background:var(--clay-t);color:#fff}
 .near-meta{display:block;color:var(--slate);font-size:13px;margin-top:2px}
 .near-answer{margin:6px 0 18px}
 .near-answer h3{font-size:17px;margin:0 0 4px}
@@ -506,8 +519,8 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .near-pick{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 0}
 .near-pick select{font:15px inherit;padding:9px 10px;border:1.5px solid var(--rule);background:#fff;color:var(--ink);border-radius:2px;min-height:44px}
 .near-name button{border:0;background:none;padding:0;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;
-  border-bottom:1.5px solid var(--clay)}
-.near-name button:hover,.near-name button:focus-visible{background:var(--clay);color:#fff}
+  border-bottom:1.5px solid var(--clay-t)}
+.near-name button:hover,.near-name button:focus-visible{background:var(--clay-t);color:#fff}
 .near-tag{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
   border:1px solid var(--rule);padding:1px 6px;border-radius:2px;white-space:nowrap}
 /* ---- start (landing) ---- the three start choices, renderStart() */
@@ -515,18 +528,18 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .start-lede b{font-weight:600}
 .start-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 26px}
 .start-door{display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;min-width:0}
-.door-kicker{font:600 10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dirt)}
+.door-kicker{font:600 10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dirt-t)}
 .start-door h3{margin:0;font:400 27px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
 .start-door p{margin:0;font-size:14px;line-height:1.4;color:var(--slate)}
 .door-form{display:flex;gap:8px;margin-top:auto;padding-top:4px}
 .door-form input,.door-form select{flex:1;min-width:0;width:auto;min-height:46px;font:15px inherit;padding:10px 11px;
   border:1.5px solid var(--rule);background:#fff;color:var(--ink);border-radius:2px}
-.door-form input:focus,.door-form select:focus{outline:2px solid var(--clay);outline-offset:1px;border-color:var(--clay)}
+.door-form input:focus,.door-form select:focus{outline:2px solid var(--clay-t);outline-offset:1px;border-color:var(--clay)}
 .door-form .near-btn{min-height:46px;white-space:nowrap;flex:0 0 auto}
-.door-form .near-btn:focus-visible,.door-alt:focus-visible{outline:2px solid var(--clay);outline-offset:2px}
+.door-form .near-btn:focus-visible,.door-alt:focus-visible{outline:2px solid var(--clay-t);outline-offset:2px}
 .door-alt{align-self:flex-start;border:0;background:none;padding:6px 0;min-height:32px;cursor:pointer;text-align:left;
   font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
-.door-alt span{border-bottom:1.5px solid var(--clay)}
+.door-alt span{border-bottom:1.5px solid var(--clay-t)}
 .door-alt:hover span{color:var(--ink);background:var(--clay)}
 .door-note{font-size:12px;line-height:1.35;color:var(--slate);min-height:32px;display:flex;align-items:center}
 .start-more{border-top:1.5px solid var(--rule);padding-top:16px}
@@ -551,18 +564,18 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .spot-actions{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding-top:2px}
 .spot-actions a,.spot-actions button{border:0;background:none;padding:6px 0;min-height:32px;cursor:pointer;text-decoration:none;
   font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
-.spot-actions a span,.spot-actions button span{border-bottom:1.5px solid var(--clay)}
-.spot-actions a:hover span,.spot-actions button:hover span{background:var(--clay);color:#fff}
-.spot-actions a:focus-visible,.spot-actions button:focus-visible{outline:2px solid var(--clay);outline-offset:2px}
+.spot-actions a span,.spot-actions button span{border-bottom:1.5px solid var(--clay-t)}
+.spot-actions a:hover span,.spot-actions button:hover span{background:var(--clay-t);color:#fff}
+.spot-actions a:focus-visible,.spot-actions button:focus-visible{outline:2px solid var(--clay-t);outline-offset:2px}
 .spot-how{margin:0;font-size:12px;line-height:1.35;color:var(--slate)}
-.spot-how a{color:var(--clay);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--clay)}
-.spot-how a:hover,.spot-how a:focus-visible{background:var(--clay);color:#fff}
+.spot-how a{color:var(--clay-t);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
+.spot-how a:hover,.spot-how a:focus-visible{background:var(--clay-t);color:#fff}
 @media(max-width:560px){.spotlight{padding:12px 13px 10px}.spotlight h3{font-size:20px}.spotlight .spot-kicker{display:block}}
 /* "Know a group we're missing?" and "Suggest a correction" (see FEEDBACK in the logic) */
 .feedback-prompt{font-size:14px;color:var(--slate);margin:16px 0 0;padding:12px 14px;border:1.5px dashed var(--rule);border-radius:2px;text-align:left}
 .empty .feedback-prompt{max-width:60ch;margin:16px auto 0}
-.feedback-prompt a{color:var(--clay);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--clay)}
-.feedback-prompt a:hover,.feedback-prompt a:focus-visible{background:var(--clay);color:#fff}
+.feedback-prompt a{color:var(--clay-t);font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--clay-t)}
+.feedback-prompt a:hover,.feedback-prompt a:focus-visible{background:var(--clay-t);color:#fff}
 .feedback-prompt small{display:block;margin-top:4px;font-size:12px}
 
 /* ---- map ---- */
@@ -572,7 +585,7 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .map-modes button{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:9px 12px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
 .map-modes button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.map-modes button:focus-visible{outline:2px solid var(--clay);outline-offset:1px}
+.map-modes button:focus-visible{outline:2px solid var(--clay-t);outline-offset:1px}
 /* Who speaks for my state: thin-coverage tiles are close to the page color, so they get a dashed edge. */
 .voice-tile{cursor:pointer}
 .state-path.voice-thin{stroke:var(--slate);stroke-dasharray:3 2;stroke-width:1.2}
@@ -588,10 +601,10 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .scorecard{border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:16px 18px 12px;margin:0 0 26px}
 .sc-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .sc-head h2{margin:0;font:400 26px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
-.sc-head h2 span{font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt);margin-left:6px}
+.sc-head h2 span{font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt-t);margin-left:6px}
 .sc-copy{margin-left:auto;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   padding:8px 10px;border:1.5px solid var(--clay);background:#fff;color:var(--ink);border-radius:2px;cursor:pointer}
-.sc-copy:hover,.sc-copy:focus-visible{background:var(--clay);color:#fff}
+.sc-copy:hover,.sc-copy:focus-visible{background:var(--clay-t);color:#fff}
 .sc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px 20px;margin-bottom:14px;
   font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
 .sc-rows{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:9px 16px;margin:0;font-size:14px;border-top:1px solid var(--rule);padding-top:12px}
@@ -630,16 +643,16 @@ ul.near-list li{display:flex;gap:14px;align-items:baseline;padding:10px 0;border
 .detail-card-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .detail-card-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
 .detail-card-name{font:600 19px/1.1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
-.detail-card-abbr{font:600 12px ui-monospace,Menlo,monospace;color:var(--dirt);letter-spacing:.05em}
+.detail-card-abbr{font:600 12px ui-monospace,Menlo,monospace;color:var(--dirt-t);letter-spacing:.05em}
 .detail-card-tier{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   color:var(--slate);border:1px solid var(--rule);padding:2px 7px;border-radius:2px}
 .detail-card-close{margin-left:auto;border:0;background:none;color:var(--slate);font-size:22px;line-height:1;
   cursor:pointer;padding:0 4px}
-.detail-card-close:hover{color:var(--clay)}
+.detail-card-close:hover{color:var(--clay-t)}
 .detail-card-region{margin-top:6px;color:var(--slate);font-size:14px}
 .detail-card-foot{margin-top:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.detail-card-link{color:var(--clay);font-weight:600;text-decoration:none;font-size:14px;border-bottom:1.5px solid var(--clay)}
-.detail-card-link:hover{background:var(--clay);color:#fff}
+.detail-card-link{color:var(--clay-t);font-weight:600;text-decoration:none;font-size:14px;border-bottom:1.5px solid var(--clay-t)}
+.detail-card-link:hover{background:var(--clay-t);color:#fff}
 .detail-card-noweb{color:var(--slate);font-style:italic;font-size:13px}
 .detail-card-parent{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .state-path:hover{stroke:var(--ink);stroke-width:2}
@@ -651,9 +664,13 @@ a.unpinned-chip:hover{border-color:var(--slate)}
 .scalebar{display:flex;align-items:center;gap:8px;margin-top:14px;
   font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
 .scalebar .grad{height:11px;flex:1;max-width:230px}
+/* The Trailhead tier key wraps whole items: on a 320px phone the four labels in one
+   row were 38px wider than the screen and panned the whole page sideways. */
+.scalebar.tier-key{flex-wrap:wrap;gap:4px 14px}
+.scalebar.tier-key .tk{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 
 .empty{padding:40px 0;color:var(--slate);text-align:center}
-.empty a{color:var(--clay);font-weight:600}
+.empty a{color:var(--clay-t);font-weight:600}
 footer{margin-top:50px;padding-top:16px;border-top:1.5px solid var(--rule);
   color:var(--slate);font-size:13px;line-height:1.6}
 footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(--rule)}
@@ -670,25 +687,25 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-group{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:15px 16px 4px;margin-bottom:16px}
 .why-group h4{
   margin:0 0 3px;font:600 11px/1 ui-monospace,Menlo,monospace;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--dirt);
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dirt-t);
 }
 .why-group .why-group-sub{margin:0 0 14px;font-size:12.5px;color:var(--slate);line-height:1.45}
 .why-slider{margin-bottom:15px}
 .why-slider-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px}
-.why-slider-val{font:600 13px ui-monospace,Menlo,monospace;color:var(--clay);white-space:nowrap}
+.why-slider-val{font:600 13px ui-monospace,Menlo,monospace;color:var(--clay-t);white-space:nowrap}
 .why-slider input[type=range]{
   width:100%;margin:7px 0 0;height:3px;border-radius:2px;background:var(--rule);
   -webkit-appearance:none;appearance:none;outline:none;cursor:pointer;
 }
 .why-slider input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-  background:var(--clay);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
+  background:var(--clay-t);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
 }
 .why-slider input[type=range]::-moz-range-thumb{
   width:15px;height:15px;border-radius:50%;background:var(--clay);
   border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
 }
-.why-slider input[type=range]:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
+.why-slider input[type=range]:focus-visible{outline:2px solid var(--clay-t);outline-offset:3px}
 @media (pointer:coarse){   /* finger-sized slider thumbs on touch screens */
   .why-slider input[type=range]{height:6px;margin-top:14px}
   .why-slider input[type=range]::-webkit-slider-thumb{width:26px;height:26px}
@@ -698,7 +715,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 /* Inline hover/focus info icon, e.g. next to "Maintenance / mile / year" */
 .info-ico{position:relative;display:inline-flex;vertical-align:-3px;margin-left:4px;color:var(--slate);cursor:help}
 .info-ico svg{display:block;width:13px;height:13px}
-.info-ico:hover,.info-ico:focus{color:var(--clay);outline:none}
+.info-ico:hover,.info-ico:focus{color:var(--clay-t);outline:none}
 .info-tip{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:210px;background:var(--ink);color:var(--paper);font:400 11px/1.5 ui-sans-serif,system-ui,sans-serif;padding:7px 9px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none;z-index:20;text-align:left}
 .info-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
 .info-ico:hover .info-tip,.info-ico:focus .info-tip{opacity:1;visibility:visible}
@@ -707,7 +724,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
    calculator's rounded-pill style, so it reads as native to this page. */
 .why-pill-grp{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 4px}
 .why-pill{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;padding:6px 10px;border:1.5px solid var(--rule);background:#fff;color:var(--slate);border-radius:2px;cursor:pointer}
-.why-pill:hover{border-color:var(--clay);color:var(--clay)}
+.why-pill:hover{border-color:var(--clay);color:var(--clay-t)}
 .why-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 /* MOBILE STICKY COST SUMMARY — hidden on desktop; on phones it pins the two
    headline totals to the top of the results column so they stay on screen
@@ -716,20 +733,20 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .wms-item{flex:1;text-align:center}
 .wms-lbl{display:block;font:600 9px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--slate);margin-bottom:3px}
 .wms-val{display:block;font:400 18px/1 "Iowan Old Style",Georgia,serif;color:var(--ink)}
-.wms-item.opt2 .wms-val{color:var(--clay)}
+.wms-item.opt2 .wms-val{color:var(--clay-t)}
 .why-reset{
   font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
-  padding:9px 13px;border:1.5px dashed var(--clay);background:#fff;color:var(--clay);
+  padding:9px 13px;border:1.5px dashed var(--clay-t);background:#fff;color:var(--clay-t);
   border-radius:2px;cursor:pointer;width:100%;
 }
-.why-reset:hover{background:var(--clay);color:#fff}
+.why-reset:hover{background:var(--clay-t);color:#fff}
 .why-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:24px}
 .why-stat{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:14px 15px}
 .why-stat.lead{border-color:var(--ink);border-width:2px}
 .why-stat-lbl{font:600 12.5px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:8px}
 /* Caribou only: its accent trio is the neon one (hot magenta/green/cyan), so --dirt
    reads as "neon pink" the other two themes' --dirt (rust/burnt-orange) doesn't. */
-[data-theme="caribou"] .why-stat-lbl{color:var(--dirt)}
+[data-theme="caribou"] .why-stat-lbl{color:var(--dirt-t)}
 .why-stat-val{font:400 27px/1 "Iowan Old Style",Georgia,serif;letter-spacing:-.01em;color:var(--ink)}
 .why-stat-sub{margin-top:6px;font-size:12px;color:var(--slate);line-height:1.4}
 /* Percentage badge next to the dollar figure on the Partnership saves/costs
@@ -739,8 +756,8 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
    Elk); --dirt is used as the "costs more" counterpart even though its hue
    varies more theme to theme, matching how the funding bars already use it. */
 .why-pct-badge{display:inline-block;font:600 14px/1 ui-monospace,Menlo,monospace;padding:3px 9px;border-radius:10px;vertical-align:middle}
-.why-pct-badge.good{background:color-mix(in srgb, var(--loam) 16%, white);color:var(--loam)}
-.why-pct-badge.caution{background:color-mix(in srgb, var(--dirt) 16%, white);color:var(--dirt)}
+.why-pct-badge.good{background:color-mix(in srgb, var(--loam) 10%, white);color:var(--loam-t)}
+.why-pct-badge.caution{background:color-mix(in srgb, var(--dirt) 10%, white);color:var(--dirt-t)}
 .why-bar{margin-bottom:16px}
 .why-bar-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:5px}
 .why-bar-name{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
@@ -769,7 +786,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-ledger tr.sum td{font-weight:600;border-bottom:1.5px solid var(--ink);background:rgba(0,0,0,.02)}
 .why-ledger tr.total td{font-weight:600;font-size:15px;border-bottom:3px double var(--ink)}
 .why-ledger .why-cell-note{display:block;font-size:11.5px;color:var(--slate);font-weight:400;margin-top:2px}
-.why-ledger td.neg{color:var(--loam)}
+.why-ledger td.neg{color:var(--loam-t)}
 /* Time-chart dots stay invisible until the crosshair picks one out, the same way
    the Charts tab's .chart-hover-dot works — 20+ visible dots per line is noise. */
 .why-dot{opacity:0;pointer-events:none}
@@ -778,10 +795,10 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
   border-left:3px solid var(--clay);background:#fff;padding:11px 14px;margin:14px 0 0;
   font-size:13px;line-height:1.55;color:var(--ink);
 }
-.why-flag b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--clay);display:block;margin-bottom:3px}
+.why-flag b{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--clay-t);display:block;margin-bottom:3px}
 .why-caveats{border:1.5px solid var(--rule);border-radius:4px;background:#fff;padding:18px 20px;margin-top:26px}
 .why-caveats h3{margin:0 0 10px;font-size:16px;letter-spacing:-.01em}
-.why-caveats h4{margin:16px 0 4px;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt)}
+.why-caveats h4{margin:16px 0 4px;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dirt-t)}
 .why-caveats p,.why-caveats li{font-size:13.5px;line-height:1.6;color:var(--ink);max-width:78ch}
 .why-caveats p{margin:0 0 8px}
 .why-caveats ul{margin:0 0 8px;padding-left:20px}
@@ -795,10 +812,10 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-field i{font-weight:400;font-style:normal;color:var(--slate)}
 .why-field input,.why-field select{font-size:16px;line-height:1.2;font-family:inherit;font-weight:400;padding:8px 9px;border:1.5px solid var(--rule);
   border-radius:3px;background:#fff;color:var(--ink);min-width:0;width:100%;box-sizing:border-box}
-.why-field input:focus-visible,.why-field select:focus-visible{outline:2px solid var(--clay);outline-offset:1px}
+.why-field input:focus-visible,.why-field select:focus-visible{outline:2px solid var(--clay-t);outline-offset:1px}
 .why-share,.why-partner-btn{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
   padding:11px 14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:2px;cursor:pointer}
-.why-share:hover,.why-partner-btn:hover{background:var(--clay);border-color:var(--clay);color:#fff}
+.why-share:hover,.why-partner-btn:hover{background:var(--clay-t);border-color:var(--clay-t);color:#fff}
 .why-partner-btn.alt{background:#fff;color:var(--ink)}
 .why-personal-note{flex:1 1 100%;margin:0;font-size:12px;line-height:1.45;color:var(--slate)}
 .why-scenario{margin:-10px 0 22px;font-size:13px;line-height:1.5;color:var(--ink)}
@@ -823,7 +840,7 @@ footer code{font-size:12px;background:#fff;padding:1px 5px;border:1px solid var(
 .why-pin-val{font:400 20px/1.1 "Iowan Old Style",Georgia,serif;white-space:nowrap}
 .why-pin-inputs{order:3;flex:1 1 auto;font:11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.03em;opacity:.8}
 .why-pin-go{order:4;margin-left:auto;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
-.why-pin:focus-visible{outline:3px solid var(--clay);outline-offset:-3px}
+.why-pin:focus-visible{outline:3px solid var(--clay-t);outline-offset:-3px}
 body.why-pin-on{padding-bottom:calc(var(--why-pin-h,64px) + 10px)}
 body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
 
@@ -835,7 +852,7 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
     border-radius:3px;background:#fff;color:var(--ink);font:13px/1.4 inherit;font-family:inherit;cursor:pointer}
   .why-live b{font-weight:600}
   .why-live span{display:block;font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--slate)}
-  .why-live i{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:var(--clay)}
+  .why-live i{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;font-style:normal;color:var(--clay-t)}
   .why-mobile-summary{display:flex;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:6;background:#fff;border:1.5px solid var(--rule);border-radius:4px;padding:9px 11px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 }
 @media(max-width:760px){
@@ -884,6 +901,9 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
     --clay:#00657f;       /*  6.6:1  links, key numbers, regional tier */
     --dirt:#a1175d;       /*  7.0:1  kickers, abbreviations, statewide tier */
     --loam:#17663a;       /*  6.8:1  "savings" green, local tier */
+    --clay-t:var(--clay); /* text shades follow the print set (all already >=4.5:1) */
+    --dirt-t:var(--dirt);
+    --loam-t:var(--loam);
     --tier-national:#111111;
     --tier-regional:#00657f;
     --tier-state:#a1175d;
@@ -974,7 +994,7 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .why-ledger tr.sum td{background:#f0f2f3}
   .why-pct-badge.good{background:#e3f1e8}
   .why-pct-badge.caution{background:#f7e3ec}
-  [data-theme="caribou"] .why-stat-lbl{color:var(--dirt)}
+  [data-theme="caribou"] .why-stat-lbl{color:var(--dirt-t)}
   .why-stat-lbl,.why-seg{letter-spacing:.04em}
   /* On a B&W printer the slate / magenta / green segments land on similar greys; a white
      seam keeps adjacent segments separable, and each wide segment carries its own $ label. */
@@ -985,7 +1005,7 @@ body.why-pin-on .share-pop{bottom:calc(var(--why-pin-h,64px) + 12px)}
   .org-name a,.tree-name a,.near-name a{border-bottom:0!important}
   .org-name a[href^="http"]::after,.tree-name a[href^="http"]::after,
   .near-name a[href^="http"]::after,.detail-card-link[href^="http"]::after{
-    content:" " attr(href);font:400 8pt ui-monospace,Menlo,monospace;color:var(--clay);
+    content:" " attr(href);font:400 8pt ui-monospace,Menlo,monospace;color:var(--clay-t);
     overflow-wrap:anywhere;word-break:break-all}
   .org-name,.near-name{flex-wrap:wrap}
   /* Structure rows: a long printed URL made the name wrap below its tier dot, stranding the
@@ -3362,7 +3382,7 @@ function renderPointMap(list){
     <p class="map-note">Real locations for ${pts.length} ${STATE_NAMES[filters.state]} organizations — each dot is an actual trailhead, shop, or org address looked up individually, not a state-level estimate. Click a dot to open that group's profile in the Directory. <a href="#" id="map-goto-all">See the full US map</a> instead.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${STATE_NAMES[filters.state]} organizations by location">
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.25" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3"/>${dots}</svg>
-    <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>${unpinnedNote(list)}`;
+    <div class="scalebar tier-key"><span class="tk"><span class="tier-dot tier-national" style="margin:0"></span>National</span><span class="tk"><span class="tier-dot tier-regional" style="margin:0"></span>Regional</span><span class="tk"><span class="tier-dot tier-state" style="margin:0"></span>Statewide</span><span class="tk"><span class="tier-dot tier-local" style="margin:0"></span>Local</span></div>${unpinnedNote(list)}`;
   $("p-map").querySelectorAll(".geo-hit").forEach(el=>
     el.addEventListener("click",()=>openOrgProfile(pts[+el.dataset.idx])));
   const link=document.getElementById("map-goto-all");
@@ -3403,7 +3423,7 @@ function renderDetailMap(){
       <rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>
       <path d="${outlinePath}" fill="var(--rule)" fill-opacity="0.3" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5 4"/>${dots}
     </svg>
-    <div class="scalebar"><span class="tier-dot tier-national" style="margin:0"></span>National&nbsp;&nbsp;<span class="tier-dot tier-regional" style="margin:0"></span>Regional&nbsp;&nbsp;<span class="tier-dot tier-state" style="margin:0"></span>Statewide&nbsp;&nbsp;<span class="tier-dot tier-local" style="margin:0"></span>Local</div>${unpinnedNote(ORGS.filter(o=>o.s===detailState))}`;
+    <div class="scalebar tier-key"><span class="tk"><span class="tier-dot tier-national" style="margin:0"></span>National</span><span class="tk"><span class="tier-dot tier-regional" style="margin:0"></span>Regional</span><span class="tk"><span class="tier-dot tier-state" style="margin:0"></span>Statewide</span><span class="tk"><span class="tier-dot tier-local" style="margin:0"></span>Local</span></div>${unpinnedNote(ORGS.filter(o=>o.s===detailState))}`;
   const card=document.getElementById("detail-card");
   let pinnedIdx=null;
   function paintCard(o,pinned){
